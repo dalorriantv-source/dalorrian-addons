@@ -1,4 +1,4 @@
--- Dalorrian's Crit Sounds: a sound and a big number every time you crit.
+-- Dalorrian's Crit Numbers (folder CritSounds): a big number, and an optional sound, every time you crit.
 -- The number pops over the mob you hit (keep enemy nameplates on), or in the middle of the screen when it can't
 -- find the mob's nameplate (heals, nameplates off). /crits for options.
 
@@ -8,7 +8,7 @@ local FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
 local NUMFONT = DAMAGE_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
 local DEFAULTS = { sound = true, pack = nil, volume = 100, numbers = true, size = 48, shake = 1, heals = true, pet = true, gap = 0, replace = true }
 local P = ns.print or print
-local function Say(msg) P("|cffffd100Crit Sounds:|r " .. msg) end
+local function Say(msg) P("|cffffd100Crit Numbers:|r " .. msg) end
 local Tip = ns.Tip or GameTooltip
 
 ---------------------------------------------------------------------------
@@ -447,10 +447,10 @@ end
 ---------------------------------------------------------------------------
 local OnOff = { { "On", true }, { "Off", false } }
 ns.HelpConfig = {
-  title = "Crit Sounds",
-  tag = "Crit Sounds",
+  title = "Crit Numbers",
+  tag = "Crit Numbers",
   settings = {
-    { label = "Crit Sounds", choices = { { "On", "on" }, { "Off", "off" } },
+    { label = "Crit Numbers", choices = { { "On", "on" }, { "Off", "off" } },
       get = function() return DB.off and "off" or "on" end,
       set = function(v) DB.off = (v == "off") or nil; pcall(GameNumbers) end },
     { label = "Sound", cycle = true,
@@ -467,7 +467,7 @@ ns.HelpConfig = {
       get = function() return DB.gap or 0 end, set = function(v) DB.gap = v end },
     { label = "Big Numbers", choices = OnOff,
       get = function() return DB.numbers and true or false end, set = function(v) DB.numbers = v; pcall(GameNumbers) end },
-    { label = "Damage Numbers", choices = { { "Crit Sounds", true }, { "The Game's", false } },
+    { label = "Damage Numbers", choices = { { "Crit Numbers", true }, { "The Game's", false } },
       get = function() return DB.replace and true or false end, set = function(v) DB.replace = v; pcall(GameNumbers) end },
     -- (1.3.6) bigger crits, and the size of normal hits is yours to pick too
     { label = "Crit Number Size", choices = { { "Big", 48 }, { "Huge", 64 }, { "Massive", 80 } },
@@ -484,6 +484,7 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.0", "Crit Sounds is now Crit Numbers: the big numbers are the main event, and the sounds are optional. Your settings and /crits stay the same" },
     { v = "1.3.11", "Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one" },
     { v = "1.3.10", "Pick your crit color under Crit Color: Purple, Orange or Gold. Purple to start (pink was too close to the game's experience numbers)" },
     { v = "1.3.9", "Crit numbers are hot pink, so a crit can't be mistaken for anything else" },
@@ -541,7 +542,7 @@ MinimapButton = function()
   end)
   b:SetScript("OnEnter", function(self)
     Tip:SetOwner(self, "ANCHOR_LEFT")
-    Tip:AddLine("Crit Sounds")
+    Tip:AddLine("Crit Numbers")
     Tip:AddLine("Left-click: Settings & Help", 1, 1, 1)
     Tip:AddLine(DB.off and "Right-click: turn it on" or "Right-click: turn it off", 1, 1, 1)
     Tip:AddLine("Drag to move", 0.6, 0.6, 0.6)
@@ -568,7 +569,7 @@ SlashCmdList.CRITSOUNDS = function(msg)
   local cmd = (msg or ""):lower():match("^(%S*)")
   if cmd == "debug" then
     local p = Pack(DB.pack)
-    print("|cffffd100Crit Sounds debug|r")
+    print("|cffffd100Crit Numbers debug|r")
     print("  this session: " .. seen.hits .. " hits from you, " .. seen.crits .. " of them crits")
     print("  last crit: " .. tostring(seen.last))
     print("  chat lines read " .. (seen.lines or 0) .. ", unreadable " .. (seen.secret or 0) .. ", combat log tab " ..
