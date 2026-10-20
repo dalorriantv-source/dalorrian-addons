@@ -1,2 +1,10 @@
 # personal sound packs: clips from games and shows, never pushed
 *_MyPacks/
+
+# private sound packs (not ours to publish): live only on Dalorrian's PC
+CritSounds/LocalPacks.lua
+CritSounds/Sounds/DALOHCRIT/
+CritSounds/Sounds/DALOWOW/
+AggroAlert/LocalPacks.lua
+AggroAlert/Sounds/DALORRIAN MEME WARNING/
+AggroAlert/Sounds/DALORRIAN_ELITE/

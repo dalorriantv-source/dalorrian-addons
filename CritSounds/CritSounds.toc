@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Crit Numbers
 ## Notes: Big crit numbers in the size and color you pick, with optional crit sounds. Sound packs, a volume slider and crit streaks. Keep enemy nameplates on to see the number over the mob. Type /crits help for settings.
 ## Author: Dalorrian
-## Version: 1.4.0
+## Version: 1.4.1
 ## IconTexture: Interface\Icons\Ability_CriticalStrike
 ## AddonCompartmentFunc: CritSounds_OnCompartmentClick
 ## SavedVariables: CritSoundsDB, CritSounds_Lang
@@ -20,3 +20,4 @@ Locales\zhCN.lua
 Locales\zhTW.lua
 Help.lua
 CritSounds.lua
+LocalPacks.lua

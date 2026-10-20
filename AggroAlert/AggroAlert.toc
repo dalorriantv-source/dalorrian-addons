@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Aggro Alert
 ## Notes: A small warning over your head before you pull a mob: its name, how far you are from pulling it, and arrows pointing at it. Hides in combat. Keep enemy nameplates on. Type /aggro help for settings.
 ## Author: Dalorrian
-## Version: 1.3.0
+## Version: 1.3.1
 ## IconTexture: Interface\Icons\Ability_Warrior_Challange
 ## AddonCompartmentFunc: AggroAlert_OnCompartmentClick
 ## SavedVariables: AggroAlertDB, AggroAlert_Lang
@@ -20,3 +20,4 @@ Locales\zhCN.lua
 Locales\zhTW.lua
 Help.lua
 AggroAlert.lua
+LocalPacks.lua

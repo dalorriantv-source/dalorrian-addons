@@ -21,6 +21,10 @@ local PACKS = {
 }
 local SOUNDS = {
   { "Dalorrian Pack", "pack_dalorrian", { pack = "dalorrian" } },
+  -- (1.3.1) packs of the game's own sounds, one at random each warning
+  { "Bell Pack", "pack_bells", { game = { 5274, 3081, 3175, 8960 } } },
+  { "Horn Pack", "pack_horns", { game = { 44292, 8459, 37666 } } },
+  { "Alarm Pack", "pack_alarms", { game = { "RAID_WARNING", 8959, 12867, 17317 } } },
   { "Soft Chime", "chime", 3081 },
   { "Map Ping", "ping", 3175 },
   { "Soft Click", "click", 856 },
@@ -65,6 +69,25 @@ local function Chime(key)
     if PlaySound then
       local ok, played, handle = pcall(PlaySound, snd, "Master")
       if ok and played then playing = handle end
+    end
+  elseif type(snd) == "table" and snd.game then
+    if not snd.ids then
+      local ids, seen = {}, {}
+      for _, g in ipairs(snd.game) do
+        local id = g
+        if type(g) == "string" then id = SOUNDKIT and SOUNDKIT[g] end
+        if type(id) == "number" and not seen[id] then seen[id] = true; ids[#ids + 1] = id end
+      end
+      snd.ids = ids
+    end
+    local n = #snd.ids
+    if n == 0 or not PlaySound then return end
+    local pick = math.random(n)
+    if n > 1 and pick == lastClip[key] then pick = pick % n + 1 end
+    lastClip[key] = pick
+    for i = 0, n - 1 do   -- a sound this version of the game doesn't have: the next one instead
+      local ok, played, handle = pcall(PlaySound, snd.ids[(pick + i - 1) % n + 1], "Master")
+      if ok and played then playing = handle; return end
     end
   elseif type(snd) == "table" and snd.pack then
     local clips = PACKS[snd.pack] or {}
@@ -462,6 +485,7 @@ ns.HelpConfig = {
       set = function(v) SlashCmdList.AGGROALERT(v == "move" and "unlock" or "lock") end },
   },
   notes = {
+    { v = "1.3.1", "More sound packs under Sound: Bell, Horn and Alarm, made of the game's own sounds. Each plays one at random every warning, like the Dalorrian Pack" },
     { v = "1.3.0", "Elite mobs warn you a few meters sooner and say Elite on the warning, even at your own level" },
     { v = "1.2.0", "A Volume slider for the sound packs. The game's own sounds follow your Master volume" },
     { v = "1.1.1", "The sound plays every time a warning pops up, even right after the last one, instead of waiting for it to finish" },

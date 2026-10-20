@@ -31,6 +31,18 @@ end
 -- (1.1.0) the Dalorrian Pack ships with the addon: Dalorrian's own crit lines
 CritSounds_AddPack("Dalorrian Pack", "Interface\\AddOns\\CritSounds\\Sounds\\dalorrian", { "all_day", "boing", "boom", "booty",
   "crit_snozeberries", "critcritcrit", "damage", "gewww", "ho_yeh", "nice", "schwing", "skeet" })
+-- (1.4.1) packs made of the game's own sounds: every player already has them, one at random each crit.
+-- Names are looked up in SOUNDKIT when it has them; the numbers are the same sounds by id.
+local function AddGamePack(label, sounds)
+  local key = label:lower():gsub("[^%w]+", "_")
+  for _, p in ipairs(PACKS) do if p.key == key then return end end
+  PACKS[#PACKS + 1] = { label = label, key = key, game = sounds, clips = sounds }
+  if soundSetting then table.insert(soundSetting.choices, #soundSetting.choices + 1, { label, key }) end
+end
+AddGamePack("Coin Pack", { "LOOT_WINDOW_COIN_SOUND", "MONEY_FRAME_OPEN", "MONEY_FRAME_CLOSE", 120, 891, 892 })
+AddGamePack("Fanfare Pack", { "LEVEL_UP", "UI_EPICLOOT_TOAST", 888, 73277, 77003, 54125 })
+AddGamePack("Alert Pack", { "RAID_WARNING", "READY_CHECK", 8959, 8960, 37666, 17317 })
+AddGamePack("Boom Pack", { 97598, 97597, 44292, 8459 })
 local function Pack(key)
   for _, p in ipairs(PACKS) do if p.key == key then return p end end
   return PACKS[1]   -- the saved pack is gone (its addon is off): the first one there is
@@ -44,9 +56,33 @@ local function PlayFile(path)
   if not (ok and played) then ok, played, handle = pcall(PlaySoundFile, path .. ".mp3", "Master") end
   if ok and played then playing = handle; return true end
 end
+local function GameIds(p)
+  if p.ids then return p.ids end
+  local ids, seen = {}, {}
+  for _, s in ipairs(p.game) do
+    local id = s
+    if type(s) == "string" then id = SOUNDKIT and SOUNDKIT[s] end
+    if type(id) == "number" and not seen[id] then seen[id] = true; ids[#ids + 1] = id end
+  end
+  p.ids = ids
+  return ids
+end
+local function PlayGame(p)
+  local ids = GameIds(p)
+  local n = #ids
+  if n == 0 or not PlaySound then return end
+  local pick = math.random(n)
+  if n > 1 and pick == lastClip[p.key] then pick = pick % n + 1 end   -- never the same one twice in a row
+  lastClip[p.key] = pick
+  for i = 0, n - 1 do   -- a sound this version of the game doesn't have: the next one instead
+    local ok, played, handle = pcall(PlaySound, ids[(pick + i - 1) % n + 1], "Master")
+    if ok and played then playing = handle; return end
+  end
+end
 local function Play(p, clip)
   if playing and StopSound then pcall(StopSound, playing, 0) end   -- the new crit cuts the old sound off
   playing = nil
+  if p.game then PlayGame(p); return end
   local vol = DB.volume or 100
   if vol >= 100 or not PlayFile(p.path .. "\\v" .. vol .. "\\" .. clip) then PlayFile(p.path .. "\\" .. clip) end
 end
@@ -63,6 +99,7 @@ local function Sound(preview)
     Play(p, p.streak[math.min(streakN - 1, #p.streak)])
     return
   end
+  if p.game then Play(p); return end
   local n = #p.clips
   local pick = math.random(n)
   if n > 1 and pick == lastClip[p.key] then pick = pick % n + 1 end   -- never the same one twice in a row
@@ -484,6 +521,7 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.1", "More sound packs to pick from under Sound: Coin, Fanfare, Alert and Boom, made of the game's own sounds. Each plays one at random every crit, like the Dalorrian Pack" },
     { v = "1.4.0", "Crit Sounds is now Crit Numbers: the big numbers are the main event, and the sounds are optional. Your settings and /crits stay the same" },
     { v = "1.3.11", "Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one" },
     { v = "1.3.10", "Pick your crit color under Crit Color: Purple, Orange or Gold. Purple to start (pink was too close to the game's experience numbers)" },
