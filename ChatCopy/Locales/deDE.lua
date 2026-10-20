@@ -49,4 +49,5 @@ ns.LOCALES.deDE = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "Erste Version: ein kleiner Knopf an jedem Chatfenster, der den Chat als reinen Text zum Kopieren öffnet",
   ["Clickable Links"] = "Klickbare Links",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "Weblinks im Chat werden golden und klickbar: Ein Klick öffnet ein kleines Feld mit dem Link, bereit zum Kopieren",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "„Blockierte Aktion“-Fehler beim Drücken von Esc oder beim Ausloggen behoben. Angeklickte Links öffnen sich jetzt in Chat Copys eigenem Feld",
 } end

@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Scrolling Loot
 ## Notes: What you loot floats up on screen, one clean line at a time. Type /sloot help for settings.
 ## Author: Dalorrian
-## Version: 1.1.0
+## Version: 1.1.1
 ## IconTexture: Interface\Icons\INV_Misc_Bag_10
 ## AddonCompartmentFunc: ScrollingLoot_OnCompartmentClick
 ## SavedVariables: ScrollingLootDB, ScrollingLoot_Lang

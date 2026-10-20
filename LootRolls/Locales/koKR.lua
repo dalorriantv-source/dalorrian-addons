@@ -78,4 +78,5 @@ ns.LOCALES.koKR = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "설정 및 도움말 창, 미니맵 버튼, 10개 언어",
   ["Shift-drag any roll bar to move them all"] = "아무 주사위 바나 Shift-드래그하면 모두 이동",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "첫 출시: 어디든 둘 수 있는 깔끔한 입찰, 차비, 포기 바",
+  ["Settings rows with four choices fit inside the window now"] = "선택지가 네 개인 설정 줄이 이제 창 안에 들어갑니다",
 } end

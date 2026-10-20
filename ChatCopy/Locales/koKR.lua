@@ -53,4 +53,5 @@ ns.LOCALES.koKR = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "첫 출시: 채팅 창마다 작은 버튼, 누르면 채팅을 복사할 수 있는 일반 텍스트로 엽니다",
   ["Clickable Links"] = "클릭 가능한 링크",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "채팅의 웹 링크가 금색으로 바뀌고 클릭할 수 있습니다. 클릭하면 복사할 수 있게 링크가 담긴 작은 상자가 열립니다",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Esc를 누르거나 로그아웃할 때 생기던 \"차단된 동작\" 오류를 고쳤습니다. 클릭한 링크는 이제 Chat Copy 자체 창에서 열립니다",
 } end

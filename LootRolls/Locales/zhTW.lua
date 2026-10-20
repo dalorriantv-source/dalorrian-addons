@@ -77,4 +77,5 @@ ns.LOCALES.zhTW = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "設定與說明視窗、小地圖按鈕和10種語言",
   ["Shift-drag any roll bar to move them all"] = "Shift+拖曳任一擲骰條即可移動全部",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "首個版本：可放在任何位置的簡潔需求、貪婪、放棄條",
+  ["Settings rows with four choices fit inside the window now"] = "有四個選項的設定列現在不會超出視窗了",
 } end

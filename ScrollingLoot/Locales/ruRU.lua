@@ -73,4 +73,5 @@ ns.LOCALES.ruRU = function() return {
   ["Money lines take the color of the biggest coin in them"] = "Строки с деньгами окрашены по самой крупной монете",
   ["Quest items get a gold border"] = "Предметы для заданий получают золотую рамку",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Первая версия: то, что ты подбираешь, всплывает на экране, по одной чистой строке",
+  ["Settings rows with four choices fit inside the window now"] = "Строки настроек с четырьмя вариантами теперь помещаются в окно",
 } end

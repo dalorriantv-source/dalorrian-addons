@@ -52,4 +52,5 @@ ns.LOCALES.zhTW = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "首個版本：每個聊天視窗上的小按鈕，點擊後以純文字打開聊天，方便複製",
   ["Clickable Links"] = "可點擊連結",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "聊天中的網址會變成金色並可點擊：點擊後彈出小框，連結已選好方便複製",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "修正了按 Esc 或登出時的「動作被阻擋」錯誤。點擊的連結現在在 Chat Copy 自己的框裡開啟",
 } end

@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Dalorrian's Crit Sounds
-## Notes: A sound and a big shaking number every time you crit. Sound packs, a volume slider and crit streaks. Keep enemy nameplates on to see the number over the mob. Type /crits help for settings.
+## Notes: A sound and a big number every time you crit, in the size and color you pick. Sound packs, a volume slider and crit streaks. Keep enemy nameplates on to see the number over the mob. Type /crits help for settings.
 ## Author: Dalorrian
-## Version: 1.2.0
+## Version: 1.3.11
 ## IconTexture: Interface\Icons\Ability_CriticalStrike
 ## AddonCompartmentFunc: CritSounds_OnCompartmentClick
 ## SavedVariables: CritSoundsDB, CritSounds_Lang

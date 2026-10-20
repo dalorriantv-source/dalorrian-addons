@@ -74,4 +74,5 @@ ns.LOCALES.frFR = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "Une fenêtre Options & Aide, un bouton de minicarte et 10 langues",
   ["Shift-drag any roll bar to move them all"] = "Maj-glisser n'importe quelle barre de jet les déplace toutes",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Première version : des barres nettes Besoin, Cupidité et Passer à placer où tu veux",
+  ["Settings rows with four choices fit inside the window now"] = "Les lignes de réglages à quatre choix tiennent maintenant dans la fenêtre",
 } end

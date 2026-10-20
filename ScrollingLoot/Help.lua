@@ -255,11 +255,14 @@ local function Build()
           row.apply = ok
         end
       end
-      for i, c in ipairs((s.cycle or s.slider) and {} or s.choices) do
-        local b = Button(win, 90, c[1], function()
+      -- more than three choices: narrower buttons so the row still fits inside the window
+      local list = (s.cycle or s.slider) and {} or s.choices
+      local bw = #list > 3 and math.floor((W - 186 - (#list - 1) * 6) / #list) or 90
+      for i, c in ipairs(list) do
+        local b = Button(win, bw, c[1], function()
           pcall(s.set, c[2]); win:Paint()
         end)
-        b:SetPoint("TOPLEFT", 170 + (i - 1) * 96, y)
+        b:SetPoint("TOPLEFT", 170 + (i - 1) * (bw + 6), y)
         b.value = c[2]
         row.btns[#row.btns + 1] = b
       end

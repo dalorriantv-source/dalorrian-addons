@@ -72,4 +72,5 @@ ns.LOCALES.zhCN = function() return {
   ["Money lines take the color of the biggest coin in them"] = "金钱行会使用其中最大货币的颜色",
   ["Quest items get a gold border"] = "任务物品带金色边框",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "首个版本：拾取的东西会一行一行干净地在屏幕上浮起",
+  ["Settings rows with four choices fit inside the window now"] = "有四个选项的设置行现在不会超出窗口了",
 } end

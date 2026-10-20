@@ -78,4 +78,5 @@ ns.LOCALES.ruRU = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "Окно настроек и помощи, кнопка у миникарты и 10 языков",
   ["Shift-drag any roll bar to move them all"] = "Shift-перетаскивание любой полоски двигает их все",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Первая версия: чистые полоски Нужно, Не откажусь и Отказаться, которые можно поставить куда угодно",
+  ["Settings rows with four choices fit inside the window now"] = "Строки настроек с четырьмя вариантами теперь помещаются в окно",
 } end

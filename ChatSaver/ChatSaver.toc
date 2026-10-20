@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Chat Saver
 ## Notes: Save your chat setup once (windows, tabs, sizes, what shows where, colors and channels) and load it on any other character. New characters get it by themselves. Type /chatsaver for options.
 ## Author: Dalorrian
-## Version: 1.1.0
+## Version: 1.1.5
 ## IconTexture: Interface\Icons\INV_Scroll_03
 ## AddonCompartmentFunc: ChatSaver_OnCompartmentClick
 ## SavedVariables: ChatSaverDB, ChatSaver_Lang

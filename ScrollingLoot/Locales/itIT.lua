@@ -72,4 +72,5 @@ ns.LOCALES.itIT = function() return {
   ["Money lines take the color of the biggest coin in them"] = "Le righe di denaro prendono il colore della moneta più grande",
   ["Quest items get a gold border"] = "Gli oggetti delle missioni hanno un bordo dorato",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Prima versione: ciò che raccogli scorre sullo schermo, una riga pulita alla volta",
+  ["Settings rows with four choices fit inside the window now"] = "Le righe delle impostazioni con quattro scelte ora stanno dentro la finestra",
 } end

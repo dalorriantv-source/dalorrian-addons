@@ -69,4 +69,5 @@ ns.LOCALES.itIT = function() return {
   ["forgot %s"] = "%s dimenticato",
   ["no character called %s"] = "nessun personaggio chiamato %s",
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "Passa sopra la borsa per vedere l'oro di ogni personaggio e il totale. Ogni personaggio compare la prossima volta che entri con lui. Scegli Questo personaggio in Al passaggio per vederne solo uno",
+  ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "I personaggi con lo stesso nome (cognomi di WoW: Forever) hanno ognuno la propria riga nel tooltip. Ognuno ricompare la prossima volta che entri con lui",
 } end

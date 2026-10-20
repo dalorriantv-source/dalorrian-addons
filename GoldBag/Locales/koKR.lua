@@ -70,4 +70,5 @@ ns.LOCALES.koKR = function() return {
   ["forgot %s"] = "%s 삭제함",
   ["no character called %s"] = "%s(이)라는 캐릭터가 없습니다",
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "골드 주머니에 마우스를 올리면 모든 캐릭터의 골드와 합계가 보입니다. 각 캐릭터는 다음에 그 캐릭터로 접속할 때 추가됩니다. 하나만 보려면 마우스를 올리면에서 이 캐릭터를 고르세요",
+  ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "이름이 같은 캐릭터(WoW: Forever 성)가 이제 툴팁에서 각자 한 줄씩 나옵니다. 각 캐릭터는 다음에 접속하면 다시 나타납니다",
 } end

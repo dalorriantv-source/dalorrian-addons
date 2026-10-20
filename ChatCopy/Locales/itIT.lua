@@ -52,4 +52,5 @@ ns.LOCALES.itIT = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "Prima versione: un piccolo pulsante su ogni finestra di chat che la apre come testo semplice, pronto da copiare",
   ["Clickable Links"] = "Link cliccabili",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "I link web in chat diventano dorati e cliccabili: un clic apre un riquadro con il link pronto da copiare",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Corretti gli errori \"azione bloccata\" premendo Esc o uscendo dal gioco. I link cliccati ora si aprono nella finestra di Chat Copy",
 } end

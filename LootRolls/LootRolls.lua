@@ -495,6 +495,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.LOOTROLLS("test") end },
   },
   notes = {
+    { v = "1.1.1", "Settings rows with four choices fit inside the window now" },
     { v = "1.1.0", "After a roll the bar stays up a few seconds with who won and what they rolled. Pick how long under Result Stays", "A Settings & Help window, a minimap button and 10 languages" },
     { v = "1.0.5", "Shift-drag any roll bar to move them all" },
     { v = "1.0.0", "First release: clean Need, Greed and Pass bars you can put anywhere" },

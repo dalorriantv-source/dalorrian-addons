@@ -52,4 +52,5 @@ ns.LOCALES.zhCN = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "首个版本：每个聊天窗口上的小按钮，点击后以纯文本打开聊天，方便复制",
   ["Clickable Links"] = "可点击链接",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "聊天中的网址会变成金色并可点击：点击后弹出小框，链接已选好方便复制",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "修复了按 Esc 或登出时的“操作被阻止”错误。点击的链接现在在 Chat Copy 自己的框里打开",
 } end

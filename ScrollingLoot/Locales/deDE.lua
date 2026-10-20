@@ -69,4 +69,5 @@ ns.LOCALES.deDE = function() return {
   ["Money lines take the color of the biggest coin in them"] = "Geldzeilen bekommen die Farbe der größten Münze darin",
   ["Quest items get a gold border"] = "Questgegenstände bekommen einen goldenen Rand",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Erste Version: was du plünderst, schwebt auf dem Bildschirm nach oben, eine klare Zeile nach der anderen",
+  ["Settings rows with four choices fit inside the window now"] = "Einstellungszeilen mit vier Auswahlen passen jetzt ins Fenster",
 } end

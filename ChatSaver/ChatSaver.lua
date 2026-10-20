@@ -58,18 +58,36 @@ end
 ---------------------------------------------------------------------------
 -- putting a saved setup on this character
 ---------------------------------------------------------------------------
-local fails
-local function Try(f, ...)
-  local ok = pcall(f, ...)
-  if not ok then fails = fails + 1 end
+-- (1.1.1) every part the game turns down is written down with why, so /chatsaver why can show it
+local fails, log
+local function Note(what)
+  fails = fails + 1
+  if #log < 40 then log[#log + 1] = what end
+end
+local function Try(label, f, ...)
+  if type(f) ~= "function" then Note(label .. ": missing in this client"); return end
+  local ok, err = pcall(f, ...)
+  if not ok then Note(label .. ": " .. tostring(err):gsub("^.-:%d+: ", "")) end
+end
+-- the game's chat functions, or the same thing as a method on the window (newer clients moved some)
+local function Fn(global, method)
+  if _G[global] then return _G[global] end
+  if method then return function(f, ...) return f[method](f, ...) end end
+end
+
+-- (1.1.2) a tab docked behind another one counts as open: the game only calls the tab you're looking at "shown"
+local function Open(w) return w.shown or (tonumber(w.docked) or 0) > 0 end
+local function OpenNow(i, f)
+  local _, _, _, _, _, _, shown, _, docked = GetChatWindowInfo(i)
+  return shown or (tonumber(docked) or 0) > 0 or f:IsShown()
 end
 
 local function Apply(s)
-  fails = 0
+  fails, log = 0, {}
   -- channels first, so the windows can be told to show them
   for _, name in ipairs(s.channels or {}) do
     if not (GetChannelName and GetChannelName(name) and GetChannelName(name) > 0) then
-      Try(JoinPermanentChannel, name, nil, 1)
+      Try("join " .. name, JoinPermanentChannel, name, nil, 1)
     end
   end
   for i = 1, NUM do
@@ -78,45 +96,60 @@ local function Apply(s)
     if w and f then
       -- which windows are open: the first two always are (chat and the combat log)
       if i > 2 then
-        if w.shown and not f:IsShown() then
-          Try(SetChatWindowShown, i, true)
-          Try(f.Show, f)
-        elseif not w.shown and f:IsShown() then
-          Try(FCF_Close, f)
+        if Open(w) and not OpenNow(i, f) then
+          Try("open window " .. i, SetChatWindowShown, i, true)
+          Try("show window " .. i, f.Show, f)
+          local tab = _G["ChatFrame" .. i .. "Tab"]
+          if tab then Try("show tab " .. i, tab.Show, tab) end
+        elseif not Open(w) and OpenNow(i, f) then
+          Try("close window " .. i, FCF_Close, f)
         end
       end
-      if w.shown or i <= 2 then
-        if w.name and w.name ~= "" then Try(FCF_SetWindowName, f, w.name) end
-        if w.size then Try(FCF_SetChatWindowFontSize, nil, f, w.size) end
-        if w.r then Try(FCF_SetWindowColor, f, w.r, w.g, w.b) end
-        if w.a then Try(FCF_SetWindowAlpha, f, w.a) end
-        Try(SetChatWindowLocked, i, w.locked); f.isLocked = w.locked
-        if FCF_SetUninteractable then Try(FCF_SetUninteractable, f, w.unint) end
+      if Open(w) or i <= 2 then
+        if w.name and w.name ~= "" then Try("name " .. i, FCF_SetWindowName, f, w.name) end
+        if w.size then Try("font size " .. i, FCF_SetChatWindowFontSize, nil, f, w.size) end
+        if w.r then Try("color " .. i, FCF_SetWindowColor, f, w.r, w.g, w.b) end
+        if w.a then Try("alpha " .. i, FCF_SetWindowAlpha, f, w.a) end
+        Try("lock " .. i, SetChatWindowLocked, i, w.locked); f.isLocked = w.locked
+        if FCF_SetUninteractable then Try("click-through " .. i, FCF_SetUninteractable, f, w.unint) end
         -- what shows in it
-        if ChatFrame_RemoveAllMessageGroups then Try(ChatFrame_RemoveAllMessageGroups, f) end
-        for _, g in ipairs(w.groups or {}) do Try(ChatFrame_AddMessageGroup, f, g) end
-        if ChatFrame_RemoveAllChannels then Try(ChatFrame_RemoveAllChannels, f) end
-        for _, c in ipairs(w.channels or {}) do Try(ChatFrame_AddChannel, f, c) end
+        Try("clear messages " .. i, Fn("ChatFrame_RemoveAllMessageGroups", "RemoveAllMessageGroups"), f)
+        local add = Fn("ChatFrame_AddMessageGroup", "AddMessageGroup")
+        for _, g in ipairs(w.groups or {}) do Try(g .. " in " .. i, add, f, g) end
+        Try("clear channels " .. i, Fn("ChatFrame_RemoveAllChannels", "RemoveAllChannels"), f)
+        local addc = Fn("ChatFrame_AddChannel", "AddChannel")
+        for _, c in ipairs(w.channels or {}) do Try(c .. " in " .. i, addc, f, c) end
         -- docked into the tabs, or on its own with its own spot and size
         if i > 1 then
-          if w.docked then Try(FCF_DockFrame, f, w.docked, false)
-          elseif f.isDocked then Try(FCF_UnDockFrame, f) end
+          if w.docked then Try("dock " .. i, FCF_DockFrame, f, w.docked, false)
+          elseif f.isDocked then Try("undock " .. i, FCF_UnDockFrame, f) end
         end
-        if w.point and SetChatWindowSavedPosition then Try(SetChatWindowSavedPosition, i, w.point, w.x, w.y) end
-        if w.width and SetChatWindowSavedDimensions then Try(SetChatWindowSavedDimensions, i, w.width, w.height) end
-        if FCF_RestorePositionAndDimensions and (i == 1 or not w.docked) then Try(FCF_RestorePositionAndDimensions, f) end
+        if w.point and SetChatWindowSavedPosition then Try("spot " .. i, SetChatWindowSavedPosition, i, w.point, w.x, w.y) end
+        if w.width and SetChatWindowSavedDimensions then Try("size " .. i, SetChatWindowSavedDimensions, i, w.width, w.height) end
+        if FCF_RestorePositionAndDimensions and (i == 1 or not w.docked) then Try("place " .. i, FCF_RestorePositionAndDimensions, f) end
       end
     end
   end
   for chatType, c in pairs(s.colors or {}) do
     if ChatTypeInfo and ChatTypeInfo[chatType] then
-      Try(ChangeChatColor, chatType, c[1], c[2], c[3])
-      if SetChatColorNameByClass then Try(SetChatColorNameByClass, chatType, c[4]) end
+      Try("color " .. chatType, ChangeChatColor, chatType, c[1], c[2], c[3])
+      if SetChatColorNameByClass then Try("class color " .. chatType, SetChatColorNameByClass, chatType, c[4]) end
     end
   end
-  for cv, v in pairs(s.cvars or {}) do Try(SetCVar, cv, v) end
-  if FCF_DockUpdate then Try(FCF_DockUpdate) end
-  if FCF_SelectDockFrame and ChatFrame1 then Try(FCF_SelectDockFrame, ChatFrame1) end
+  for cv, v in pairs(s.cvars or {}) do Try("option " .. cv, SetCVar, cv, v) end
+  if FCF_DockUpdate then Try("tabs", FCF_DockUpdate) end
+  if FCF_SelectDockFrame and ChatFrame1 then Try("first tab", FCF_SelectDockFrame, ChatFrame1) end
+  -- then check it took: anything that still doesn't match the save is noted too
+  for i = 1, NUM do
+    local w = s.windows[i]
+    if w and (Open(w) or i <= 2) then
+      local name, size = GetChatWindowInfo(i)
+      if i > 2 and not OpenNow(i, _G["ChatFrame" .. i]) then Note("window " .. i .. " (" .. tostring(w.name) .. ") is still closed") end
+      if w.size and size ~= w.size then Note("window " .. i .. " font is " .. tostring(size) .. ", saved " .. tostring(w.size)) end
+      if w.name and w.name ~= "" and name ~= w.name then Note("window " .. i .. " is called " .. tostring(name) .. ", saved " .. w.name) end
+    end
+  end
+  DB.lastLoad = { when = time(), fails = log }
   return fails
 end
 
@@ -157,25 +190,40 @@ local function SaveAs(name)
   if ns.RepaintHelp then ns.RepaintHelp() end
 end
 
-StaticPopupDialogs = StaticPopupDialogs or {}
-StaticPopupDialogs.CHATSAVER_NAME = {
-  text = "Name this chat setup", button1 = ACCEPT or "Accept", button2 = CANCEL or "Cancel",
-  hasEditBox = true, maxLetters = 24, timeout = 0, whileDead = true, hideOnEscape = true, preferredIndex = 3,
-  OnShow = function(self)
-    self.text:SetText(Tr("Name this chat setup"))
-    local eb = self.editBox or self.EditBox
-    if eb then eb:SetText(""); eb:SetFocus() end
-  end,
-  OnAccept = function(self)
-    local eb = self.editBox or self.EditBox
-    SaveAs(eb and eb:GetText())
-  end,
-  EditBoxOnEnterPressed = function(self)
-    SaveAs(self:GetText())
-    self:GetParent():Hide()
-  end,
-  EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-}
+-- (1.1.4) our own small naming box: borrowing the game's popups can cause "blocked action" errors when logging out
+local nameBox
+local function AskName()
+  if not nameBox then
+    local CF = ns.CreateFrame or CreateFrame
+    nameBox = CF("Frame", "ChatSaverNameBox", UIParent, "BackdropTemplate")
+    nameBox:SetSize(320, 96)
+    nameBox:SetPoint("TOP", 0, -160)
+    nameBox:SetFrameStrata("DIALOG")
+    nameBox:SetClampedToScreen(true)
+    nameBox:EnableMouse(true)
+    nameBox:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    nameBox:SetBackdropColor(0.05, 0.05, 0.07, 0.95)
+    nameBox:SetBackdropBorderColor(1, 0.82, 0, 0.8)
+    local t = nameBox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    t:SetPoint("TOP", 0, -12); t:SetText("Name this chat setup")
+    local eb = CreateFrame("EditBox", nil, nameBox, "InputBoxTemplate")
+    eb:SetSize(260, 20); eb:SetPoint("TOP", 0, -36); eb:SetAutoFocus(false); eb:SetMaxLetters(24)
+    local function Close() eb:ClearFocus(); nameBox:Hide() end
+    local function OK() SaveAs(eb:GetText()); Close() end
+    eb:SetScript("OnEnterPressed", OK)
+    eb:SetScript("OnEscapePressed", Close)
+    local function Btn(label, x, fn)
+      local b = CF("Button", nil, nameBox, "UIPanelButtonTemplate")
+      b:SetSize(100, 22); b:SetPoint("BOTTOM", x, 10); b:SetText(label); b:SetScript("OnClick", fn)
+    end
+    Btn(ACCEPT or "Accept", -54, OK)
+    Btn(CANCEL or "Cancel", 54, Close)
+    nameBox.eb = eb
+  end
+  nameBox:Show()
+  nameBox.eb:SetText("")
+  nameBox.eb:SetFocus()
+end
 
 local armed
 local function Arm(what, msg)
@@ -187,7 +235,7 @@ end
 
 local function Save()
   if DB.sel == NEW or not DB.sel then
-    if StaticPopup_Show then StaticPopup_Show("CHATSAVER_NAME") else SaveAs("Main") end
+    AskName()
     return
   end
   if Arm("save" .. DB.sel, string.format(Tr("this replaces the saved setup %s with this character's chat. Click Save again to go ahead"), DB.sel)) then
@@ -199,11 +247,9 @@ local function Load(confirmed, name)
   name = name or DB.sel
   local setup = name and DB.setups[name]
   if not setup then Say("nothing saved yet. Save your chat on the character it looks right on first") return end
-  if not confirmed and not Arm("load" .. name, string.format(Tr("this replaces this character's chat with %s, saved from %s on %s. Click Load again to go ahead"),
-      name, setup.from or "?", When(setup.when))) then return end
   local n = Apply(setup)
   CHAR.loaded, CHAR.loadedName = time(), name
-  if n > 0 then Say(string.format(Tr("chat loaded, with %s small parts the game wouldn't take. Type /reload if anything looks off"), n))
+  if n > 0 then Say(string.format(Tr("chat loaded, with %s small parts the game wouldn't take. Type /chatsaver why to see them"), n))
   else Say("chat loaded") end
 end
 
@@ -266,13 +312,18 @@ ns.HelpConfig = {
   settings = {
     { label = "Setup", cycle = true, choices = setupChoices,
       get = function() return DB.sel end, set = function(v) DB.sel = v end },
-    { label = "This Setup", choices = { { "Save", "save" }, { "Load", "load" }, { "Delete", "delete" } },
+    { label = "This Setup", choices = { { "Save", "save" }, { "Load", "load" }, { "Delete", "delete", "danger" } },
       get = function() return nil end,
       set = function(v) if v == "save" then Save() elseif v == "load" then Load() else Delete() end end },
     { label = "New Characters Get", cycle = true, choices = autoChoices,
       get = function() return DB.newChar or false end, set = function(v) DB.newChar = v end },
   },
   notes = {
+    { v = "1.1.5", "The Delete button is red, so it's hard to hit by mistake" },
+    { v = "1.1.4", "Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out" },
+    { v = "1.1.3", "Load works on the first click. No more clicking it twice" },
+    { v = "1.1.2", "Extra chat tabs (like a Party or Guild tab) now come back when you load a setup. They were skipped when they sat behind another tab" },
+    { v = "1.1.1", "Fixed the box for naming a new setup not opening", "When a load can't do everything, /chatsaver why lists what the game turned down" },
     { v = "1.1.0", "Save as many chat setups as you like, each with its own name, and pick which one to load. Pick which one new characters get, or none" },
     { v = "1.0.0", "First release: save your chat setup once and load it on any other character. New characters get it by themselves" },
   },
@@ -349,11 +400,16 @@ SlashCmdList.CHATSAVER = function(msg)
     local names = Names()
     if #names == 0 then Say("nothing saved yet. Save your chat on the character it looks right on first") end
     for _, n in ipairs(names) do P("  " .. n .. "  (" .. (DB.setups[n].from or "?") .. ", " .. When(DB.setups[n].when) .. ")") end
+  elseif cmd == "why" then   -- (1.1.1) what the last load couldn't do
+    local L = DB.lastLoad
+    if not (L and L.fails and #L.fails > 0) then Say("the last load went through with nothing left over") return end
+    Say(string.format(Tr("the last load had %s parts the game wouldn't take"), #L.fails))
+    for _, f in ipairs(L.fails) do P("  " .. f) end
   elseif cmd == "" then
     Say("save your chat setup once and load it on any other character" .. ".")
     P("  /chatsaver save <name>   (" .. "save this character's chat" .. ")")
     P("  /chatsaver load <name>   (" .. "put the saved chat on this character" .. ")")
-    P("  /chatsaver list")
+    P("  /chatsaver list   /chatsaver why   (" .. "what the last load couldn't do" .. ")")
     P("  /chatsaver help   (" .. "all settings, and how to report a bug" .. ")")
   elseif ns.OpenHelp then
     ns.OpenHelp()

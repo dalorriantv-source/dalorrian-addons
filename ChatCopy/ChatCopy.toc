@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Chat Copy
 ## Notes: A small button on each chat window. Click it and the chat opens as plain text, ready to copy. Type /chatcopy to open it too, or /chatcopy help for settings.
 ## Author: Dalorrian
-## Version: 1.2.0
+## Version: 1.2.1
 ## IconTexture: Interface\Icons\INV_Misc_Note_01
 ## AddonCompartmentFunc: ChatCopy_OnCompartmentClick
 ## SavedVariables: ChatCopyDB, ChatCopy_Lang

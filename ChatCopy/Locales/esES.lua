@@ -52,4 +52,5 @@ ns.LOCALES.esES = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "Primera versión: un botoncito en cada ventana de chat que la abre como texto plano, lista para copiar",
   ["Clickable Links"] = "Enlaces clicables",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "Los enlaces web del chat se vuelven dorados y clicables: un clic abre un cuadrito con el enlace listo para copiar",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Corregidos los errores de \"acción bloqueada\" al pulsar Esc o al salir. Los enlaces pulsados ahora se abren en la ventana propia de Chat Copy",
 } end

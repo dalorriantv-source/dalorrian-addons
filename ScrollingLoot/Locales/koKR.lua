@@ -73,4 +73,5 @@ ns.LOCALES.koKR = function() return {
   ["Money lines take the color of the biggest coin in them"] = "돈 줄은 가장 큰 동전의 색을 띱니다",
   ["Quest items get a gold border"] = "퀘스트 아이템은 금색 테두리",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "첫 출시: 주운 전리품이 한 줄씩 깔끔하게 화면 위로 떠오릅니다",
+  ["Settings rows with four choices fit inside the window now"] = "선택지가 네 개인 설정 줄이 이제 창 안에 들어갑니다",
 } end

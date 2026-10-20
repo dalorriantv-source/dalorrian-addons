@@ -167,6 +167,7 @@ local URLS = {
   "www%.[%w%-]+%.[%w%-%._~:/%?#@!%$&'%*%+,;=%%]+",
   "discord%.gg/[%w%-]+",
 }
+local LINK = "|cffffd100|Haddon:ChatCopy:%s|h%s|h|r"
 local function Linkify(msg)
   if type(msg) ~= "string" or not (DB and DB.links) then return msg end
   -- links already in the message (items, players) are left alone: only the plain text between them changes
@@ -186,7 +187,7 @@ local function Linkify(msg)
     end
     plain = plain:gsub("\001(%d+)\001", function(n)
       local u = marks[tonumber(n)]
-      return "|cffffd100|Hurl:" .. u .. "|h" .. u .. "|h|r"
+      return string.format(LINK, u, u)
     end)
     out[#out + 1] = plain
     if not a then break end
@@ -195,43 +196,63 @@ local function Linkify(msg)
   end
   return table.concat(out)
 end
-local function Filter(_, _, msg, ...)
-  local new = Linkify(msg)
-  if new ~= msg then return false, new, ... end
-end
 
-StaticPopupDialogs = StaticPopupDialogs or {}
-StaticPopupDialogs.CHATCOPY_URL = {
-  text = "Ctrl+C to copy, Esc to close", button1 = CLOSE or "Close",
-  hasEditBox = true, editBoxWidth = 350, timeout = 0, whileDead = true, hideOnEscape = true, preferredIndex = 3,
-  OnShow = function(self, url)
-    self.text:SetText(ns.Tr and ns.Tr("Ctrl+C to copy, Esc to close") or "Ctrl+C to copy, Esc to close")
-    local eb = self.editBox or self.EditBox
-    if eb then eb:SetText(url or ""); eb:SetFocus(); eb:HighlightText() end
-  end,
-  EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-  EditBoxOnEnterPressed = function(self) self:GetParent():Hide() end,
-  EditBoxOnTextChanged = function(self, data)   -- for copying, so typing doesn't change it
-    if data and self:GetText() ~= data then self:SetText(data); self:HighlightText() end
-  end,
-}
+-- (1.2.1) a link is clicked through the game's own "addon" links, and the address opens in our own small
+-- box. Taking over SetItemRef or borrowing the game's popups spread "blocked action" errors to the Esc menu
+-- and logging out, so neither is touched any more.
+local box
 local function ShowURL(url)
-  if StaticPopup_Show then StaticPopup_Show("CHATCOPY_URL", nil, nil, url) end
+  if not box then
+    box = CF("Frame", "ChatCopyURLBox", UIParent, "BackdropTemplate")
+    box:SetSize(420, 70)
+    box:SetPoint("TOP", 0, -160)
+    box:SetFrameStrata("DIALOG")
+    box:SetClampedToScreen(true)
+    box:EnableMouse(true)
+    Style(box)
+    local t = box:CreateFontString(nil, "OVERLAY")
+    t:SetFont(FONT, 11, ""); t:SetTextColor(GOLD[1], GOLD[2], GOLD[3]); t:SetPoint("TOPLEFT", 12, -10)
+    t:SetText(ns.Tr and ns.Tr("Ctrl+C to copy, Esc to close") or "Ctrl+C to copy, Esc to close")
+    local eb = CreateFrame("EditBox", nil, box, "InputBoxTemplate")
+    eb:SetSize(390, 20); eb:SetPoint("TOPLEFT", 18, -32)
+    eb:SetAutoFocus(false)
+    local function Close() eb:ClearFocus(); box:Hide() end
+    eb:SetScript("OnEscapePressed", Close)
+    eb:SetScript("OnEnterPressed", Close)
+    eb:SetScript("OnTextChanged", function(self, user)   -- for copying, so typing doesn't change it
+      if user and self:GetText() ~= box.url then self:SetText(box.url or ""); self:HighlightText() end
+    end)
+    local x = CreateFrame("Button", nil, box)
+    x:SetSize(18, 18); x:SetPoint("TOPRIGHT", -6, -6)
+    x.t = x:CreateFontString(nil, "OVERLAY", "GameFontHighlight"); x.t:SetPoint("CENTER"); x.t:SetText("x")
+    x:SetScript("OnClick", Close)
+    box.eb = eb
+  end
+  box.url = url
+  box:Show()
+  box.eb:SetText(url or "")
+  box.eb:SetFocus()
+  box.eb:HighlightText()
+end
+local function Filter(_, _, msg, ...)
+  local ok, new = pcall(Linkify, msg)   -- some chat text can't be read by addons: leave it as it is
+  if ok and new ~= msg then return false, new, ... end
 end
 local function HookLinks()
   if ChatCopy_LinksHooked then return end
   ChatCopy_LinksHooked = true
-  -- "url:" links are ours: everything else goes on to the game as normal
-  local orig = SetItemRef
-  SetItemRef = function(link, text, button, chatFrame)
-    if type(link) == "string" and link:sub(1, 4) == "url:" then ShowURL(link:sub(5)) return end
-    return orig(link, text, button, chatFrame)
-  end
-  if ChatFrame_AddMessageEventFilter then
+  if not (EventRegistry and EventRegistry.RegisterCallback) then return end   -- no safe way to catch the click: plain text it stays
+  EventRegistry:RegisterCallback("SetItemRef", function(_, link)
+    if type(link) ~= "string" then return end
+    local url = link:match("^addon:ChatCopy:(.+)$")
+    if url then ShowURL(url) end
+  end, ns)
+  local add = ChatFrame_AddMessageEventFilter or (ChatFrameUtil and ChatFrameUtil.AddMessageEventFilter)
+  if add then
     for _, e in ipairs({ "CHAT_MSG_SAY", "CHAT_MSG_YELL", "CHAT_MSG_GUILD", "CHAT_MSG_OFFICER", "CHAT_MSG_PARTY", "CHAT_MSG_PARTY_LEADER",
       "CHAT_MSG_RAID", "CHAT_MSG_RAID_LEADER", "CHAT_MSG_RAID_WARNING", "CHAT_MSG_WHISPER", "CHAT_MSG_WHISPER_INFORM", "CHAT_MSG_CHANNEL",
       "CHAT_MSG_BN_WHISPER", "CHAT_MSG_BN_WHISPER_INFORM", "CHAT_MSG_INSTANCE_CHAT", "CHAT_MSG_INSTANCE_CHAT_LEADER", "CHAT_MSG_EMOTE" }) do
-      pcall(ChatFrame_AddMessageEventFilter, e, Filter)
+      pcall(add, e, Filter)
     end
   end
 end
@@ -288,6 +309,7 @@ ns.HelpConfig = {
       get = function() return DB.lines or 500 end, set = function(v) DB.lines = v end },
   },
   notes = {
+    { v = "1.2.1", "Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box" },
     { v = "1.2.0", "Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy" },
     { v = "1.1.0", "A Settings & Help window, a minimap button and 10 languages. Pick how many lines to copy and how the button looks" },
     { v = "1.0.0", "First release: a small button on each chat window that opens the chat as plain text, ready to copy" },

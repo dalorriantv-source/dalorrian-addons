@@ -73,4 +73,5 @@ ns.LOCALES.ptBR = function() return {
   ["Money lines take the color of the biggest coin in them"] = "Linhas de dinheiro ficam com a cor da maior moeda",
   ["Quest items get a gold border"] = "Itens de missão ganham borda dourada",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Primeira versão: o que você saqueia sobe flutuando na tela, uma linha limpa por vez",
+  ["Settings rows with four choices fit inside the window now"] = "Linhas de configuração com quatro opções agora cabem na janela",
 } end

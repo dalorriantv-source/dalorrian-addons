@@ -77,4 +77,5 @@ ns.LOCALES.zhCN = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "设置与帮助窗口、小地图按钮和10种语言",
   ["Shift-drag any roll bar to move them all"] = "Shift+拖动任一掷骰条即可移动全部",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "首个版本：可放在任何位置的简洁需求、贪婪、放弃条",
+  ["Settings rows with four choices fit inside the window now"] = "有四个选项的设置行现在不会超出窗口了",
 } end

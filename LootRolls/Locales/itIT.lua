@@ -77,4 +77,5 @@ ns.LOCALES.itIT = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "Una finestra Impostazioni e aiuto, un pulsante sulla minimappa e 10 lingue",
   ["Shift-drag any roll bar to move them all"] = "Maiusc e trascina una barra qualsiasi per spostarle tutte",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Prima versione: barre pulite per Necessità, Avidità e Passa da mettere dove vuoi",
+  ["Settings rows with four choices fit inside the window now"] = "Le righe delle impostazioni con quattro scelte ora stanno dentro la finestra",
 } end

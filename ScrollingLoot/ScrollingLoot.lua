@@ -343,6 +343,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.SCROLLINGLOOT("test") end },
   },
   notes = {
+    { v = "1.1.1", "Settings rows with four choices fit inside the window now" },
     { v = "1.1.0", "A Settings & Help window, a minimap button and 10 languages" },
     { v = "1.0.4", "Money lines take the color of the biggest coin in them" },
     { v = "1.0.3", "Quest items get a gold border" },

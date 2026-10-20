@@ -99,15 +99,165 @@ local function OnCombat()
 end
 
 ---------------------------------------------------------------------------
+-- (1.1.0) WoW: Forever doesn't let addons read combat events, so this reads the game's own feed of hits on
+-- your target (the numbers on a target portrait) and works out which ability did each one:
+--   * a hit right after you cast something is that ability
+--   * a magic hit with nothing just cast is a tick from the last thing you cast (a DoT like Serpent Sting)
+--   * a physical hit with nothing just cast is your auto attack (Auto Shot, or Melee)
+-- It's a good guess, not perfect: in a group other players' hits on the same mob can slip in, and a pet's
+-- hits count as your auto attack.
+---------------------------------------------------------------------------
+local feedSeen = { events = 0, hits = 0, crits = 0, hidden = 0, log = {} }
+local function Log(line)   -- the last few decisions, for /crittracker debug
+  local L = feedSeen.log
+  L[#L + 1] = line
+  if #L > 8 then table.remove(L, 1) end
+end
+local cast = { t = 0 }   -- your last cast that could hit something
+local recent = 0         -- when you last cast anything
+local function SpellName(id)
+  if C_Spell and C_Spell.GetSpellName then local ok, n = pcall(C_Spell.GetSpellName, id); if ok and n then return n end end
+  if GetSpellInfo then local ok, n = pcall(GetSpellInfo, id); if ok and n then return n end end
+end
+local AUTO = { [75] = true, [6603] = true, [5019] = true }   -- Auto Shot, Auto Attack, Shoot (wands)
+local function Harmful(id)
+  local f = (C_Spell and C_Spell.IsSpellHarmful) or IsHarmfulSpell
+  if not f then return true end
+  local ok, v = pcall(f, id)
+  if not ok then ok, v = pcall(f, SpellName(id) or "") end
+  return not ok or v and true or false
+end
+local function Helpful(id)
+  local f = (C_Spell and C_Spell.IsSpellHelpful) or IsHelpfulSpell
+  if not f then return true end
+  local ok, v = pcall(f, id)
+  return not ok or v and true or false
+end
+local function OnCast(id)
+  if not id or AUTO[id] then return end
+  recent = GetTime()
+  local name = SpellName(id)
+  if not name then return end
+  local harm, help = Harmful(id), Helpful(id)
+  -- (1.1.3) only a spell that's clearly a heal or buff is left out; when the game can't say, it counts
+  cast = { id = id, name = name, t = GetTime(), harm = harm or not help, help = help }
+end
+-- (1.1.3) this client moved these checks under C_Spell; the old names quietly said "no", so every Auto Shot
+-- counted as Melee and, in a group, most hits were thrown away
+local function AutoRepeat(id)
+  local f = (C_Spell and C_Spell.IsAutoRepeatSpell) or IsAutoRepeatSpell
+  if not f then return false end
+  local ok, on = pcall(f, id)
+  if ok and on then return true end
+  local n = SpellName(id)
+  if n then ok, on = pcall(f, n); if ok and on then return true end end
+  return false
+end
+local function Meleeing()
+  local f = (C_Spell and C_Spell.IsCurrentSpell) or IsCurrentSpell
+  if not f then return false end
+  local ok, on = pcall(f, 6603)
+  return ok and on and true or false
+end
+local function AutoName()
+  for _, id in ipairs({ 75, 5019 }) do
+    if AutoRepeat(id) then return SpellName(id) or "Auto Shot", id end
+  end
+  return "Melee"
+end
+local function Acting()
+  if GetTime() - recent < 1.5 then return true end
+  return Meleeing() or AutoRepeat(75) or AutoRepeat(5019)
+end
+-- (1.1.2) a sting, curse or mark leaves a debuff and doesn't hit on its own: a physical hit right after one
+-- of those is your auto attack, not the spell
+local function Debuffed(c)
+  local found = false
+  pcall(function()
+    if C_UnitAuras and C_UnitAuras.GetDebuffDataByIndex then
+      for i = 1, 40 do
+        local a = C_UnitAuras.GetDebuffDataByIndex("target", i)
+        if not a then break end
+        if a.spellId == c.id or a.name == c.name then found = true break end
+      end
+    elseif UnitDebuff then
+      for i = 1, 40 do
+        local n, _, _, _, _, _, _, _, _, id = UnitDebuff("target", i)
+        if not n then break end
+        if id == c.id or n == c.name then found = true break end
+      end
+    end
+  end)
+  return found
+end
+local function OnFeed(unit, action, flag, amount, school)
+  feedSeen.events = feedSeen.events + 1
+  local ok, isHit, isHeal, isCrit = pcall(function()
+    return action == "WOUND", action == "HEAL", flag == "CRITICAL"
+  end)
+  if not ok then feedSeen.hidden = feedSeen.hidden + 1 return end
+  if not (isHit or isHeal) or type(amount) ~= "number" then return end
+  local readable = pcall(function() return amount > 0 end)
+  if not readable then feedSeen.hidden = feedSeen.hidden + 1 return end
+  if amount <= 0 then return end
+  local now, target = GetTime(), nil
+  pcall(function() target = UnitName("target") end)
+  if isHeal then
+    -- your heals: on you, or on a friendly target (not both, or a self-heal would count twice)
+    if unit == "target" then
+      local mine = false
+      pcall(function() mine = UnitIsUnit("target", "player") end)
+      if mine then return end
+    end
+    if cast.help and now - cast.t < 1.5 then
+      Record(cast.name, cast.id, amount, isCrit, true, false, unit == "player" and UnitName("player") or target)
+      feedSeen.hits = feedSeen.hits + 1; if isCrit then feedSeen.crits = feedSeen.crits + 1 end
+    end
+    return
+  end
+  if unit ~= "target" then return end
+  if IsInGroup and IsInGroup() and not Acting() then feedSeen.skipped = (feedSeen.skipped or 0) + 1 return end   -- probably someone else's hit
+  local name, id
+  if cast.harm and not cast.used and now - cast.t < 1.2 and not (school == 1 and Debuffed(cast)) then
+    name, id = cast.name, cast.id; cast.used = true
+  elseif school and school ~= 1 and cast.harm and now - cast.t < 18 then
+    name, id = cast.name, cast.id   -- a tick from what you cast last
+  elseif school == 1 or school == nil then
+    -- in a group a plain physical hit could be anyone's (a rogue's stab, a pet's bite): only counted solo
+    if not Acting() or (IsInGroup and IsInGroup()) then feedSeen.skipped = (feedSeen.skipped or 0) + 1; Log(amount .. " physical: skipped (auto attack in a group, or not attacking)") return end
+    name, id = AutoName()
+  else
+    Log(amount .. " school " .. tostring(school) .. ": skipped (no spell cast lately)")
+    return
+  end
+  Log(amount .. (isCrit and " crit" or "") .. " school " .. tostring(school) .. " -> " .. tostring(name))
+  feedSeen.hits = feedSeen.hits + 1; if isCrit then feedSeen.crits = feedSeen.crits + 1 end
+  feedSeen.last = name .. " " .. amount .. (isCrit and " crit" or "")
+  Record(name, id, amount, isCrit, false, false, target)
+end
+local feed = CreateFrame("Frame")
+feed:SetScript("OnEvent", function(_, e, unit, a, b, c, d)
+  if not DB or DB.off then return end
+  if e == "UNIT_SPELLCAST_SUCCEEDED" then pcall(OnCast, b) return end   -- unit, castGUID, spellID
+  local ok = pcall(OnFeed, unit, a, b, c, d)
+  if not ok then feedSeen.hidden = feedSeen.hidden + 1 end
+end)
+local function WatchFeed()
+  if not feed.RegisterUnitEvent then return end
+  pcall(feed.RegisterUnitEvent, feed, "UNIT_COMBAT", "target", "player")
+  pcall(feed.RegisterUnitEvent, feed, "UNIT_SPELLCAST_SUCCEEDED", "player")
+end
+
+---------------------------------------------------------------------------
 -- the window: every ability, its best crit and best hit; hover a row for when and where
 ---------------------------------------------------------------------------
 local win
 local WW, ROWH = 470, 20
 local COLS = {
-  { key = "name", label = "Ability", x = 30, w = 196, justify = "LEFT" },
-  { key = "crit", label = "Best Crit", x = 230, w = 80, justify = "RIGHT" },
-  { key = "hit", label = "Best Hit", x = 316, w = 80, justify = "RIGHT" },
-  { key = "pct", label = "Crit %", x = 400, w = 50, justify = "RIGHT" },
+  -- (1.1.4) no Crit % column: just the ability and its two records, ending before the scroll bar
+  { key = "name", label = "Ability", x = 30, w = 210, justify = "LEFT" },
+  { key = "crit", label = "Best Crit", x = 250, w = 90, justify = "RIGHT" },
+  { key = "hit", label = "Best Hit", x = 344, w = 90, justify = "RIGHT" },
 }
 local function Solid(parent, layer, r, g, b, a)
   local t = parent:CreateTexture(nil, layer or "BACKGROUND")
@@ -146,6 +296,7 @@ local function List()
     if k == "pct" then return r.uses > 0 and r.crits / r.uses or 0 end
     return r[k] and r[k].amt or 0
   end
+  if DB.sort == "pct" then DB.sort = "crit" end   -- the old Crit % sort
   local k = DB.sort or "crit"
   table.sort(out, function(a, b)
     local x, y = v(a, k), v(b, k)
@@ -246,17 +397,18 @@ local function Row(i)
     local d = self.data
     if not d then return end
     Tip:SetOwner(self, "ANCHOR_RIGHT")
+    -- (1.1.1) one block per record: the number on the right, then Target / Where / When lined up under it
     GameTooltip:AddLine((d.pet and (Tr("Pet") .. ": ") or "") .. Nice(d.name), GOLD[1], GOLD[2], GOLD[3])
-    for _, s in ipairs({ { "crit", "Best Crit" }, { "hit", "Best Hit" } }) do
+    for _, s in ipairs({ { "crit", "Best Crit", { 1, 0.82, 0 } }, { "hit", "Best Hit", { 1, 1, 1 } } }) do
       local b = d[s[1]]
       if b then
-        GameTooltip:AddDoubleLine(Tr(s[2]), Commas(b.amt), 0.8, 0.8, 0.8, 1, 1, 1)
-        local on = (b.target and (b.target .. "  ·  ") or "") .. (b.where or "")
-        if on ~= "" then GameTooltip:AddLine("   " .. on, 0.6, 0.6, 0.6) end
-        if b.when then GameTooltip:AddLine("   " .. date("%b %d, %I:%M %p", b.when), 0.6, 0.6, 0.6) end
+        GameTooltip:AddLine(" ")
+        GameTooltip:AddDoubleLine(Tr(s[2]), Commas(b.amt), 1, 1, 1, s[3][1], s[3][2], s[3][3])
+        if b.target then GameTooltip:AddDoubleLine("    " .. Tr("Target"), b.target, 0.6, 0.6, 0.6, 0.9, 0.9, 0.9) end
+        if b.where and b.where ~= "" then GameTooltip:AddDoubleLine("    " .. Tr("Where"), b.where, 0.6, 0.6, 0.6, 0.9, 0.9, 0.9) end
+        if b.when then GameTooltip:AddDoubleLine("    " .. Tr("When"), date("%b %d, %I:%M %p", b.when), 0.6, 0.6, 0.6, 0.9, 0.9, 0.9) end
       end
     end
-    GameTooltip:AddDoubleLine(Tr("Crits"), d.crits .. " / " .. d.uses, 0.8, 0.8, 0.8, 1, 1, 1)
     GameTooltip:Show()
   end)
   r:SetScript("OnLeave", function(self) self.hl:SetVertexColor(1, 1, 1, 0); GameTooltip:Hide() end)
@@ -269,7 +421,8 @@ Refresh = function()
   local list = List()
   for _, b in ipairs(win.filters) do b:SetOn(DB.filter == b.value) end
   for _, h in ipairs(win.heads) do
-    if h.key == (DB.sort or "crit") then h.label:SetTextColor(1, 1, 1) else h.label:SetTextColor(GOLD[1], GOLD[2], GOLD[3]) end
+    -- (1.1.5) fixed colors that match the numbers under them: Best Hit white, everything else gold
+    if h.key == "hit" then h.label:SetTextColor(1, 1, 1) else h.label:SetTextColor(GOLD[1], GOLD[2], GOLD[3]) end
   end
   win.who:SetText((UnitName("player") or "") .. "  ·  " .. Tr("Level") .. " " .. (UnitLevel("player") or ""))
   for i, d in ipairs(list) do
@@ -279,7 +432,6 @@ Refresh = function()
     r.cols.name:SetText((d.pet and ("|cff9fd6ff" .. Tr("Pet") .. ":|r ") or "") .. (d.heal and "|cff66ff77" or "") .. Nice(d.name) .. (d.heal and "|r" or ""))
     r.cols.crit:SetText(d.crit and ("|cffffd100" .. Commas(d.crit.amt) .. "|r") or "|cff666666-|r")
     r.cols.hit:SetText(d.hit and Commas(d.hit.amt) or "|cff666666-|r")
-    r.cols.pct:SetText(d.uses > 0 and (math.floor(d.crits / d.uses * 100 + 0.5) .. "%") or "-")
     r:Show()
   end
   for i = #list + 1, #win.rows do win.rows[i]:Hide(); win.rows[i].data = nil end
@@ -302,7 +454,8 @@ local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("UNIT_PET")
-ev:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+-- older clients still hand addons the combat log; Forever (which has C_DamageMeter) blocks asking for it
+if not C_DamageMeter then ev:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") end
 ev:SetScript("OnEvent", function(_, e, a1)
   if e == "COMBAT_LOG_EVENT_UNFILTERED" then
     if DB then OnCombat() end
@@ -317,6 +470,7 @@ ev:SetScript("OnEvent", function(_, e, a1)
   elseif e == "PLAYER_LOGIN" then
     me, pet = UnitGUID("player"), UnitGUID("pet")
     pcall(MinimapButton)
+    if C_DamageMeter then WatchFeed() end
   elseif e == "UNIT_PET" then
     pet = UnitGUID("pet")
   end
@@ -343,6 +497,12 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() Toggle() end },
   },
   notes = {
+    { v = "1.1.5", "Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them" },
+    { v = "1.1.4", "Removed the Crit % column. The window shows each ability's best crit and best hit" },
+    { v = "1.1.3", "Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's" },
+    { v = "1.1.2", "Fixed an auto attack crit landing right after a sting, curse or mark being counted as that spell" },
+    { v = "1.1.1", "Cleaner hover: each record lists Target, Where and When on their own lines. The Crit % column no longer hides under the scroll bar" },
+    { v = "1.1.0", "Works on WoW: Forever again. The game stopped letting addons read combat events, so hits now come from the game's feed of hits on your target, matched to what you just cast. Hits with nothing cast count as your auto attack" },
     { v = "1.0.0", "First release: your best hit and best crit with every attack, ability and heal, with when and where" },
   },
   report = function()
@@ -409,6 +569,12 @@ SlashCmdList.CRITTRACKER = function(msg)
     Toggle()
   elseif cmd == "off" then
     DB.off = not DB.off or nil; Say(DB.off and "turned off" or "turned on")
+  elseif cmd == "debug" then
+    print("|cffffd100Crit Tracker debug|r")
+    print("  target feed: events " .. feedSeen.events .. ", hits counted " .. feedSeen.hits .. ", crits " .. feedSeen.crits .. ", hidden " .. feedSeen.hidden .. ", skipped " .. (feedSeen.skipped or 0))
+    print("  auto shot on " .. tostring(AutoRepeat(75)) .. ", melee on " .. tostring(Meleeing()) .. ", in group " .. tostring(IsInGroup and IsInGroup() or false))
+    print("  last cast: " .. tostring(cast.name) .. " (counts as damage " .. tostring(cast.harm) .. ")")
+    for _, l in ipairs(feedSeen.log) do print("    " .. l) end
   else
     if ns.OpenHelp then ns.OpenHelp() end
   end

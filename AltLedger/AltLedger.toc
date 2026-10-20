@@ -1,0 +1,22 @@
+## Interface: 16001
+## Title: Dalorrian's Alt Ledger
+## Notes: Every character you play in one window: level, gold, rested XP, free bag space, professions and where you left them. Find any item across all of them. Type /alts to open it.
+## Author: Dalorrian
+## Version: 1.4.0
+## IconTexture: Interface\Icons\INV_Misc_GroupNeedMore
+## AddonCompartmentFunc: AltLedger_OnCompartmentClick
+## SavedVariables: AltLedgerDB, AltLedger_Lang
+
+Lang.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\ptBR.lua
+Locales\itIT.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+Help.lua
+AltLedger.lua

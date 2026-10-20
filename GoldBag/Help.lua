@@ -120,11 +120,16 @@ local function Button(parent, w, label, onClick)
     self.on = on
     if on then
       self.bg:SetVertexColor(GOLD[1], GOLD[2], GOLD[3], 0.9); self.label:SetTextColor(0.1, 0.1, 0.1)
+    elseif self.danger then   -- a choice that can't be undone (Delete): red, so it isn't clicked by mistake
+      self.bg:SetVertexColor(0.24, 0.08, 0.08, 1); self.label:SetTextColor(1, 0.35, 0.35)
     else
       self.bg:SetVertexColor(0.14, 0.15, 0.19, 1); self.label:SetTextColor(0.85, 0.85, 0.9)
     end
   end
-  b:SetScript("OnEnter", function(self) if not self.on then self.bg:SetVertexColor(0.22, 0.23, 0.28, 1) end end)
+  b:SetScript("OnEnter", function(self)
+    if self.on then return end
+    if self.danger then self.bg:SetVertexColor(0.4, 0.1, 0.1, 1) else self.bg:SetVertexColor(0.22, 0.23, 0.28, 1) end
+  end)
   b:SetScript("OnLeave", function(self) self:SetOn(self.on) end)
   b:SetScript("OnClick", onClick)
   b:SetOn(false)
@@ -255,12 +260,16 @@ local function Build()
           row.apply = ok
         end
       end
-      for i, c in ipairs((s.cycle or s.slider) and {} or s.choices) do
-        local b = Button(win, 90, c[1], function()
+      -- more than three choices: narrower buttons so the row still fits inside the window
+      local list = (s.cycle or s.slider) and {} or s.choices
+      local bw = #list > 3 and math.floor((W - 186 - (#list - 1) * 6) / #list) or 90
+      for i, c in ipairs(list) do
+        local b = Button(win, bw, c[1], function()
           pcall(s.set, c[2]); win:Paint()
         end)
-        b:SetPoint("TOPLEFT", 170 + (i - 1) * 96, y)
+        b:SetPoint("TOPLEFT", 170 + (i - 1) * (bw + 6), y)
         b.value = c[2]
+        if c[3] == "danger" then b.danger = true; b:SetOn(false) end   -- { "Delete", value, "danger" }
         row.btns[#row.btns + 1] = b
       end
       win.rows[#win.rows + 1] = row

@@ -78,4 +78,5 @@ ns.LOCALES.ptBR = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "Uma janela de Configurações e ajuda, um botão no minimapa e 10 idiomas",
   ["Shift-drag any roll bar to move them all"] = "Shift e arraste qualquer barra de rolagem para mover todas",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Primeira versão: barras limpas de Necessidade, Ganância e Passar que você coloca onde quiser",
+  ["Settings rows with four choices fit inside the window now"] = "Linhas de configuração com quatro opções agora cabem na janela",
 } end

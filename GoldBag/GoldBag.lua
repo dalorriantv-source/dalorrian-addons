@@ -61,9 +61,32 @@ box.text:SetJustifyH("RIGHT")
 box:Hide()
 
 -- (1.2.0) every character's gold, kept as you log in on each one, for the hover
+-- (1.2.1) WoW: Forever gives characters a surname and keeps names unique per ruleset (PvP, PvE...), so
+-- "Dalorrian Fury" and "Dalorrian Warlockian" are kept apart instead of sharing one "Dalorrian" line
 local ME, REALM
+local function Ruleset()
+  local ok, on = pcall(function() return RegionalUniqueNamesEnabled and RegionalUniqueNamesEnabled() end)
+  if not (ok and on) then return nil end
+  local R = Enum and Enum.GameRule
+  local function Is(rule) local o, v = pcall(C_GameRules.IsGameRuleActive, rule); return o and v end
+  if C_GameRules and R then
+    if R.PvPRuleset and Is(R.PvPRuleset) then return "PvP" end
+    if R.RPRuleset and Is(R.RPRuleset) then return "RP" end
+    if R.HardcoreRuleset and Is(R.HardcoreRuleset) then return "HC" end
+  end
+  return "PvE"
+end
+local function Who()
+  local name, surname = UnitName("player")
+  if surname and surname ~= "" then
+    local sep = Constants and Constants.CharacterNameSeparatorConsts and Constants.CharacterNameSeparatorConsts.CHARACTERNAME_SURNAME_SEPARATOR or " "
+    name = name .. sep .. surname
+  end
+  return name, Ruleset() or (GetRealmName and GetRealmName()) or "?"
+end
 local function Remember(m)
   if not (DB and ME) then return end
+  if m == 0 and DB.chars and DB.chars[REALM] and DB.chars[REALM][ME] and (DB.chars[REALM][ME].money or 0) > 0 then return end   -- the game reads 0 for a moment at login
   DB.chars = DB.chars or {}
   DB.chars[REALM] = DB.chars[REALM] or {}
   local _, class = UnitClass("player")
@@ -174,7 +197,11 @@ ev:SetScript("OnEvent", function(_, e, a1)
     DB = GoldBagDB
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
   elseif e == "PLAYER_ENTERING_WORLD" then
-    ME, REALM = UnitName("player"), GetRealmName and GetRealmName() or "?"
+    ME, REALM = Who()
+    -- (1.2.1) older versions went by first name and realm name, which mixed up characters sharing a first name:
+    -- that list is cleared (each character comes back the next time you log in on it)
+    local old = GetRealmName and GetRealmName()
+    if DB.chars and old and old ~= REALM and DB.chars[old] then DB.chars[old] = nil end
     Place(); Update()
     pcall(MinimapButton)
     -- bar addons (Bartender and friends) move the bag buttons a moment after login
@@ -208,6 +235,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.2.1", "Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it" },
     { v = "1.2.0", "Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one" },
     { v = "1.1.0", "A Settings & Help window, a minimap button and 10 languages" },
     { v = "1.0.5", "Sits under the world map and other windows instead of on top of them" },

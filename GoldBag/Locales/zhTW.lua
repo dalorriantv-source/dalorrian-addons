@@ -69,4 +69,5 @@ ns.LOCALES.zhTW = function() return {
   ["forgot %s"] = "已忘記 %s",
   ["no character called %s"] = "沒有名為 %s 的角色",
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "滑鼠移到金幣袋上可看到每個角色的金幣和總數。每個角色會在你下次登入它時加入。在滑鼠懸停顯示中選擇此角色只看一個",
+  ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "同名角色（WoW: Forever 的姓氏）現在在滑鼠提示裡各佔一行。每個角色在你下次登入時會重新出現",
 } end

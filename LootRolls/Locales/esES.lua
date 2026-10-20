@@ -77,4 +77,5 @@ ns.LOCALES.esES = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "Una ventana de Ajustes y ayuda, un botón en el minimapa y 10 idiomas",
   ["Shift-drag any roll bar to move them all"] = "Mayús y arrastrar cualquier barra de tirada las mueve todas",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Primera versión: barras limpias de Necesidad, Codicia y Pasar que puedes poner donde quieras",
+  ["Settings rows with four choices fit inside the window now"] = "Las filas de ajustes con cuatro opciones ahora caben en la ventana",
 } end

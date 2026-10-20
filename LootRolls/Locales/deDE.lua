@@ -74,4 +74,5 @@ ns.LOCALES.deDE = function() return {
   ["A Settings & Help window, a minimap button and 10 languages"] = "Ein Fenster Einstellungen & Hilfe, ein Minikarten-Knopf und 10 Sprachen",
   ["Shift-drag any roll bar to move them all"] = "Shift-Ziehen an einer Wurfleiste verschiebt alle",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Erste Version: klare Leisten für Bedarf, Gier und Passen, die du überall hinlegen kannst",
+  ["Settings rows with four choices fit inside the window now"] = "Einstellungszeilen mit vier Auswahlen passen jetzt ins Fenster",
 } end

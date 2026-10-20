@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Gold Bag
 ## Notes: Your gold in one small box on top of your bag bar. Shift-drag to move it. Type /goldbag help for settings.
 ## Author: Dalorrian
-## Version: 1.2.0
+## Version: 1.2.1
 ## IconTexture: Interface\Icons\INV_Misc_Coin_02
 ## AddonCompartmentFunc: GoldBag_OnCompartmentClick
 ## SavedVariables: GoldBagDB, GoldBag_Lang

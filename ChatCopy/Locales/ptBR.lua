@@ -53,4 +53,5 @@ ns.LOCALES.ptBR = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "Primeira versão: um botãozinho em cada janela de chat que abre o chat como texto simples, pronto para copiar",
   ["Clickable Links"] = "Links clicáveis",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "Links da web no chat ficam dourados e clicáveis: um clique abre uma caixinha com o link pronto para copiar",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Corrigidos os erros de \"ação bloqueada\" ao apertar Esc ou deslogar. Links clicados agora abrem na caixa própria do Chat Copy",
 } end

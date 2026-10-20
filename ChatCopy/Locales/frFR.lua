@@ -49,4 +49,5 @@ ns.LOCALES.frFR = function() return {
   ["First release: a small button on each chat window that opens the chat as plain text, ready to copy"] = "Première version : un petit bouton sur chaque fenêtre de chat qui l'ouvre en texte brut, prêt à copier",
   ["Clickable Links"] = "Liens cliquables",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "Les liens web du chat deviennent dorés et cliquables : un clic ouvre une petite boîte avec le lien prêt à copier",
+  ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Correction des erreurs « action bloquée » en appuyant sur Échap ou en se déconnectant. Les liens cliqués s'ouvrent maintenant dans la fenêtre de Chat Copy",
 } end
