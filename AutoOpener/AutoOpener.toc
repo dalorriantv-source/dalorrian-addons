@@ -1,0 +1,22 @@
+## Interface: 16001
+## Title: Dalorrian's Auto Opener
+## Notes: Opens your clams, bags of loot, crates and anything else that opens, by itself, whenever you're out of combat. Type /opener for settings.
+## Author: Dalorrian
+## Version: 1.2.0
+## IconTexture: Interface\Icons\INV_Misc_Shell_03
+## AddonCompartmentFunc: AutoOpener_OnCompartmentClick
+## SavedVariables: AutoOpenerDB, AutoOpener_Lang
+
+Lang.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\ptBR.lua
+Locales\itIT.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+Help.lua
+AutoOpener.lua

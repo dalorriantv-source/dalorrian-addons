@@ -1,0 +1,22 @@
+## Interface: 16001
+## Title: Dalorrian's Scrolling Loot
+## Notes: What you loot floats up on screen, one clean line at a time. Type /sloot help for settings.
+## Author: Dalorrian
+## Version: 1.1.0
+## IconTexture: Interface\Icons\INV_Misc_Bag_10
+## AddonCompartmentFunc: ScrollingLoot_OnCompartmentClick
+## SavedVariables: ScrollingLootDB, ScrollingLoot_Lang
+
+Lang.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\ptBR.lua
+Locales\itIT.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+Help.lua
+ScrollingLoot.lua
