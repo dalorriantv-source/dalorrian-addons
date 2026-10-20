@@ -100,4 +100,6 @@ ns.LOCALES.itIT = function() return {
   ["White"] = "Bianco",
   ["Lime"] = "Lime",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "Colore critici ha più scelte: Viola, Arancione, Oro, Ciano, Rosso, Rosa, Bianco e Lime. Clicca per scorrerli e vederli uno per uno",
+  ["Bigger"] = "Più grande",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "La dimensione dei numeri critici ora dice Grande, Più grande ed Enorme",
 } end

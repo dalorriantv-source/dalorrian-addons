@@ -99,4 +99,6 @@ ns.LOCALES.esMX = function() return {
   ["White"] = "Blanco",
   ["Lime"] = "Lima",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "Color de críticos tiene más opciones: Morado, Naranja, Dorado, Cian, Rojo, Rosa, Blanco y Lima. Haz clic para pasar por ellos y ver cada uno",
+  ["Bigger"] = "Más grande",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "El tamaño de los números críticos ahora dice Grande, Más grande y Enorme",
 } end

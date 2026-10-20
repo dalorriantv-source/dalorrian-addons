@@ -101,4 +101,6 @@ ns.LOCALES.ptBR = function() return {
   ["White"] = "Branco",
   ["Lime"] = "Verde-limão",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "Cor dos críticos tem mais opções: Roxo, Laranja, Dourado, Ciano, Vermelho, Rosa, Branco e Verde-limão. Clique para passar por elas e ver cada uma",
+  ["Bigger"] = "Maior",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "O tamanho dos números críticos agora diz Grande, Maior e Enorme",
 } end

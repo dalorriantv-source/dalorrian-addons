@@ -507,7 +507,7 @@ ns.HelpConfig = {
     { label = "Damage Numbers", choices = { { "Dalorrian's", true }, { "The Game's", false } },
       get = function() return DB.replace and true or false end, set = function(v) DB.replace = v; pcall(GameNumbers) end },
     -- (1.3.6) bigger crits, and the size of normal hits is yours to pick too
-    { label = "Crit Number Size", choices = { { "Big", 48 }, { "Huge", 64 }, { "Massive", 80 } },
+    { label = "Crit Number Size", choices = { { "Big", 48 }, { "Bigger", 64 }, { "Huge", 80 } },
       get = function() return DB.size or 64 end, set = function(v) DB.size = v; ShowNumber(math.random(400, 2400), false) end },
     -- (1.3.11) one button that steps through every color: your crits, your pick
     { label = "Crit Color", cycle = true, choices = { { "Purple", "purple" }, { "Orange", "orange" }, { "Gold", "gold" },
@@ -521,6 +521,7 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.3", "Crit Number Size now reads Big, Bigger and Huge" },
     { v = "1.4.2", "Shows up everywhere as Dalorrian's Crit Numbers (window, minimap button and chat)" },
     { v = "1.4.1", "More sound packs to pick from under Sound: Coin, Fanfare, Alert and Boom, made of the game's own sounds. Each plays one at random every crit, like the Dalorrian Pack" },
     { v = "1.4.0", "Crit Sounds is now Crit Numbers: the big numbers are the main event, and the sounds are optional. Your settings and /crits stay the same" },

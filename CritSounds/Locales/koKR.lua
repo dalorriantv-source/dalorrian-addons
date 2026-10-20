@@ -101,4 +101,6 @@ ns.LOCALES.koKR = function() return {
   ["White"] = "흰색",
   ["Lime"] = "연두",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "치명타 색 선택지가 늘었습니다: 보라, 주황, 금색, 청록, 빨강, 분홍, 흰색, 연두. 눌러서 하나씩 넘기며 확인하세요",
+  ["Bigger"] = "더 크게",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "치명타 숫자 크기가 이제 크게, 더 크게, 아주 크게로 표시됩니다",
 } end

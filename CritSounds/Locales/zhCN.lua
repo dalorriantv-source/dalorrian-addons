@@ -100,4 +100,6 @@ ns.LOCALES.zhCN = function() return {
   ["White"] = "白色",
   ["Lime"] = "黄绿色",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "暴击颜色有更多选择：紫色、橙色、金色、青色、红色、粉色、白色和黄绿色。点击逐个切换查看",
+  ["Bigger"] = "更大",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "暴击数字大小现在显示为大、更大和超大",
 } end

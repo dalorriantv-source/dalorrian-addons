@@ -97,4 +97,6 @@ ns.LOCALES.deDE = function() return {
   ["White"] = "Weiß",
   ["Lime"] = "Hellgrün",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "Bei Krit-Farbe gibt es mehr Auswahl: Lila, Orange, Gold, Türkis, Rot, Pink, Weiß und Hellgrün. Klick drauf, um sie durchzugehen und jede zu sehen",
+  ["Bigger"] = "Größer",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "Kritische Zahlengröße heißt jetzt Groß, Größer und Riesig",
 } end

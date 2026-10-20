@@ -101,4 +101,6 @@ ns.LOCALES.ruRU = function() return {
   ["White"] = "Белый",
   ["Lime"] = "Салатовый",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "В «Цвет критов» больше вариантов: фиолетовый, оранжевый, золотой, голубой, красный, розовый, белый и салатовый. Нажимай, чтобы перебрать и увидеть каждый",
+  ["Bigger"] = "Больше",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "Размер чисел критов теперь называется Большой, Больше и Огромный",
 } end

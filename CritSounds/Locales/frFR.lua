@@ -97,4 +97,6 @@ ns.LOCALES.frFR = function() return {
   ["White"] = "Blanc",
   ["Lime"] = "Vert clair",
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "Couleur des critiques propose plus de choix : Violet, Orange, Or, Cyan, Rouge, Rose, Blanc et Vert clair. Clique pour les faire défiler et voir chacune",
+  ["Bigger"] = "Plus grand",
+  ["Crit Number Size now reads Big, Bigger and Huge"] = "La taille des chiffres critiques affiche maintenant Grand, Plus grand et Énorme",
 } end
