@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Dalorrian's Stat Tracker
-## Notes: A clean stats panel beside your character window: base stats, melee, ranged, spell, defense, item level, durability and speed. Type /stats to show it.
+## Notes: Pick your spec and see your most important stats first, where to upgrade next, and green, gray or red stats on every piece of gear. Type /stats to show it.
 ## Author: Dalorrian
-## Version: 1.0.0
+## Version: 1.1.0
 ## IconTexture: Interface\Icons\INV_Misc_Note_01
 ## AddonCompartmentFunc: StatTracker_OnCompartmentClick
 ## SavedVariables: StatTrackerDB, StatTracker_Lang
@@ -19,4 +19,5 @@ Locales\koKR.lua
 Locales\zhCN.lua
 Locales\zhTW.lua
 Help.lua
+Spec.lua
 StatTracker.lua

@@ -6,7 +6,7 @@ local ADDON, ns = ...
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
-local DEFAULTS = { attach = true, scale = 1, decimals = 1 }
+local DEFAULTS = { attach = true, scale = 1, decimals = 1, gear = true }
 local P = ns.print or print
 local Tr = ns.Tr or function(s) return s end
 local Tip = ns.Tip or GameTooltip
@@ -149,10 +149,7 @@ local function DamageReduction()
   return math.min(dr, 0.75) * 100
 end
 local function ItemLevel()
-  local overall, equipped = Safe(GetAverageItemLevel)
-  equipped = Num(equipped) or Num(overall)
-  if equipped and equipped > 0 then return equipped end
-  -- work it out from what you're wearing
+  -- (1.1.0) the average of what you're wearing: the game's own number counts empty slots as 0
   local sum, n = 0, 0
   for slot = 1, 17 do
     if slot ~= 4 then   -- shirts don't count
@@ -165,6 +162,9 @@ local function ItemLevel()
     end
   end
   if n > 0 then return sum / n end
+  local overall, equipped = Safe(GetAverageItemLevel)
+  equipped = Num(equipped) or Num(overall)
+  if equipped and equipped > 0 then return equipped end
 end
 local function Durability()
   local low
@@ -274,7 +274,7 @@ ns.STAT_TIPS = TIPS
 -- the panel
 ---------------------------------------------------------------------------
 local panel, rows = nil, {}
-local PW, RH = 210, 15
+local PW, RH = 230, 15
 local standalone = false   -- opened with /stats (stays open on its own)
 
 local function Text(parent, font)
@@ -292,6 +292,14 @@ local function Row(i)
   r.label = Text(r, "GameFontHighlightSmall"); r.label:SetPoint("LEFT", 4, 0)
   r.value = Text(r, "GameFontHighlightSmall"); r.value:SetPoint("RIGHT", -4, 0); r.value:SetJustifyH("RIGHT")
   r:SetScript("OnEnter", function(self)
+    if self.tipText then
+      self.hl:SetVertexColor(1, 1, 1, 0.06)
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+      local item = self.tipText:match("|H(item:[^|]+)|h")
+      if item then GameTooltip:SetHyperlink(item) else GameTooltip:AddLine(self.tipText, 1, 1, 1, true) end
+      GameTooltip:Show()
+      return
+    end
     if not self.tip then return end
     self.hl:SetVertexColor(1, 1, 1, 0.06)
     Tip:SetOwner(self, "ANCHOR_RIGHT")
@@ -299,40 +307,248 @@ local function Row(i)
     Tip:AddLine(TIPS[self.tip] or "", 1, 1, 1, true)
     Tip:Show()
   end)
+  r:SetScript("OnClick", function(self) if self.onClick then self.onClick() end end)
   r:SetScript("OnLeave", function(self) self.hl:SetVertexColor(1, 1, 1, 0); GameTooltip:Hide() end)
   rows[i] = r
   return r
 end
 
+-- (1.1.0) every stat by key, so your spec can put them in its own order
+local function Lines(spec)
+  local ranged = spec and spec.ranged
+  return {
+    WDPS = ranged and { "Weapon DPS", RangedDPS, function(v) return v and Dec(v) end, "TIP_RangedDPS" }
+      or { "Weapon DPS", MeleeDPS, function(v) return v and Dec(v) end, "TIP_MeleeDPS" },
+    EXP = { "Expertise", function() return Num(Safe(GetExpertise)) end, Int, nil },
+    HASTE = { "Haste", function()
+      local v = Num(Safe(GetHaste))
+      if v then return v end
+      local cr = G("CR_HASTE_SPELL")
+      if cr then return Num(Safe(GetCombatRatingBonus, cr)) end
+    end, Pct, nil },
+    STR = { "Strength", function() return Stat(1) end, Int, "TIP_Strength" },
+    AGI = { "Agility", function() return Stat(2) end, Int, "TIP_Agility" },
+    STA = { "Stamina", function() return Stat(3) end, Int, "TIP_Stamina" },
+    INT = { "Intellect", function() return Stat(4) end, Int, "TIP_Intellect" },
+    SPI = { "Spirit", function() return Stat(5) end, Int, "TIP_Spirit" },
+    ARMOR = { "Armor", Armor, Int, "TIP_Armor" },
+    AP = { "Attack Power", AttackPower, Int, "TIP_AttackPower" },
+    RAP = { "Ranged Attack Power", RangedPower, Int, "TIP_RangedPower" },
+    CRIT = ranged and { "Crit", RangedCrit, Pct, "TIP_RangedCrit" } or { "Crit", MeleeCrit, Pct, "TIP_MeleeCrit" },
+    HIT = { "Hit", MeleeHit, Pct, "TIP_Hit" },
+    SP = { "Spell Power", SpellPower, Int, "TIP_SpellPower" },
+    HEAL = { "Healing", Healing, Int, "TIP_Healing" },
+    SCRIT = { "Spell Crit", SpellCrit, Pct, "TIP_SpellCrit" },
+    MP5 = { "Mana Regen", ManaRegen, function(v) return v and (Commas(v) .. " / 5 sec") end, "TIP_ManaRegen" },
+    DEF = { "Defense", Defense, Int, "TIP_Defense" },
+    DODGE = { "Dodge", function() return Num(Safe(GetDodgeChance)) end, Pct, "TIP_Dodge" },
+    PARRY = { "Parry", function() return Num(Safe(GetParryChance)) end, Pct, "TIP_Parry" },
+    BLOCK = { "Block", function() return Num(Safe(GetBlockChance)) end, Pct, "TIP_Block" },
+  }
+end
+-- the rest, after your spec's stats
+local EXTRA = {
+  { "Attack Speed", Speeds, function(v) return v end, "TIP_AttackSpeed" },
+  { "Ranged Speed", RangedSpeed, function(v) return v and Dec(v) end, "TIP_RangedSpeed" },
+  { "Damage Reduction", DamageReduction, Pct, "TIP_DamageReduction" },
+  { "Item Level", ItemLevel, function(v) return v and Dec(v) end, "TIP_ItemLevel" },
+  { "Durability", Durability, function(v) return v and (math.floor(v + 0.5) .. "%") end, "TIP_Durability" },
+  { "Movement Speed", MoveSpeed, function(v) return v and (math.floor(v + 0.5) .. "%") end, "TIP_MoveSpeed" },
+}
+
+---------------------------------------------------------------------------
+-- (1.1.0) your gear: green, gray or red stats beside each slot, and where to upgrade next
+---------------------------------------------------------------------------
+local SLOTS = {
+  { "Head", 1, "L", "INVTYPE_HEAD" }, { "Neck", 2, "L", "INVTYPE_NECK" }, { "Shoulder", 3, "L", "INVTYPE_SHOULDER" },
+  { "Back", 15, "L", "INVTYPE_CLOAK" }, { "Chest", 5, "L", "INVTYPE_CHEST" }, { "Wrist", 9, "L", "INVTYPE_WRIST" },
+  { "Hands", 10, "R", "INVTYPE_HAND" }, { "Waist", 6, "R", "INVTYPE_WAIST" }, { "Legs", 7, "R", "INVTYPE_LEGS" },
+  { "Feet", 8, "R", "INVTYPE_FEET" }, { "Finger0", 11, "R", "INVTYPE_FINGER" }, { "Finger1", 12, "R", "INVTYPE_FINGER" },
+  { "Trinket0", 13, "R", "INVTYPE_TRINKET" }, { "Trinket1", 14, "R", "INVTYPE_TRINKET" },
+  { "MainHand", 16, "B", "INVTYPE_WEAPONMAINHAND" }, { "SecondaryHand", 17, "B", "INVTYPE_WEAPONOFFHAND" }, { "Ranged", 18, "B", "INVTYPE_RANGED" },
+}
+local SLOT_EN = { INVTYPE_HEAD = "Head", INVTYPE_NECK = "Neck", INVTYPE_SHOULDER = "Shoulder", INVTYPE_CLOAK = "Back",
+  INVTYPE_CHEST = "Chest", INVTYPE_WRIST = "Wrist", INVTYPE_HAND = "Hands", INVTYPE_WAIST = "Waist", INVTYPE_LEGS = "Legs",
+  INVTYPE_FEET = "Feet", INVTYPE_FINGER = "Finger", INVTYPE_TRINKET = "Trinket", INVTYPE_WEAPONMAINHAND = "Main Hand",
+  INVTYPE_WEAPONOFFHAND = "Off Hand", INVTYPE_RANGED = "Ranged" }
+local function SlotName(s) local g = _G[s[4]]; return (type(g) == "string" and g ~= "") and g or Tr(SLOT_EN[s[4]]) end
+local COLOR = { good = { 0.3, 1, 0.3 }, meh = { 0.62, 0.62, 0.62 }, bad = { 1, 0.3, 0.3 } }
+local ORDER = { [1] = 1, [5] = 2, [7] = 3, [3] = 4, [10] = 5, [8] = 6, [6] = 7, [9] = 8, [15] = 9, [16] = 10, [18] = 11, [17] = 12, [2] = 13, [11] = 14, [12] = 15, [13] = 16, [14] = 17 }
+
+local function ILvl(link)
+  local lvl = C_Item and C_Item.GetDetailedItemLevelInfo and Num(Safe(C_Item.GetDetailedItemLevelInfo, link))
+  if not lvl then local _, _, _, l = Safe((C_Item and C_Item.GetItemInfo) or GetItemInfo, link); lvl = Num(l) end
+  return lvl or 0
+end
+
+-- every slot: what's in it, its stats and what that means for your spec
+local function Gear(spec)
+  local out = {}
+  local w = spec and spec.weights or {}
+  local mh = Safe(GetInventoryItemLink, "player", 16)
+  local twoHand = false
+  if mh then local _, _, _, _, _, _, _, _, equip = Safe((C_Item and C_Item.GetItemInfo) or GetItemInfo, mh); twoHand = equip == "INVTYPE_2HWEAPON" end
+  for _, s in ipairs(SLOTS) do
+    local link = Safe(GetInventoryItemLink, "player", s[2])
+    local g = { slot = s, link = link }
+    if link then
+      g.stats = ns.ItemStats(link)
+      g.verdict = ns.Verdict(g.stats, w)
+      g.ilvl = ILvl(link)
+    elseif s[2] == 17 and twoHand then
+      g.skip = true   -- a two-hander fills both hands
+    end
+    out[#out + 1] = g
+  end
+  return out
+end
+
+-- the labels beside each slot on your character window: a small dark box, one stat per line
+local labels, toggle = {}, nil
+local function Label(s, slot)
+  local box = labels[s[2]]
+  if box then return box end
+  box = CreateFrame("Frame", nil, slot)
+  box:SetFrameLevel(slot:GetFrameLevel() + 2)
+  box.bg = box:CreateTexture(nil, "BACKGROUND"); box.bg:SetAllPoints(); box.bg:SetTexture(W); box.bg:SetVertexColor(0, 0, 0, 0.6)
+  box.text = box:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  box.text:SetPoint("CENTER")
+  box.text:SetSpacing(1)
+  if s[3] == "L" then box:SetPoint("LEFT", slot, "RIGHT", 5, 0); box.text:SetJustifyH("LEFT")
+  elseif s[3] == "R" then box:SetPoint("RIGHT", slot, "LEFT", -5, 0); box.text:SetJustifyH("RIGHT")
+  else box:SetPoint("BOTTOM", slot, "TOP", 0, 4); box.text:SetJustifyH("CENTER") end
+  labels[s[2]] = box
+  return box
+end
+
+-- Gear Stats: On / Off, right on the character window
+local PaintGear
+local function GearToggle()
+  if toggle then return toggle end
+  local head = _G.CharacterHeadSlot
+  if not head then return end
+  toggle = CreateFrame("Button", nil, head)
+  toggle:SetSize(100, 18)
+  toggle:SetPoint("BOTTOMLEFT", head, "TOPLEFT", 0, 6)
+  toggle.bg = toggle:CreateTexture(nil, "BACKGROUND"); toggle.bg:SetAllPoints(); toggle.bg:SetTexture(W)
+  toggle.text = toggle:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall"); toggle.text:SetPoint("CENTER")
+  toggle:SetScript("OnClick", function() DB.gear = not DB.gear; PaintGear() end)
+  toggle:SetScript("OnEnter", function(self) self.bg:SetVertexColor(0.22, 0.23, 0.28, 0.95) end)
+  toggle:SetScript("OnLeave", function(self) self.bg:SetVertexColor(0.08, 0.08, 0.1, 0.85) end)
+  toggle.bg:SetVertexColor(0.08, 0.08, 0.1, 0.85)
+  return toggle
+end
+
+PaintGear = function()
+  local cf = _G.CharacterFrame
+  if not (DB and cf and cf:IsShown()) then return end
+  local t = GearToggle()
+  if t then
+    t.text:SetText(Tr(DB.gear and "Gear Stats: On" or "Gear Stats: Off"))
+    if DB.gear then t.text:SetTextColor(0.3, 1, 0.3) else t.text:SetTextColor(0.6, 0.6, 0.6) end
+  end
+  local spec = ns.CurrentSpec(DB)
+  for _, g in ipairs(Gear(spec)) do
+    local s = g.slot
+    local slot = _G["Character" .. s[1] .. "Slot"]
+    if slot then
+      local box = Label(s, slot)
+      if DB.gear and g.stats and next(g.stats) and spec then
+        local c = COLOR[g.verdict] or COLOR.meh
+        box.text:SetText(ns.StatText(g.stats, spec.weights)); box.text:SetTextColor(c[1], c[2], c[3])
+        box:SetSize((box.text:GetStringWidth() or 40) + 8, (box.text:GetStringHeight() or 12) + 4)
+        box:Show()
+      else
+        box:Hide()
+      end
+    end
+  end
+end
+ns.PaintGear = PaintGear
+
 local function Paint()
+  PaintGear()
   if not (panel and panel:IsShown()) then return end
   local y, n = -34, 0
-  for _, sec in ipairs(Sections()) do
-    local lines = {}
-    for k = 2, #sec do
-      local s = sec[k]
-      local ok, v = pcall(s[2])
-      local shown = ok and v ~= nil and s[3](v) or nil
-      if shown then lines[#lines + 1] = { s[1], shown, s[4] } end
+  local function Head(text)
+    n = n + 1
+    local h = Row(n)
+    h.tip, h.name, h.onClick, h.tipText = nil, nil, nil, nil
+    h.label:SetFontObject("GameFontNormalSmall"); h.label:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
+    h.label:SetText(text); h.value:SetText("")
+    h:ClearAllPoints(); h:SetPoint("TOPLEFT", 8, y); h:Show()
+    y = y - RH - 1
+    return h
+  end
+  local function Line(label, value, tip, r, g, b)
+    n = n + 1
+    local row = Row(n)
+    row.tip, row.name, row.onClick, row.tipText = tip, Tr(label), nil, nil
+    row.label:SetFontObject("GameFontHighlightSmall"); row.label:SetTextColor(0.78, 0.78, 0.82)
+    row.label:SetText(label); row.value:SetText(value or ""); row.value:SetTextColor(r or 1, g or 1, b or 1)
+    row:ClearAllPoints(); row:SetPoint("TOPLEFT", 8, y); row:Show()
+    y = y - RH
+    return row
+  end
+
+  -- who you are: race, class and spec. Click the spec to change it
+  local spec = ns.CurrentSpec(DB)
+  local race = Safe(UnitRace, "player") or ""
+  local cname, ctoken = Safe(UnitClass, "player")
+  local cc = ctoken and RAID_CLASS_COLORS and RAID_CLASS_COLORS[ctoken]
+  local who = Head(race .. " " .. (cname or ""))
+  if cc then who.label:SetTextColor(cc.r, cc.g, cc.b) end
+  if spec then
+    local r = Line(spec.name .. (spec.auto and ("  |cff888888(" .. Tr("auto") .. ")|r") or ""), Tr("Change"), nil, GOLD[1], GOLD[2], GOLD[3])
+    r.label:SetTextColor(1, 1, 1)
+    r.tipText = Tr("Click to change your spec")
+    r.onClick = function() ns.NextSpec(DB); Paint() end
+  end
+  y = y - 6
+
+  -- your most important stats, best first
+  local L = Lines(spec)
+  local w = spec and spec.weights or {}
+  local keys = {}
+  for k in pairs(L) do keys[#keys + 1] = k end
+  table.sort(keys, function(a, b) local x, z = w[a] or 0, w[b] or 0; if x ~= z then return x > z end return a < b end)
+  local top, rest = {}, {}
+  for _, k in ipairs(keys) do
+    -- a hunter's attack power on gear counts for shots too, but the melee number is not one to watch
+    local watch = not (k == "AP" and ClassToken() == "HUNTER")
+    -- a stat this client can't read (Expertise before gear has it) waits in More Stats instead of showing a dash
+    local readable = k == "WDPS"
+    if watch and (w[k] or 0) >= 0.5 and #top < 6 and not readable then
+      local d = L[k]; local ok, v = pcall(d[2]); readable = ok and v ~= nil
     end
-    if #lines > 0 then
-      n = n + 1
-      local h = Row(n)
-      h.tip, h.name = nil, nil
-      h.label:SetFontObject("GameFontNormalSmall"); h.label:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
-      h.label:SetText(sec[1]); h.value:SetText("")
-      h:ClearAllPoints(); h:SetPoint("TOPLEFT", 8, y); h:Show()
-      y = y - RH - 1
-      for _, l in ipairs(lines) do
-        n = n + 1
-        local r = Row(n)
-        r.tip, r.name = l[3], Tr(l[1])
-        r.label:SetFontObject("GameFontHighlightSmall"); r.label:SetTextColor(0.78, 0.78, 0.82)
-        r.label:SetText(l[1]); r.value:SetText(l[2]); r.value:SetTextColor(1, 1, 1)
-        r:ClearAllPoints(); r:SetPoint("TOPLEFT", 8, y); r:Show()
-        y = y - RH
-      end
-      y = y - 6
+    if watch and (w[k] or 0) >= 0.5 and #top < 6 and readable then top[#top + 1] = k else rest[#rest + 1] = k end
+  end
+  Head(Tr("Most Important Stats"))
+  for i, k in ipairs(top) do
+    local d = L[k]
+    local ok, v = pcall(d[2])
+    local shown = ok and v ~= nil and d[3](v) or "-"
+    if k == "WDPS" and shown == "-" then shown = Tr("no weapon") end
+    local r = Line(d[1], shown, d[4])
+    r.label:SetText(i .. ". " .. Tr(d[1]))
+  end
+  y = y - 6
+
+  -- everything else, folded away until you want it
+  local more = Head(Tr("More Stats") .. (DB.more and "  -" or "  +"))
+  more.onClick = function() DB.more = not DB.more; Paint() end
+  more.tipText = Tr(DB.more and "Click to hide" or "Click to show")
+  if DB.more then
+    for _, k in ipairs(rest) do
+      local d = L[k]
+      local ok, v = pcall(d[2])
+      local shown = ok and v ~= nil and d[3](v) or nil
+      if shown and shown ~= "0" and shown ~= (Dec(0) .. "%") then Line(d[1], shown, d[4]) end
+    end
+    for _, d in ipairs(EXTRA) do
+      local ok, v = pcall(d[2])
+      local shown = ok and v ~= nil and d[3](v) or nil
+      if shown then Line(d[1], shown, d[4]) end
     end
   end
   for i = n + 1, #rows do rows[i]:Hide() end
@@ -403,7 +619,7 @@ local function HookCharacter()
   local cf = _G.CharacterFrame
   if not cf or cf.statTrackerHooked then return end
   cf.statTrackerHooked = true
-  cf:HookScript("OnShow", function() if DB and DB.attach and not standalone then Open(false) end end)
+  cf:HookScript("OnShow", function() if DB and DB.attach and not standalone then Open(false) end; C_Timer.After(0.05, ns.PaintGear) end)
   cf:HookScript("OnHide", function() if panel and not standalone then panel:Hide() end end)
 end
 
@@ -412,7 +628,9 @@ end
 ---------------------------------------------------------------------------
 local soon
 local function Soon()
-  if soon or not (panel and panel:IsShown()) then return end
+  if soon then return end
+  local cf = _G.CharacterFrame
+  if not ((panel and panel:IsShown()) or (cf and cf:IsShown())) then return end
   soon = true
   C_Timer.After(0.2, function() soon = nil; Paint() end)
 end
@@ -422,7 +640,8 @@ local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 for _, e in ipairs({ "PLAYER_EQUIPMENT_CHANGED", "PLAYER_LEVEL_UP", "UPDATE_INVENTORY_DURABILITY", "COMBAT_RATING_UPDATE",
-  "SKILL_LINES_CHANGED", "PLAYER_DAMAGE_DONE_MODS", "SPELL_POWER_CHANGED", "PLAYER_ENTERING_WORLD" }) do
+  "SKILL_LINES_CHANGED", "PLAYER_DAMAGE_DONE_MODS", "SPELL_POWER_CHANGED", "PLAYER_ENTERING_WORLD",
+  "CHARACTER_POINTS_CHANGED", "PLAYER_TALENT_UPDATE", "GET_ITEM_INFO_RECEIVED" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 if ev.RegisterUnitEvent then
@@ -459,8 +678,16 @@ ns.HelpConfig = {
       get = function() return DB.scale or 1 end, set = function(v) DB.scale = v; Place() end },
     { label = "Decimals", choices = { { "1", 1 }, { "2", 2 } },
       get = function() return DB.decimals or 1 end, set = function(v) DB.decimals = v; Paint() end },
+    -- (1.1.0) colored stats beside each slot on your character window
+    { label = "Gear Stats On Character Window", choices = { { "On", true }, { "Off", false } },
+      get = function() return DB.gear and true or false end, set = function(v) DB.gear = v; Paint() end },
   },
   notes = {
+    { v = "1.1.0", "Pick your spec (or let it read your talents) and the panel puts your most important stats first",
+      "On your character window, each piece of gear shows its stats in green when they're good for your spec, gray when they're so-so and red when they're wrong for you",
+      "A Gear Stats button on your character window turns those on and off",
+      "Item level counts only what you're wearing, so empty slots no longer drag it down. Everything else sits under More Stats",
+      "Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count" },
     { v = "1.0.0", "First release: a clean stats panel beside your character window. Base stats, melee, ranged, spell and defense, plus item level, durability and movement speed. Hover any stat to see what it does" },
   },
   report = function()

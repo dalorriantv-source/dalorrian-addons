@@ -1,9 +1,9 @@
 ## Interface: 16001
 ## Title: Dalorrian's Junk Cleaner
-## Notes: Sells your gray junk the moment you open a vendor, with one line in chat. Bags full? /junk drop finds your least valuable gray item. Never sells green or better, quest items or materials.
+## Notes: Every gray item in your bags in one list, cheapest first. Destroy Next Item throws away the top one, one click at a time. Type /junk to open it.
 ## Author: Dalorrian
-## Version: 1.0.0
-## IconTexture: Interface\Icons\INV_Misc_Bag_10
+## Version: 1.1.0
+## IconTexture: Interface\Icons\Spell_Fire_Fire
 ## AddonCompartmentFunc: JunkCleaner_OnCompartmentClick
 ## SavedVariables: JunkCleanerDB, JunkCleaner_Lang
 
