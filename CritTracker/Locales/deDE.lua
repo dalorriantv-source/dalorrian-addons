@@ -76,4 +76,7 @@ ns.LOCALES.deDE = function() return {
   ["Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's"] = "Automatischer Schuss wird jetzt als solcher erfasst (er zählte als Nahkampf), und viele verpasste Treffer werden jetzt gezählt. In einer Gruppe zählen normale automatische Angriffe nicht, da sie von jedem sein könnten",
   ["Removed the Crit % column. The window shows each ability's best crit and best hit"] = "Die Spalte Krit % ist weg. Das Fenster zeigt für jede Fähigkeit den besten Krit und den besten Treffer",
   ["Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them"] = "Spaltenköpfe behalten ihre Farben: Bester Krit gold, Bester Treffer weiß, wie die Zahlen darunter",
+  ["Best Heal"] = "Beste Heilung",
+  ["Best Heal (Crit)"] = "Beste Heilung (Krit)",
+  ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "Neue Spalte Beste Heilung in Grün: deine größte Heilung mit jedem Heilzauber. Bester Krit und Bester Treffer gelten für Schaden",
 } end

@@ -73,4 +73,12 @@ ns.LOCALES.koKR = function() return {
   ["First release: your combo points as clean gold squares just under your character"] = "첫 출시: 캐릭터 바로 아래에 깔끔한 금색 사각형으로 보이는 연계 점수",
   ["Energy Bar"] = "기력 바",
   ["A thin energy bar under the squares, with a spark that sweeps across every 2 seconds to show when your next energy tick lands"] = "사각형 아래 얇은 기력 바. 2초마다 불꽃이 지나가며 다음 기력 틱이 언제 오는지 보여줍니다",
+  ["Horizontal"] = "가로",
+  ["Vertical"] = "세로",
+  ["Show"] = "표시",
+  ["Always"] = "항상",
+  ["In Combat"] = "전투 중",
+  ["Direction now reads Horizontal or Vertical"] = "방향이 이제 가로 또는 세로로 표시됩니다",
+  ["New Show setting: Always, or only In Combat"] = "새 설정 표시: 항상, 또는 전투 중에만",
+  ["The energy bar fills and drains with your energy, and it's a little thicker so it's easier to see"] = "기력 바가 기력에 따라 차고 줄어들며, 잘 보이도록 조금 더 두꺼워졌습니다",
 } end

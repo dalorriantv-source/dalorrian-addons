@@ -80,4 +80,7 @@ ns.LOCALES.koKR = function() return {
   ["Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's"] = "자동 사격이 이제 자동 사격으로 기록됩니다(근접으로 셌었음). 놓치던 많은 공격도 이제 셉니다. 파티에서는 누구 것인지 모르는 일반 자동 공격은 세지 않습니다",
   ["Removed the Crit % column. The window shows each ability's best crit and best hit"] = "치명타 % 열을 없앴습니다. 창에는 기술별 최고 치명타와 최고 공격만 나옵니다",
   ["Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them"] = "열 제목 색이 고정됩니다: 최고 치명타는 금색, 최고 공격은 흰색으로 아래 숫자와 같습니다",
+  ["Best Heal"] = "최고 치유량",
+  ["Best Heal (Crit)"] = "최고 치유량 (치명타)",
+  ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "새 최고 치유량 열(녹색): 각 치유 주문의 가장 큰 치유량. 최고 치명타와 최고 일반은 피해용입니다",
 } end

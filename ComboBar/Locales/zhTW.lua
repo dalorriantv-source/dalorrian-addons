@@ -72,4 +72,12 @@ ns.LOCALES.zhTW = function() return {
   ["First release: your combo points as clean gold squares just under your character"] = "首個版本：在角色正下方用乾淨的金色方塊顯示你的連擊點",
   ["Energy Bar"] = "能量條",
   ["A thin energy bar under the squares, with a spark that sweeps across every 2 seconds to show when your next energy tick lands"] = "連擊方塊下方的細能量條，每2秒有一道火花掃過，顯示下一次能量恢復何時到來",
+  ["Horizontal"] = "水平",
+  ["Vertical"] = "垂直",
+  ["Show"] = "顯示",
+  ["Always"] = "始終",
+  ["In Combat"] = "戰鬥中",
+  ["Direction now reads Horizontal or Vertical"] = "方向現在顯示為水平或垂直",
+  ["New Show setting: Always, or only In Combat"] = "新的顯示設定：始終，或僅戰鬥中",
+  ["The energy bar fills and drains with your energy, and it's a little thicker so it's easier to see"] = "能量條會隨你的能量增減，並且稍微加粗，更容易看清",
 } end

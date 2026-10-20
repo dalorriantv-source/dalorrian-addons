@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Crit Tracker
 ## Notes: Your best hit and best crit with every attack, ability and heal, with when and where. A quiet line in chat when you beat a record. Type /crittracker for your records.
 ## Author: Dalorrian
-## Version: 1.1.5
+## Version: 1.2.0
 ## IconTexture: Interface\Icons\INV_Misc_Head_Dragon_01
 ## AddonCompartmentFunc: CritTracker_OnCompartmentClick
 ## SavedVariables: CritTrackerDB, CritTracker_Lang

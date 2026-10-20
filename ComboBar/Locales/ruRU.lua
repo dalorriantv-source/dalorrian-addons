@@ -73,4 +73,12 @@ ns.LOCALES.ruRU = function() return {
   ["First release: your combo points as clean gold squares just under your character"] = "Первая версия: приёмы в серии чёткими золотыми квадратами прямо под персонажем",
   ["Energy Bar"] = "Полоса энергии",
   ["A thin energy bar under the squares, with a spark that sweeps across every 2 seconds to show when your next energy tick lands"] = "Тонкая полоса энергии под квадратами, по ней каждые 2 секунды пробегает искра, показывая, когда придёт следующий тик энергии",
+  ["Horizontal"] = "Горизонтально",
+  ["Vertical"] = "Вертикально",
+  ["Show"] = "Показывать",
+  ["Always"] = "Всегда",
+  ["In Combat"] = "В бою",
+  ["Direction now reads Horizontal or Vertical"] = "Направление теперь называется Горизонтально или Вертикально",
+  ["New Show setting: Always, or only In Combat"] = "Новая настройка Показывать: Всегда или только В бою",
+  ["The energy bar fills and drains with your energy, and it's a little thicker so it's easier to see"] = "Полоска энергии заполняется и убывает вместе с твоей энергией и стала чуть толще, чтобы её было лучше видно",
 } end

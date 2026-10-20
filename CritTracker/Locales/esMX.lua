@@ -78,4 +78,7 @@ ns.LOCALES.esMX = function() return {
   ["Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's"] = "Disparo automático ahora se registra como tal (contaba como Cuerpo a cuerpo) y se cuentan muchos golpes que se perdían. En grupo, los ataques automáticos normales no cuentan, porque podrían ser de cualquiera",
   ["Removed the Crit % column. The window shows each ability's best crit and best hit"] = "Se quitó la columna Crit %. La ventana muestra el mejor crítico y el mejor golpe de cada habilidad",
   ["Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them"] = "Los encabezados mantienen su color: Mejor crítico dorado, Mejor golpe blanco, como los números de abajo",
+  ["Best Heal"] = "Mejor sanación",
+  ["Best Heal (Crit)"] = "Mejor sanación (Crítico)",
+  ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "Nueva columna Mejor sanación en verde: tu mayor sanación con cada hechizo de sanación. Mejor crítico y Mejor golpe son para el daño",
 } end

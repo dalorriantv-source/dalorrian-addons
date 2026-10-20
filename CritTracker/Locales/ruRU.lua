@@ -80,4 +80,7 @@ ns.LOCALES.ruRU = function() return {
   ["Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's"] = "Автоматический выстрел теперь учитывается как он сам (раньше шёл как ближний бой), и много пропущенных ударов теперь засчитывается. В группе обычные автоатаки не считаются: они могут быть чьими угодно",
   ["Removed the Crit % column. The window shows each ability's best crit and best hit"] = "Столбец «Крит %» убран. В окне лучший крит и лучший удар каждой способности",
   ["Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them"] = "Заголовки больше не меняют цвет: лучший крит золотой, лучший удар белый, как цифры под ними",
+  ["Best Heal"] = "Лучшее исцеление",
+  ["Best Heal (Crit)"] = "Лучшее исцеление (Крит)",
+  ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "Новый столбец Лучшее исцеление зелёным: твоё самое сильное исцеление каждым лечащим заклинанием. Лучший крит и Лучший удар относятся к урону",
 } end

@@ -7,7 +7,7 @@ local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
 local FULL = { 1, 0.42, 0.1 }        -- every point lit: the squares turn ember orange
 local SIZE, GAP = 18, 4
-local DEFAULTS = { scale = 1, vertical = false, fade = true, energy = true }
+local DEFAULTS = { scale = 1, vertical = false, fade = true, energy = true }   -- (1.3.0) DB.show: "always" or "combat"
 local _, CLASS = UnitClass("player")
 local CP = (Enum and Enum.PowerType and Enum.PowerType.ComboPoints) or 4
 
@@ -54,45 +54,54 @@ end
 -- energy comes in ticks of 20 every 2 seconds, and the spark shows when the next one lands
 ---------------------------------------------------------------------------
 local ENERGY = (Enum and Enum.PowerType and Enum.PowerType.Energy) or 3
-local EH, TICK = 5, 2.0
+local EH, TICK = 7, 2.0   -- (1.3.0) a little thicker so it's easy to see
 local en = CreateFrame("Frame", nil, bar, "BackdropTemplate")
 en:SetBackdrop({ bgFile = W, edgeFile = W, edgeSize = 1 })
 en:SetBackdropColor(0.04, 0.04, 0.05, 0.8)
 en:SetBackdropBorderColor(0, 0, 0, 1)
 en:EnableMouse(false)
-en.fill = en:CreateTexture(nil, "ARTWORK")
-en.fill:SetColorTexture(1, 0.96, 0.41, 0.9)   -- energy yellow, a shade off the gold squares
-en.spark = en:CreateTexture(nil, "OVERLAY")
+-- (1.3.0) a real status bar does the filling: WoW: Forever can hand addons "secret" power numbers that
+-- can't be measured, but a status bar can still show them, so the fill always follows your energy
+en.sb = CreateFrame("StatusBar", nil, en)
+en.sb:SetPoint("TOPLEFT", 1, -1); en.sb:SetPoint("BOTTOMRIGHT", -1, 1)
+en.sb:SetStatusBarTexture(W)
+en.sb:SetStatusBarColor(1, 0.96, 0.41, 0.9)   -- energy yellow, a shade off the gold squares
+en.sb:SetMinMaxValues(0, 100); en.sb:SetValue(0)
+en.spark = en.sb:CreateTexture(nil, "OVERLAY")
 en.spark:SetColorTexture(1, 1, 1, 0.95)
+en.spark:Hide()
 en:Hide()
+local function Plain(v) return type(v) == "number" and not (issecretvalue and issecretvalue(v)) end
 local lastEnergy, lastTick
+local function Energy()
+  local cur, max = UnitPower("player"), UnitPowerMax("player")   -- your current power: energy while this bar shows
+  if max == nil or (Plain(max) and max <= 0) then max = 100 end
+  pcall(en.sb.SetMinMaxValues, en.sb, 0, max)
+  pcall(en.sb.SetValue, en.sb, cur or 0)
+  return cur
+end
 en:SetScript("OnUpdate", function(self)
-  local cur, max = UnitPower("player", ENERGY) or 0, UnitPowerMax("player", ENERGY) or 100
-  if max <= 0 then max = 100 end
+  local cur = Energy()
   local now = GetTime()
   -- a natural tick: 20 energy (40 under Adrenaline Rush) arriving on its own, not a potion mid-tick
-  if lastEnergy and cur > lastEnergy then
-    local gain = cur - lastEnergy
-    if gain >= 18 and gain <= 45 and (not lastTick or now - lastTick > 1.6) then lastTick = now end
+  if Plain(cur) then
+    if lastEnergy and cur > lastEnergy then
+      local gain = cur - lastEnergy
+      if gain >= 18 and gain <= 45 and (not lastTick or now - lastTick > 1.6) then lastTick = now end
+    end
+    lastEnergy = cur
   end
-  lastEnergy = cur
-  local f = math.min(1, cur / max)
+  if lastTick and now - lastTick > 6 then lastTick = nil end   -- no ticks lately (full, or smooth regen): no spark
   local p = lastTick and (((now - lastTick) % TICK) / TICK) or nil
-  local inner = 2
-  if DB.vertical then
-    local h = self:GetHeight() - inner
-    self.fill:ClearAllPoints()
-    self.fill:SetPoint("BOTTOMLEFT", 1, 1); self.fill:SetPoint("BOTTOMRIGHT", -1, 1)
-    self.fill:SetHeight(math.max(0.01, h * f))
-    self.spark:SetShown(p ~= nil)
-    if p then self.spark:ClearAllPoints(); self.spark:SetSize(self:GetWidth() - inner, 2); self.spark:SetPoint("BOTTOM", 0, 1 + h * p - 1) end
-  else
-    local w = self:GetWidth() - inner
-    self.fill:ClearAllPoints()
-    self.fill:SetPoint("TOPLEFT", 1, -1); self.fill:SetPoint("BOTTOMLEFT", 1, 1)
-    self.fill:SetWidth(math.max(0.01, w * f))
-    self.spark:SetShown(p ~= nil)
-    if p then self.spark:ClearAllPoints(); self.spark:SetSize(2, self:GetHeight() - inner); self.spark:SetPoint("LEFT", 1 + w * p - 1, 0) end
+  local sb = self.sb
+  self.spark:SetShown(p ~= nil)
+  if p then
+    self.spark:ClearAllPoints()
+    if DB.vertical then
+      self.spark:SetSize(sb:GetWidth(), 2); self.spark:SetPoint("BOTTOM", 0, sb:GetHeight() * p - 1)
+    else
+      self.spark:SetSize(2, sb:GetHeight()); self.spark:SetPoint("LEFT", sb:GetWidth() * p - 1, 0)
+    end
   end
 end)
 
@@ -139,6 +148,7 @@ local function Layout()
   else
     en:SetPoint("TOPLEFT", bar, "BOTTOMLEFT", 0, -3); en:SetSize(long, EH)
   end
+  en.sb:SetOrientation(DB.vertical and "VERTICAL" or "HORIZONTAL")
   bar.max = m
 end
 
@@ -163,10 +173,11 @@ local function Update()
       p.fill:Hide(); p.shine:Hide()
     end
   end
-  -- empty and out of combat: it steps away so it never clutters the screen
-  local idle = n == 0 and not UnitAffectingCombat("player") and not DB.unlocked and not testing
-  if DB.fade and idle then bar:Hide() else bar:Show() end
-  en:SetShown(DB.energy and (UnitPowerMax("player", ENERGY) or 0) > 0 and (UnitPowerType("player") == ENERGY or testing) and true or false)
+  -- (1.3.0) Show: Always, or only In Combat (moving it or a preview always shows it)
+  local away = DB.show == "combat" and not UnitAffectingCombat("player") and not DB.unlocked and not testing
+  if away then bar:Hide() else bar:Show() end
+  en:SetShown(DB.energy and (UnitPowerType("player") == ENERGY or testing) and true or false)
+  if en:IsShown() then Energy() end
   bar:SetAlpha((n == 0 and not DB.unlocked) and 0.5 or 1)
 end
 
@@ -185,6 +196,7 @@ ev:SetScript("OnEvent", function(_, e, a1)
     ComboBarDB = ComboBarDB or {}
     DB = ComboBarDB
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
+    if DB.show == nil then DB.show = (DB.fade == false) and "always" or "combat" end   -- (1.3.0) from the old When Empty
     return
   end
   if not DB then return end
@@ -219,15 +231,15 @@ ns.HelpConfig = {
     { label = "Combo Bar", choices = { { "On", "on" }, { "Off", "off" } },
       get = function() return DB.off and "off" or "on" end,
       set = function(v) DB.off = (v == "off") or nil; Update() end },
-    { label = "Direction", choices = { { "Flat", false }, { "Standing", true } },
+    { label = "Direction", choices = { { "Horizontal", false }, { "Vertical", true } },
       get = function() return DB.vertical and true or false end,
       set = function(v) DB.vertical = v; Layout(); Update() end },
     { label = "Energy Bar", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.energy and true or false end, set = function(v) DB.energy = v; Update() end },
     { label = "Size", choices = { { "Small", 0.8 }, { "Normal", 1 }, { "Big", 1.3 } },
       get = function() return DB.scale or 1 end, set = function(v) DB.scale = v; Place() end },
-    { label = "When Empty", choices = { { "Hide It", true }, { "Keep It", false } },
-      get = function() return DB.fade and true or false end, set = function(v) DB.fade = v; Update() end },
+    { label = "Show", choices = { { "Always", "always" }, { "In Combat", "combat" } },
+      get = function() return DB.show or "combat" end, set = function(v) DB.show = v; Update() end },
     { label = "Move It", choices = { { "Locked", "lock" }, { "Move It", "move" }, { "Reset", "reset" } },
       get = function() return DB.unlocked and "move" or "lock" end,
       set = function(v) SlashCmdList.COMBOBAR(v == "move" and "unlock" or v) end },
@@ -235,13 +247,16 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.COMBOBAR("test") end },
   },
   notes = {
+    { v = "1.3.0", "Direction now reads Horizontal or Vertical",
+      "New Show setting: Always, or only In Combat",
+      "The energy bar fills and drains with your energy, and it's a little thicker so it's easier to see" },
     { v = "1.2.0", "A thin energy bar under the squares, with a spark that sweeps across every 2 seconds to show when your next energy tick lands" },
     { v = "1.1.0", "A Settings & Help window, a minimap button and 10 languages" },
     { v = "1.0.0", "First release: your combo points as clean gold squares just under your character" },
   },
   report = function()
     return { "Class " .. tostring(CLASS) .. ", max " .. tostring(Max()) .. ", vertical " .. tostring(DB.vertical) ..
-      ", fade " .. tostring(DB.fade) .. (DB.off and ", turned off" or "") }
+      ", show " .. tostring(DB.show) .. ", power " .. tostring(UnitPowerType("player")) .. (DB.off and ", turned off" or "") }
   end,
 }
 
@@ -255,7 +270,7 @@ MinimapButton = function()
   b:RegisterForDrag("LeftButton")
   b:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
   b.icon = b:CreateTexture(nil, "ARTWORK")
-  b.icon:SetTexture("Interface\\Icons\\Ability_Rogue_Eviscerate")
+  b.icon:SetTexture("Interface\\Icons\\Ability_Rogue_SliceDice")
   b.icon:SetSize(20, 20); b.icon:SetPoint("CENTER", 0, 1); b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
   local border = b:CreateTexture(nil, "OVERLAY")
   border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
@@ -301,7 +316,7 @@ SlashCmdList.COMBOBAR = function(msg)
     if not Wanted() then Say("your class doesn't use combo points, but here's how it looks.") end
     Test()
   elseif cmd == "vertical" then
-    DB.vertical = not DB.vertical; Layout(); Update(); Say(DB.vertical and "standing up." or "lying flat.")
+    DB.vertical = not DB.vertical; Layout(); Update(); Say(DB.vertical and "Vertical" or "Horizontal")
   elseif cmd == "unlock" or cmd == "move" then
     DB.unlocked = true; bar:EnableMouse(true); bar:Show(); Update()
     Say("drag it where you want it, then /combo lock. Shift-drag works any time.")
@@ -309,8 +324,15 @@ SlashCmdList.COMBOBAR = function(msg)
     DB.unlocked = nil; bar:EnableMouse(false); Update(); Say("locked.")
   elseif cmd == "scale" and tonumber(arg) then
     DB.scale = math.max(0.5, math.min(3, tonumber(arg))); Place(); Say("size " .. DB.scale .. ".")
-  elseif cmd == "fade" then
-    DB.fade = not DB.fade; Update(); Say(DB.fade and "hides when empty out of combat." or "always shown.")
+  elseif cmd == "fade" or cmd == "show" then
+    DB.show = (DB.show == "combat") and "always" or "combat"; Update(); Say(DB.show == "combat" and "In Combat" or "Always")
+  elseif cmd == "debug" then
+    local cur, max = UnitPower("player"), UnitPowerMax("player")
+    local function S(v) return (issecretvalue and issecretvalue(v)) and "secret" or tostring(v) end
+    local a, b = en.sb:GetMinMaxValues()
+    Say("power type " .. tostring(UnitPowerType("player")) .. ", energy " .. S(cur) .. " / " .. S(max) ..
+      ", bar shown " .. tostring(en:IsShown()) .. ", bar size " .. math.floor(en:GetWidth()) .. "x" .. math.floor(en:GetHeight()) ..
+      ", bar value " .. S(en.sb:GetValue()) .. " of " .. S(b) .. ", tick " .. tostring(lastTick ~= nil))
   elseif cmd == "off" then
     DB.off = not DB.off or nil; Update(); Say(DB.off and "turned off" or "turned on")
   elseif cmd == "reset" then

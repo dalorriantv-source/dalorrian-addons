@@ -79,4 +79,7 @@ ns.LOCALES.zhTW = function() return {
   ["Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's"] = "自動射擊現在按自動射擊記錄（之前算成了近戰），很多漏掉的傷害現在也會計入。組隊時普通自動攻擊不計入，因為可能是別人的",
   ["Removed the Crit % column. The window shows each ability's best crit and best hit"] = "移除了爆擊率一欄。視窗顯示每個技能的最高爆擊和最高傷害",
   ["Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them"] = "欄位標題顏色固定：最高爆擊金色，最高傷害白色，和下面的數字一致",
+  ["Best Heal"] = "最高治療",
+  ["Best Heal (Crit)"] = "最高治療（暴擊）",
+  ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "新增綠色的最高治療欄：每個治療法術的最大治療量。最高暴擊和最高普通用於傷害",
 } end

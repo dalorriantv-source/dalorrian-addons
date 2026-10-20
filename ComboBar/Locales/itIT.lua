@@ -72,4 +72,12 @@ ns.LOCALES.itIT = function() return {
   ["First release: your combo points as clean gold squares just under your character"] = "Prima versione: i tuoi punti combo come quadrati dorati puliti proprio sotto il tuo personaggio",
   ["Energy Bar"] = "Barra dell'energia",
   ["A thin energy bar under the squares, with a spark that sweeps across every 2 seconds to show when your next energy tick lands"] = "Una sottile barra dell'energia sotto i quadrati, con una scintilla che la percorre ogni 2 secondi per mostrare quando arriva il prossimo tick di energia",
+  ["Horizontal"] = "Orizzontale",
+  ["Vertical"] = "Verticale",
+  ["Show"] = "Mostra",
+  ["Always"] = "Sempre",
+  ["In Combat"] = "In combattimento",
+  ["Direction now reads Horizontal or Vertical"] = "Direzione ora dice Orizzontale o Verticale",
+  ["New Show setting: Always, or only In Combat"] = "Nuova impostazione Mostra: Sempre, o solo In combattimento",
+  ["The energy bar fills and drains with your energy, and it's a little thicker so it's easier to see"] = "La barra dell'energia si riempie e si svuota con la tua energia, ed è un po' più spessa per vederla meglio",
 } end

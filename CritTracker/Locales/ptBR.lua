@@ -80,4 +80,7 @@ ns.LOCALES.ptBR = function() return {
   ["Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's"] = "Tiro Automático agora conta como Tiro Automático (contava como Corpo a corpo), e muitos golpes que se perdiam agora contam. Em grupo, ataques automáticos comuns não contam, pois podem ser de qualquer um",
   ["Removed the Crit % column. The window shows each ability's best crit and best hit"] = "A coluna Crit % foi removida. A janela mostra o melhor crítico e o melhor golpe de cada habilidade",
   ["Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them"] = "Os cabeçalhos mantêm a cor: Melhor crítico dourado, Melhor golpe branco, como os números abaixo",
+  ["Best Heal"] = "Melhor cura",
+  ["Best Heal (Crit)"] = "Melhor cura (Crítico)",
+  ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "Nova coluna Melhor cura em verde: sua maior cura com cada feitiço de cura. Melhor crítico e Melhor golpe são para dano",
 } end

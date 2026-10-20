@@ -252,12 +252,14 @@ end
 -- the window: every ability, its best crit and best hit; hover a row for when and where
 ---------------------------------------------------------------------------
 local win
-local WW, ROWH = 470, 20
+local WW, ROWH = 540, 20   -- (1.2.0) wider for the Best Heal column
 local COLS = {
   -- (1.1.4) no Crit % column: just the ability and its two records, ending before the scroll bar
-  { key = "name", label = "Ability", x = 30, w = 210, justify = "LEFT" },
-  { key = "crit", label = "Best Crit", x = 250, w = 90, justify = "RIGHT" },
-  { key = "hit", label = "Best Hit", x = 344, w = 90, justify = "RIGHT" },
+  { key = "name", label = "Ability", x = 30, w = 200, justify = "LEFT" },
+  { key = "crit", label = "Best Crit", x = 240, w = 85, justify = "RIGHT" },
+  { key = "hit", label = "Best Hit", x = 329, w = 85, justify = "RIGHT" },
+  -- (1.2.0) heals get their own column in green: Best Crit and Best Hit are for damage
+  { key = "heal", label = "Best Heal", x = 418, w = 85, justify = "RIGHT" },
 }
 local function Solid(parent, layer, r, g, b, a)
   local t = parent:CreateTexture(nil, layer or "BACKGROUND")
@@ -286,6 +288,14 @@ local function FlatButton(parent, w, label, onClick)
   return b
 end
 
+-- (1.2.0) a heal's record is its biggest heal, crit or not
+local function BestHeal(r)
+  if not r.heal then return nil end
+  local c, h = r.crit, r.hit
+  if c and (not h or c.amt >= h.amt) then return c, true end
+  return h, false
+end
+
 local function List()
   local out = {}
   for _, r in pairs(REC or {}) do
@@ -294,6 +304,8 @@ local function List()
   local function v(r, k)
     if k == "name" then return r.name end
     if k == "pct" then return r.uses > 0 and r.crits / r.uses or 0 end
+    if k == "heal" then local b = BestHeal(r); return b and b.amt or 0 end
+    if r.heal then return 0 end   -- heals sort under Best Heal, not Best Crit or Best Hit
     return r[k] and r[k].amt or 0
   end
   if DB.sort == "pct" then DB.sort = "crit" end   -- the old Crit % sort
@@ -399,8 +411,13 @@ local function Row(i)
     Tip:SetOwner(self, "ANCHOR_RIGHT")
     -- (1.1.1) one block per record: the number on the right, then Target / Where / When lined up under it
     GameTooltip:AddLine((d.pet and (Tr("Pet") .. ": ") or "") .. Nice(d.name), GOLD[1], GOLD[2], GOLD[3])
-    for _, s in ipairs({ { "crit", "Best Crit", { 1, 0.82, 0 } }, { "hit", "Best Hit", { 1, 1, 1 } } }) do
-      local b = d[s[1]]
+    local blocks = { { "crit", "Best Crit", { 1, 0.82, 0 } }, { "hit", "Best Hit", { 1, 1, 1 } } }
+    if d.heal then
+      local hb, wasCrit = BestHeal(d)
+      blocks = { { hb, wasCrit and "Best Heal (Crit)" or "Best Heal", { 0.4, 1, 0.47 } } }
+    end
+    for _, s in ipairs(blocks) do
+      local b = type(s[1]) == "table" and s[1] or d[s[1]]
       if b then
         GameTooltip:AddLine(" ")
         GameTooltip:AddDoubleLine(Tr(s[2]), Commas(b.amt), 1, 1, 1, s[3][1], s[3][2], s[3][3])
@@ -421,8 +438,10 @@ Refresh = function()
   local list = List()
   for _, b in ipairs(win.filters) do b:SetOn(DB.filter == b.value) end
   for _, h in ipairs(win.heads) do
-    -- (1.1.5) fixed colors that match the numbers under them: Best Hit white, everything else gold
-    if h.key == "hit" then h.label:SetTextColor(1, 1, 1) else h.label:SetTextColor(GOLD[1], GOLD[2], GOLD[3]) end
+    -- (1.1.5) fixed colors that match the numbers under them: Best Hit white, Best Heal green, everything else gold
+    if h.key == "hit" then h.label:SetTextColor(1, 1, 1)
+    elseif h.key == "heal" then h.label:SetTextColor(0.4, 1, 0.47)
+    else h.label:SetTextColor(GOLD[1], GOLD[2], GOLD[3]) end
   end
   win.who:SetText((UnitName("player") or "") .. "  ·  " .. Tr("Level") .. " " .. (UnitLevel("player") or ""))
   for i, d in ipairs(list) do
@@ -430,8 +449,16 @@ Refresh = function()
     r.data = d
     r.icon:SetTexture(d.icon)
     r.cols.name:SetText((d.pet and ("|cff9fd6ff" .. Tr("Pet") .. ":|r ") or "") .. (d.heal and "|cff66ff77" or "") .. Nice(d.name) .. (d.heal and "|r" or ""))
-    r.cols.crit:SetText(d.crit and ("|cffffd100" .. Commas(d.crit.amt) .. "|r") or "|cff666666-|r")
-    r.cols.hit:SetText(d.hit and Commas(d.hit.amt) or "|cff666666-|r")
+    local dash = "|cff666666-|r"
+    if d.heal then
+      local hb = BestHeal(d)
+      r.cols.crit:SetText(dash); r.cols.hit:SetText(dash)
+      r.cols.heal:SetText(hb and ("|cff66ff77" .. Commas(hb.amt) .. "|r") or dash)
+    else
+      r.cols.crit:SetText(d.crit and ("|cffffd100" .. Commas(d.crit.amt) .. "|r") or dash)
+      r.cols.hit:SetText(d.hit and Commas(d.hit.amt) or dash)
+      r.cols.heal:SetText(dash)
+    end
     r:Show()
   end
   for i = #list + 1, #win.rows do win.rows[i]:Hide(); win.rows[i].data = nil end
@@ -497,6 +524,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() Toggle() end },
   },
   notes = {
+    { v = "1.2.0", "New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage" },
     { v = "1.1.5", "Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them" },
     { v = "1.1.4", "Removed the Crit % column. The window shows each ability's best crit and best hit" },
     { v = "1.1.3", "Auto Shot is tracked as Auto Shot now (it was counted as Melee), and a lot of hits that were being missed are counted. In a group, plain auto attack hits aren't counted, since they could be anyone's" },
