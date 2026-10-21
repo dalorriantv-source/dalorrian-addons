@@ -1,0 +1,24 @@
+## Interface: 16001
+## Title: Dalorrian's Classic Gear Compare
+## Notes: Hover any gear to see what it did in Classic: the stats Forever changed, its old Use, Equip and Chance on hit effects, and which gear is new in Forever. Type /gearcompare for settings.
+## Author: Dalorrian
+## Version: 1.0.0
+## IconTexture: Interface\Icons\INV_Helmet_03
+## AddonCompartmentFunc: ClassicGearCompare_OnCompartmentClick
+## SavedVariables: ClassicGearCompareDB, ClassicGearCompare_Lang
+## X-Credits: Classic item data from Classic Era game files via wago.tools
+
+Lang.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\ptBR.lua
+Locales\itIT.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+Help.lua
+Data.lua
+ClassicGearCompare.lua
