@@ -51,4 +51,5 @@ ns.LOCALES.koKR = function() return {
   ["Classic stats in tooltips are off"] = "툴팁의 클래식 능력치가 꺼졌습니다",
   ["First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them"] = "첫 출시: 장비에 마우스를 올리면 클래식에서 어땠는지 볼 수 있습니다. Forever에서 바뀐 능력치는 색으로 표시되고, Forever에서 바뀐 경우 예전 효과(사용 효과, 착용 효과, 적중 시 발동)도 표시됩니다",
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "Forever 신규 장비는 그렇게 표시됩니다. 바뀌지 않은 장비는 아무것도 추가로 표시하지 않습니다",
+  ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "예전 착용 효과를 Forever가 이제 능력치(주문력 등)로 보여 주는 장비는, 실제로 바뀐 게 없으면 더 이상 바뀐 것으로 표시되지 않습니다",
 } end

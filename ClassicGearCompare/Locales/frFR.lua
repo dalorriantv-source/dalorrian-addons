@@ -47,4 +47,5 @@ ns.LOCALES.frFR = function() return {
   ["Classic stats in tooltips are off"] = "Les stats Classic dans les infobulles sont désactivées",
   ["First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them"] = "Première version : survolez une pièce d'équipement pour voir ce qu'elle faisait dans Classic. Les stats modifiées par Forever sont colorées, et ses anciens effets (Utiliser, Équipé, Chances quand vous touchez) s'affichent quand Forever les a changés",
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "L'équipement nouveau dans Forever l'indique. L'équipement inchangé n'affiche rien de plus",
+  ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "L'équipement dont l'ancien effet Équipé est maintenant affiché par Forever comme une stat (comme la puissance des sorts) n'apparaît plus comme modifié quand rien n'a changé",
 } end

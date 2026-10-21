@@ -51,4 +51,5 @@ ns.LOCALES.ptBR = function() return {
   ["Classic stats in tooltips are off"] = "Os atributos do Classic nas dicas estão desativados",
   ["First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them"] = "Primeira versão: passe o mouse sobre qualquer equipamento para ver o que ele fazia no Classic. Os atributos que o Forever mudou ficam coloridos, e os efeitos antigos (Uso, Equipado, Chance ao acertar) aparecem quando o Forever os mudou",
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "Equipamentos novos no Forever avisam. Equipamentos sem mudanças não mostram nada a mais",
+  ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "Equipamentos cujo antigo efeito de Equipado agora o Forever mostra como atributo (como Poder Mágico) não aparecem mais como alterados quando nada mudou",
 } end

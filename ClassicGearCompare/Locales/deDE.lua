@@ -47,4 +47,5 @@ ns.LOCALES.deDE = function() return {
   ["Classic stats in tooltips are off"] = "Classic-Werte in Tooltips sind aus",
   ["First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them"] = "Erste Version: Fahre über ein Ausrüstungsteil, um zu sehen, was es in Classic tat. Von Forever geänderte Werte sind eingefärbt, und alte Effekte (Benutzen, Anlegen, Trefferchance) erscheinen, wenn Forever sie geändert hat",
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "Ausrüstung, die neu in Forever ist, wird so markiert. Unveränderte Ausrüstung zeigt nichts zusätzlich",
+  ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "Ausrüstung, deren alten Anlegen-Effekt Forever jetzt als Wert anzeigt (etwa Zaubermacht), gilt nicht mehr als geändert, wenn sich nichts geändert hat",
 } end

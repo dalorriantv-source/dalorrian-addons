@@ -140,8 +140,9 @@ local function AddLines(tt, link)
     seen[k] = true
     keys[#keys + 1] = k
   end
+  -- (1.0.1) only the stats Classic had are compared. Forever counts some old Equip effects as stats
+  -- (Spell Power, Attack Power and the like): those aren't changes, and changed effects show below anyway.
   for k in pairs(c.stats) do Want(k) end
-  for k, v in pairs(live) do if type(v) == "number" and v ~= 0 then Want(k) end end
   table.sort(keys, function(a, b)
     local ra, rb = RANK[a] or 99, RANK[b] or 99
     if ra ~= rb then return ra < rb end
@@ -219,6 +220,7 @@ ns.HelpConfig = {
       get = function() return DB.newLine and true or false end, set = function(v) DB.newLine = v end },
   },
   notes = {
+    { v = "1.0.1", "Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed" },
     { v = "1.0.0", "First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them",
       "Gear that's new in Forever says so. Gear that didn't change shows nothing extra" },
   },

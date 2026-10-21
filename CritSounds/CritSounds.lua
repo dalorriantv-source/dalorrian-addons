@@ -31,6 +31,8 @@ end
 -- (1.1.0) the Dalorrian Pack ships with the addon: Dalorrian's own crit lines
 CritSounds_AddPack("Dalorrian Pack", "Interface\\AddOns\\CritSounds\\Sounds\\dalorrian", { "all_day", "boing", "boom", "booty",
   "crit_snozeberries", "critcritcrit", "damage", "gewww", "ho_yeh", "nice", "schwing", "skeet" })
+CritSounds_AddPack("Halo Pack", "Interface\\AddOns\\CritSounds\\Sounds\\DALOHCRIT", { "DACLONICE", "DALCOITY", "DALCOOVER", "DALCOUNF", "DALOAC", "DALOCOKIL", "DALOCTRIPPLE", "DALODOUBLE", "DALOEX", "DALOGAM", "DALOYO" })
+CritSounds_AddPack("Wow Pack", "Interface\\AddOns\\CritSounds\\Sounds\\DALOWOW", { "DALOW2024", "DALOW292", "DALOWOW", "DALOWOW2", "DALOWOW3", "DALOWOWWW" })
 -- (1.4.1) packs made of the game's own sounds: every player already has them, one at random each crit.
 -- Names are looked up in SOUNDKIT when it has them; the numbers are the same sounds by id.
 local function AddGamePack(label, sounds)
@@ -221,7 +223,10 @@ end
 
 -- (1.3.0) Crit Sounds draws every hit, so the game's own damage numbers are switched off (they'd show twice).
 -- Your old setting is kept and put back if you pick The Game's, or turn Crit Sounds or its numbers off.
-local function Replacing() return DB and DB.replace and DB.numbers and not DB.off end
+-- (1.4.5) in a group the game draws your normal hits (it only ever shows yours): Forever doesn't tell addons
+-- whose hit a mob took, and with party members on the same mob there's no telling yours from theirs
+local function Grouped() local ok, g = pcall(IsInGroup); return ok and g and true or false end
+local function Replacing() return DB and DB.replace and DB.numbers and not DB.off and not Grouped() end
 -- (1.3.4) newer clients keep these under "_v2" names, and DoT ticks and pet hits have their own: all of them
 -- go off, or your numbers show twice
 local FCT = { "floatingCombatTextCombatDamage", "floatingCombatTextCombatLogPeriodicSpells",
@@ -388,6 +393,161 @@ local function Repeat(amount, flag, unit)
   recentHits[key] = now
   return false
 end
+-- (1.4.5) whose fight is it? Asked of the mob's threat list, the way other combat text addons on Forever do it.
+--   "yes"  you or your pet are on it and nobody else in your group is
+--   "wait" nobody is on it yet (the first hit of a pull)
+--   "shared" someone else in your group is on it too (or the game hid the answer): your own swings and casts decide
+--   "no"   someone outside your group tagged it
+local function Get(f, ...)
+  if not f then return nil end
+  local ok, v = pcall(f, ...)
+  if not ok then return nil end
+  if issecretvalue and issecretvalue(v) then return "secret" end
+  return v
+end
+local fights = {}   -- the last answer for each mob, for the killing blow (a dead mob has no threat list)
+local function Whose(unit, guid, second)
+  local now = GetTime()
+  local last = guid and fights[guid]
+  if Get(UnitIsDead, unit) == true then
+    if last and last.v ~= "wait" and now - last.t < 10 then return last.v end
+    if Get(UnitIsTapDenied, unit) == true then return "no" end
+    return Grouped() and "shared" or "yes"
+  end
+  if last and now - last.t < 0.5 and last.v ~= "wait" then return last.v end
+  local v
+  if Get(UnitIsTapDenied, unit) == true then
+    v = "no"
+  else
+    local mine, hidden = false, false
+    for _, who in ipairs({ "player", "pet" }) do
+      local s = Get(UnitThreatSituation, who, unit)
+      if s == "secret" then hidden = true elseif s ~= nil then mine = true end
+    end
+    local others = false
+    if Grouped() then
+      local raid = IsInRaid and IsInRaid()
+      local n = raid and (GetNumGroupMembers() or 0) or 4
+      for i = 1, n do
+        for _, who in ipairs(raid and { "raid" .. i, "raidpet" .. i } or { "party" .. i, "partypet" .. i }) do
+          if Get(UnitExists, who) == true and Get(UnitIsUnit, who, "player") ~= true and Get(UnitIsUnit, who, "pet") ~= true then
+            local s = Get(UnitThreatSituation, who, unit)
+            if s == "secret" then hidden = true elseif s ~= nil then others = true end
+          end
+          if others then break end
+        end
+        if others then break end
+      end
+    end
+    if others then v = "shared"
+    elseif hidden then v = (not Grouped() and unit == "target") and "yes" or "shared"   -- solo, your own target is yours
+    elseif mine then v = "yes"
+    else v = second and "shared" or "wait" end
+  end
+  if guid then
+    fights[guid] = { v = v, t = now }
+    for k, f in pairs(fights) do if now - f.t > 30 then fights[k] = nil end end
+  end
+  return v
+end
+-- (1.4.5) on a mob your group shares, a hit is yours when one of your own actions lines up with it, the way
+-- the other crit addons on Forever do it, with each action owning one hit:
+--   * a melee swing (the game says when you swing) owns one physical hit on your target that lands within a
+--     second, plus a same-moment proc like a Seal
+--   * a spell you or your pet cast owns one hit of its school on the mob it was cast at: right away for melee
+--     abilities, within 3 seconds for anything that flies. An instant area spell owns a hit on every mob it lands on
+--   * while you channel, hits of the channel's school on its target are yours
+-- A party member's hit that lands in the same instant can still slip through, but never more than one per
+-- action of yours.
+local swings, casts, channel = {}, {}, nil
+local function Prune(list, now, keep) while list[1] and now - list[1].t > keep do table.remove(list, 1) end end
+local MAGIC = { 2, 4, 8, 16, 32, 64 }   -- holy, fire, nature, frost, shadow, arcane
+-- which magic schools a spell's text names, in the client's language ("Fire damage", "Feuerschaden")
+local function Schools(desc)
+  local found = {}
+  if type(desc) ~= "string" or desc == "" or not (C_Spell and C_Spell.GetSchoolString) then return found end
+  for _, m in ipairs(MAGIC) do
+    local okS, word = pcall(C_Spell.GetSchoolString, m)
+    if okS and type(word) == "string" and word ~= "" and desc:find(word, 1, true) then found[m] = true end
+  end
+  return found
+end
+-- a spell that names a magic school can't own a hit of another one
+local function SchoolFits(c, school)
+  if not next(c.schools) then return true end
+  return c.schools[school] == true
+end
+local function OnCast(unit, id)
+  if id == nil or (issecretvalue and issecretvalue(id)) then return end
+  local now = GetTime()
+  Prune(casts, now, 3)
+  local harmful, desc, ranged = false, nil, false
+  pcall(function() harmful = C_Spell.IsSpellHarmful(id) and true or false end)
+  pcall(function() desc = C_Spell.GetSpellDescription(id) end)
+  pcall(function() local i = C_Spell.GetSpellInfo(id); ranged = i ~= nil and (i.maxRange or 0) > 5 end)
+  if issecretvalue and (issecretvalue(harmful) or issecretvalue(desc) or issecretvalue(ranged)) then harmful, desc, ranged = true, nil, true end
+  local schools = Schools(desc)
+  -- Arcane Explosion and the like aren't cast at anything: they own same-moment hits of their school.
+  -- Spells that are neither harmful nor name a school (buffs, totems, mounts) aren't attacks.
+  local area = not harmful
+  if area and not next(schools) then return end
+  local at
+  if not area then pcall(function() at = UnitGUID(unit == "pet" and "pettarget" or "target") end) end
+  casts[#casts + 1] = { t = now, guid = at, schools = schools, ranged = ranged, area = area, hit = {} }
+end
+local function OnRangedSwing()
+  local now = GetTime()
+  Prune(casts, now, 3)
+  local at
+  pcall(function() at = UnitGUID("target") end)
+  casts[#casts + 1] = { t = now, guid = at, schools = { }, ranged = true, hit = {} }   -- Auto Shot or Shoot: it still has to fly
+end
+local function OnSwing(...)
+  local ranged = (Enum and Enum.PlayerSwingType and Enum.PlayerSwingType.Ranged) or 2
+  for i = 1, select("#", ...) do if select(i, ...) == ranged then return OnRangedSwing() end end
+  local now = GetTime()
+  Prune(swings, now, 1.5)
+  swings[#swings + 1] = { t = now }
+end
+local function CastOwns(c, guid, physical, school, t, sameOnly)
+  local age = t - c.t
+  if age < -0.15 then return false end
+  local same = age <= 0.05
+  if sameOnly and not same then return false end
+  if not same and age > (c.ranged and 3 or 0.4) then return false end
+  if not SchoolFits(c, school) then return false end
+  local key = guid or "?"
+  if c.hit[key] then return false end
+  if c.area then
+    if physical or not same then return false end
+  elseif not (guid ~= nil and guid == c.guid and not c.used) then
+    if not (same and not physical) then return false end   -- an instant spell landing on more than one mob
+  end
+  c.hit[key] = true
+  if guid ~= nil and guid == c.guid then c.used = true end
+  return true
+end
+local function Claim(guid, onTarget, school, t)
+  local physical = school == 1 or school == nil
+  if channel and t <= channel.stop + 1 and not physical and guid == channel.guid and SchoolFits(channel, school) then
+    return true
+  end
+  -- 1) a spell from this very instant (Sinister Strike, Arcane Explosion)
+  for i = #casts, 1, -1 do if CastOwns(casts[i], guid, physical, school, t, true) then return true end end
+  -- 2) a melee swing
+  if onTarget then
+    for _, w in ipairs(swings) do
+      if t - w.t >= -0.15 and t - w.t <= 1 then
+        if physical and not w.used then w.used = t return true end
+        if not physical and w.used and math.abs(w.used - t) <= 0.05 and not w.proc then w.proc = true return true end   -- a Seal riding the swing
+      end
+    end
+  end
+  -- 3) a spell still on its way, newest first
+  for i = #casts, 1, -1 do if CastOwns(casts[i], guid, physical, school, t, false) then return true end end
+  return false
+end
+local Mine
 local function OnUnitCombat(unit, action, flag, amount, school)
   seen.uc = (seen.uc or 0) + 1
   local u = Which(unit)
@@ -398,14 +558,44 @@ local function OnUnitCombat(unit, action, flag, amount, school)
   if not hit then return end
   local okR, dup = pcall(Repeat, amount, flag, unit)
   if okR and dup then return end
-  if IsInGroup and IsInGroup() then
-    local okA, act = pcall(Acting)
-    if not (okA and act) then return end
+  -- (1.4.5) only hits on a mob that only you (and your pet) are fighting count. Forever doesn't say who
+  -- hit it, so the mob's threat list decides: anyone else on it, and the hit could be theirs.
+  local guid
+  pcall(function() guid = UnitGUID(u) end)
+  local okW, whose = pcall(Whose, u, guid)
+  if not okW then whose = "shared" end
+  if whose == "no" then seen.notMine = (seen.notMine or 0) + 1 return end
+  local t = GetTime()
+  local function Shared()
+    -- checked a moment later, once every swing and cast from this instant has come in
+    C_Timer.After(0, function()
+      local okC, mine = pcall(Claim, guid, u == "target", school, t)
+      if okC and mine then seen.claimed = (seen.claimed or 0) + 1; pcall(Mine, u, guid, crit, amount, school)
+      else seen.notMine = (seen.notMine or 0) + 1 end
+    end)
   end
+  if whose == "shared" then Shared() return end
+  if whose == "wait" then
+    -- the first hit of a pull can land before the threat list catches up: look again in a moment
+    C_Timer.After(0.2, function()
+      local same = false
+      pcall(function() same = guid ~= nil and UnitGUID(u) == guid end)   -- a nameplate can belong to another mob by now
+      if not same then return end
+      local ok2, again = pcall(Whose, u, guid, true)
+      if ok2 and again == "yes" then pcall(Mine, u, guid, crit, amount, school)
+      elseif ok2 and again == "shared" then
+        local okC, mine = pcall(Claim, guid, u == "target", school, t)
+        if okC and mine then seen.claimed = (seen.claimed or 0) + 1; pcall(Mine, u, guid, crit, amount, school)
+        else seen.notMine = (seen.notMine or 0) + 1 end
+      else seen.notMine = (seen.notMine or 0) + 1 end
+    end)
+    return
+  end
+  Mine(u, guid, crit, amount, school)
+end
+Mine = function(u, guid, crit, amount, school)
   if not crit then
     if Replacing() then
-      local guid
-      pcall(function() guid = UnitGUID(u) end)
       pcall(ShowSmall, amount, guid, school)
     end
     return
@@ -416,20 +606,37 @@ local function OnUnitCombat(unit, action, flag, amount, school)
   local shown = "?"
   pcall(function() shown = tostring(amount) end)
   seen.last = u .. " crit " .. shown
-  local guid
-  pcall(function() guid = UnitGUID(u) end)
   Crit(amount, false, guid)
 end
 local feed = CreateFrame("Frame")
 feed:SetScript("OnEvent", function(_, e, unit, a, b, c, d)
   if not DB or DB.off then return end
-  if e == "UNIT_SPELLCAST_SUCCEEDED" then acted = GetTime() return end
+  if e == "UNIT_SPELLCAST_SUCCEEDED" then
+    if unit == "player" then acted = GetTime() end
+    pcall(OnCast, unit, b)   -- unit, cast, spell
+    return
+  elseif e == "PLAYER_SWING" then pcall(OnSwing, unit, a, b) return
+  elseif e == "UNIT_SPELLCAST_CHANNEL_START" then
+    local desc, at
+    pcall(function() desc = C_Spell.GetSpellDescription(b) end)
+    pcall(function() at = UnitGUID("target") end)
+    channel = { stop = math.huge, schools = Schools(desc), guid = at }
+    return
+  elseif e == "UNIT_SPELLCAST_CHANNEL_STOP" then
+    if channel then channel.stop = GetTime() end
+    return
+  end
   local ok = pcall(OnUnitCombat, unit, a, b, c, d)
   if not ok then seen.ucHidden = (seen.ucHidden or 0) + 1 end
 end)
 local function WatchTarget()
   pcall(feed.RegisterEvent, feed, "UNIT_COMBAT")   -- every unit: your target and every nameplate
-  if feed.RegisterUnitEvent then pcall(feed.RegisterUnitEvent, feed, "UNIT_SPELLCAST_SUCCEEDED", "player") end
+  if feed.RegisterUnitEvent then
+    pcall(feed.RegisterUnitEvent, feed, "UNIT_SPELLCAST_SUCCEEDED", "player", "pet")
+    pcall(feed.RegisterUnitEvent, feed, "UNIT_SPELLCAST_CHANNEL_START", "player")
+    pcall(feed.RegisterUnitEvent, feed, "UNIT_SPELLCAST_CHANNEL_STOP", "player")
+  end
+  pcall(feed.RegisterEvent, feed, "PLAYER_SWING")   -- (1.4.5) your own melee swings
 end
 
 local MinimapButton   -- made further down, after the settings
@@ -437,6 +644,8 @@ local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("UNIT_PET")
+ev:RegisterEvent("GROUP_ROSTER_UPDATE")
+ev:RegisterEvent("PLAYER_REGEN_ENABLED")
 -- older clients still hand addons the combat log; Forever (which has C_DamageMeter) blocks asking for it
 if not C_DamageMeter then ev:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") end
 ev:SetScript("OnEvent", function(_, e, a1)
@@ -447,6 +656,8 @@ ev:SetScript("OnEvent", function(_, e, a1)
     CritSoundsDB = CritSoundsDB or {}
     DB = CritSoundsDB
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
+    -- (1.4.5) an early 1.4.5 test build switched Damage Numbers to the game's: put it back
+    if DB.gameNumbers145 then DB.gameNumbers145 = nil; DB.replace = true end
     -- (1.3.6) crit sizes went up a step: move an older pick up with them
     if not DB.size2 then
       DB.size2 = true
@@ -461,6 +672,8 @@ ev:SetScript("OnEvent", function(_, e, a1)
     pcall(GameNumbers)
   elseif e == "UNIT_PET" then
     pet = UnitGUID("pet")
+  elseif e == "GROUP_ROSTER_UPDATE" or e == "PLAYER_REGEN_ENABLED" then
+    if DB then pcall(GameNumbers) end   -- (1.4.5) joined or left a group: who draws your normal hits
   end
 end)
 
@@ -521,6 +734,9 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.5", "Only your hits and your pet's hits get numbers now. Forever doesn't tell addons who hit a mob, so Crit Numbers checks the mob's threat list: if anyone else is fighting it, their hits stay off your screen",
+      "In a group, your normal hits use the game's own numbers (they only ever show yours). Big crit numbers and crit sounds still play in dungeons: on a mob your group shares, a crit counts when it lines up with your own swing or spell" },
+    { v = "1.4.4", "New sound packs from Dalorrian under Sound: Halo Pack and Wow Pack" },
     { v = "1.4.3", "Crit Number Size now reads Big, Bigger and Huge" },
     { v = "1.4.2", "Shows up everywhere as Dalorrian's Crit Numbers (window, minimap button and chat)" },
     { v = "1.4.1", "More sound packs to pick from under Sound: Coin, Fanfare, Alert and Boom, made of the game's own sounds. Each plays one at random every crit, like the Dalorrian Pack" },
@@ -614,7 +830,7 @@ SlashCmdList.CRITSOUNDS = function(msg)
     print("  last crit: " .. tostring(seen.last))
     print("  chat lines read " .. (seen.lines or 0) .. ", unreadable " .. (seen.secret or 0) .. ", combat log tab " ..
       ((ChatFrame2 and ChatFrame2.IsShown and "found") or "missing") .. ", crits from chat " .. (seen.chat or 0))
-    print("  target feed: events " .. (seen.uc or 0) .. ", from nameplates " .. (seen.plates or 0) .. ", crits " .. (seen.ucCrits or 0) .. ", hidden " .. (seen.ucHidden or 0))
+    print("  target feed: events " .. (seen.uc or 0) .. ", from nameplates " .. (seen.plates or 0) .. ", crits " .. (seen.ucCrits or 0) .. ", hidden " .. (seen.ucHidden or 0) .. ", yours on shared mobs " .. (seen.claimed or 0) .. ", not yours " .. (seen.notMine or 0))
     print("  on " .. tostring(not DB.off) .. ", sound " .. tostring(DB.sound) .. " (" .. (p and p.key or "no pack") .. "), numbers " ..
       tostring(DB.numbers) .. ", packs " .. #PACKS .. ", you " .. tostring(me))
     return

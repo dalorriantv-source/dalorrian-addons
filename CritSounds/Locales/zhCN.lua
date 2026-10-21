@@ -102,4 +102,6 @@ ns.LOCALES.zhCN = function() return {
   ["Crit Color has more to pick from: Purple, Orange, Gold, Cyan, Red, Pink, White and Lime. Click it to step through them and see each one"] = "暴击颜色有更多选择：紫色、橙色、金色、青色、红色、粉色、白色和黄绿色。点击逐个切换查看",
   ["Bigger"] = "更大",
   ["Crit Number Size now reads Big, Bigger and Huge"] = "暴击数字大小现在显示为大、更大和超大",
+  ["Only your hits and your pet's hits get numbers now. Forever doesn't tell addons who hit a mob, so Crit Numbers checks the mob's threat list: if anyone else is fighting it, their hits stay off your screen"] = "现在只有你和你宠物的攻击会显示数字。Forever 不会告诉插件是谁打了怪物，所以 Crit Numbers 会查看怪物的仇恨列表：只要有其他人在和它战斗，他们的攻击就不会出现在你的屏幕上",
+  ["In a group, your normal hits use the game's own numbers (they only ever show yours). Big crit numbers and crit sounds still play in dungeons: on a mob your group shares, a crit counts when it lines up with your own swing or spell"] = "组队时，你的普通攻击使用游戏自带的数字（它只显示你的）。大号暴击数字和暴击音效在地下城里照常出现：在全队一起打的怪物上，只有和你自己的攻击或法术对得上的暴击才算",
 } end

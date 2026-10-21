@@ -51,4 +51,5 @@ ns.LOCALES.ruRU = function() return {
   ["Classic stats in tooltips are off"] = "Характеристики Classic в подсказках выключены",
   ["First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them"] = "Первая версия: наведите на любой предмет снаряжения, чтобы увидеть, что он давал в Classic. Характеристики, измененные в Forever, выделены цветом, а старые эффекты (Использование, Если на персонаже, Вероятность при попадании) показываются, если Forever их изменил",
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "Новое в Forever снаряжение помечено. Неизмененное снаряжение ничего дополнительно не показывает",
+  ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "Снаряжение, старый эффект «Если на персонаже» которого Forever теперь показывает как характеристику (например, силу заклинаний), больше не отмечается как измененное, если ничего не изменилось",
 } end
