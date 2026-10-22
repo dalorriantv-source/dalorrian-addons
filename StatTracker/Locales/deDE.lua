@@ -146,4 +146,5 @@ ns.LOCALES.deDE = function() return {
   ["A Gear Stats button on your character window turns those on and off"] = "Ein Knopf Ausrüstungswerte im Charakterfenster schaltet sie an und aus",
   ["Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count"] = "Die Wertprioritäten folgen den aktuellen WoW: Forever-Guides: Waffenschaden zuerst für Nahkämpfer und Jäger, Überlebensjäger kämpfen im Nahkampf, und Tempo und Waffenkunde zählen",
   ["Most Important Stats"] = "Wichtigste Werte",
+  ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Braucht weniger Speicher: Die Ausrüstungswerte im Charakterfenster werden jetzt aktualisiert, wenn sich deine Ausrüstung ändert, nicht jede Sekunde",
 } end

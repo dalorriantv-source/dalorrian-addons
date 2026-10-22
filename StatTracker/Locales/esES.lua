@@ -149,4 +149,5 @@ ns.LOCALES.esES = function() return {
   ["A Gear Stats button on your character window turns those on and off"] = "Un botón Estadísticas de equipo en la ventana del personaje las muestra u oculta",
   ["Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count"] = "Las prioridades siguen las guías actuales de WoW: Forever: el daño del arma primero para cuerpo a cuerpo y cazadores, los cazadores de Supervivencia van cuerpo a cuerpo, y la Celeridad y la Pericia cuentan",
   ["Most Important Stats"] = "Estadísticas más importantes",
+  ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Usa menos memoria: las estadísticas del equipo en la ventana del personaje ahora se actualizan cuando cambia tu equipo, no cada segundo",
 } end

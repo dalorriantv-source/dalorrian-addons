@@ -35,10 +35,13 @@ local ORDER = { DPS, ARMOR, "ITEM_MOD_STRENGTH_SHORT", "ITEM_MOD_AGILITY_SHORT",
 local RANK = {}
 for i, k in ipairs(ORDER) do RANK[k] = i end
 
-local cache = {}
+-- (1.0.2) capped: after 2000 different items it starts over, so a long session doesn't keep every item ever hovered
+local cache, cacheN = {}, 0
 local function Classic(id)
   local c = cache[id]
   if c ~= nil then return c or nil end
+  if cacheN >= 2000 then cache, cacheN = {}, 0 end
+  cacheN = cacheN + 1
   local raw = ns.CLASSIC and ns.CLASSIC[id]
   if not raw then cache[id] = false; return nil end
   c = { stats = {} }
@@ -62,19 +65,43 @@ local function Classic(id)
 end
 
 -- Classic effects in the player's language (English when a language has no text for one)
+-- (1.0.2) Data.lua carries a builder per language. Only yours and English are ever used (the language only
+-- changes with a reload), so the rest are dropped at login, and each builder is let go once its table is made.
 local fxLang, fxEnglish
-local function Effects(id)
+local function FxCode()
+  local code = (ns.L and ns.L.code) or (GetLocale and GetLocale()) or "enUS"
+  if code == "esMX" then code = "esES" end
   local all = ns.CLASSIC_FX
-  if not all then return nil end
+  if not (all and all[code]) then code = "enUS" end
+  return code
+end
+local function PruneFx()
+  local all = ns.CLASSIC_FX
+  if not all then return end
+  local keep = FxCode()
+  for code in pairs(all) do
+    if code ~= keep and code ~= "enUS" then all[code] = nil end
+  end
+end
+local function Effects(id)
   if not fxLang then
-    local code = (ns.L and ns.L.code) or (GetLocale and GetLocale()) or "enUS"
-    if code == "esMX" then code = "esES" end
-    local build = all[code] or all.enUS
+    local all = ns.CLASSIC_FX
+    if not all then return nil end
+    PruneFx()
+    local code = FxCode()
+    local build = all[code]
     fxLang = build and build() or {}
+    all[code] = nil
+    if code == "enUS" then fxEnglish = fxLang end   -- English is never built twice
+    if fxEnglish then ns.CLASSIC_FX = nil end
   end
   local fx = fxLang[id]
   if fx then return fx end
-  if not fxEnglish then fxEnglish = all.enUS and all.enUS() or {} end
+  if not fxEnglish then
+    local all = ns.CLASSIC_FX
+    fxEnglish = all and all.enUS and all.enUS() or {}
+    ns.CLASSIC_FX = nil
+  end
   return fxEnglish[id]
 end
 
@@ -220,6 +247,7 @@ ns.HelpConfig = {
       get = function() return DB.newLine and true or false end, set = function(v) DB.newLine = v end },
   },
   notes = {
+    { v = "1.0.2", "Uses less memory: only the Classic effect text for your language is kept loaded" },
     { v = "1.0.1", "Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed" },
     { v = "1.0.0", "First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them",
       "Gear that's new in Forever says so. Gear that didn't change shows nothing extra" },
@@ -295,6 +323,7 @@ ev:SetScript("OnEvent", function(_, e, a1)
     DB = ClassicGearCompareDB
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
   elseif e == "PLAYER_LOGIN" then
+    PruneFx()
     HookAll()
     pcall(MinimapButton)
   end

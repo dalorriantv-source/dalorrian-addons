@@ -66,4 +66,5 @@ ns.LOCALES.deDE = function() return {
   ["nothing"] = "nichts",
   ["opened %s: %s"] = "%s geöffnet: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "Eine ruhige Zeile im Chat nach jedem Schwung: was du geöffnet hast und was drin war, Gold inklusive",
+  ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "Speicherleck behoben und Taschenprüfungen beschleunigt. Gegenstände hören nicht mehr mitten in einer Sitzung auf, sich von selbst zu öffnen",
 } end

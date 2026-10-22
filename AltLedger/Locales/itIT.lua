@@ -117,4 +117,5 @@ ns.LOCALES.itIT = function() return {
   ["The All Characters total shows gold, silver and copper"] = "Il totale di tutti i personaggi mostra oro, argento e rame",
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "Nuove colonne Giocato e Professioni. Giocato si riempie da solo pochi secondi dopo l'accesso. Professioni mostra icona e livello di ogni professione principale",
   ["The window is a bit wider to fit them"] = "La finestra è un po' più larga per farle stare",
+  ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "Corretta una perdita di memoria: i nomi degli oggetti salvati vengono cancellati quando nessuno dei tuoi personaggi ha più quell'oggetto",
 } end

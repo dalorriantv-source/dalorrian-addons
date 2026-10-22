@@ -79,4 +79,5 @@ ns.LOCALES.ruRU = function() return {
   ["Shift-drag any roll bar to move them all"] = "Shift-перетаскивание любой полоски двигает их все",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Первая версия: чистые полоски Нужно, Не откажусь и Отказаться, которые можно поставить куда угодно",
   ["Settings rows with four choices fit inside the window now"] = "Строки настроек с четырьмя вариантами теперь помещаются в окно",
+  ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Исправлена утечка памяти: броски, прочитанные из чата, освобождаются, когда закрываются их полосы",
 } end

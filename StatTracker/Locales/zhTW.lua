@@ -149,4 +149,5 @@ ns.LOCALES.zhTW = function() return {
   ["A Gear Stats button on your character window turns those on and off"] = "角色視窗上的裝備屬性按鈕可以開啟或關閉",
   ["Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count"] = "屬性優先順序參照最新的 WoW: Forever 指南：近戰和獵人武器傷害優先，生存獵人改為近戰，加速和熟練也計算在內",
   ["Most Important Stats"] = "最重要的屬性",
+  ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "佔用更少記憶體：角色視窗上的裝備屬性現在只在裝備變化時更新，而不是每秒更新",
 } end

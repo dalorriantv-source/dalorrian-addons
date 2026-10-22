@@ -78,4 +78,5 @@ ns.LOCALES.zhTW = function() return {
   ["Shift-drag any roll bar to move them all"] = "Shift+拖曳任一擲骰條即可移動全部",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "首個版本：可放在任何位置的簡潔需求、貪婪、放棄條",
   ["Settings rows with four choices fit inside the window now"] = "有四個選項的設定列現在不會超出視窗了",
+  ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "修正了記憶體洩漏：從聊天中讀取的擲骰結果會在其進度條關閉後釋放",
 } end

@@ -62,6 +62,7 @@ end
 -- one roll bar: icon, name, Need / Greed / Disenchant / Pass, a timer draining along the bottom
 ---------------------------------------------------------------------------
 local bars, shown = {}, {}
+local rolls = {}   -- item name -> player -> { kind, roll }   (1.1.2) up here so Close can empty it
 local CHOICES = {
   { key = "need", id = 1, tex = "Interface\\Buttons\\UI-GroupLoot-Dice", tip = NEED or "Need" },
   { key = "greed", id = 2, tex = "Interface\\Buttons\\UI-GroupLoot-Coin", tip = GREED or "Greed" },
@@ -82,6 +83,9 @@ local function Close(b)
   b:Hide()
   b.rollID, b.test, b.result, b.picked, b.won = nil, nil, nil, nil, nil
   for i, s in ipairs(shown) do if s == b then table.remove(shown, i) break end end
+  -- (1.1.2) no bars left: nothing can use the rolls read from chat any more. Before, they were only let go
+  -- when a matching "won" line came in, so items nobody won (or that you never saw) piled up all session
+  if #shown == 0 then wipe(rolls) end
   Layout()
 end
 
@@ -356,7 +360,6 @@ local ROLLED = {
   { Pattern(LOOT_ROLL_ROLLED_DE), ROLL_DISENCHANT or "Disenchant" },
 }
 local WON, YOUWON, ALLPASS = Pattern(LOOT_ROLL_WON), Pattern(LOOT_ROLL_YOU_WON), Pattern(LOOT_ROLL_ALL_PASSED)
-local rolls = {}   -- item name -> player -> { kind, roll }
 local function ItemName(s) return s and (s:match("%[(.-)%]") or s) end
 local function BarFor(name)
   for _, b in ipairs(shown) do if not b.test and b.itemName == name and (b.result or b.picked or b.rollID) then return b end end
@@ -367,6 +370,7 @@ local function OnRollChat(msg)
     local c = Match(r[1], msg)   -- "Need Roll - 87 for [item] by Stabby"
     if c then
       local item = ItemName(c[2])
+      if not BarFor(item) then return end   -- (1.1.2) only kept for a roll that has a bar to show it on
       rolls[item] = rolls[item] or {}
       rolls[item][c[3]] = { kind = r[2], roll = tonumber(c[1]) }
       return
@@ -495,6 +499,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.LOOTROLLS("test") end },
   },
   notes = {
+    { v = "1.1.2", "Fixed a memory leak: rolls read from chat are let go once their bars close" },
     { v = "1.1.1", "Settings rows with four choices fit inside the window now" },
     { v = "1.1.0", "After a roll the bar stays up a few seconds with who won and what they rolled. Pick how long under Result Stays", "A Settings & Help window, a minimap button and 10 languages" },
     { v = "1.0.5", "Shift-drag any roll bar to move them all" },

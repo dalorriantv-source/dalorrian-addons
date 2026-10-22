@@ -118,4 +118,5 @@ ns.LOCALES.ruRU = function() return {
   ["The All Characters total shows gold, silver and copper"] = "Итог по всем персонажам показывает золото, серебро и медь",
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "Новые столбцы «Наиграно» и «Профессии». «Наиграно» заполняется само через несколько секунд после входа. «Профессии» показывает значок и навык каждой основной профессии",
   ["The window is a bit wider to fit them"] = "Окно стало чуть шире, чтобы всё поместилось",
+  ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "Исправлена утечка памяти: сохранённые названия предметов удаляются, когда ни у одного из твоих персонажей больше нет этого предмета",
 } end

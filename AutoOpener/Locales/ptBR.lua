@@ -70,4 +70,5 @@ ns.LOCALES.ptBR = function() return {
   ["nothing"] = "nada",
   ["opened %s: %s"] = "aberto %s: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "Uma linha discreta no chat depois de cada leva: o que você abriu e o que saiu, ouro incluído",
+  ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "Corrigido um vazamento de memória e as verificações das bolsas ficaram mais rápidas. Os itens não param mais de abrir sozinhos no meio da sessão",
 } end

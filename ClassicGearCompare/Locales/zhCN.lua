@@ -51,4 +51,5 @@ ns.LOCALES.zhCN = function() return {
   ["First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them"] = "首个版本：将鼠标悬停在任意装备上，查看它在经典旧世中的效果。Forever 改动过的属性会以颜色标出，如果 Forever 改动了它的旧效果（使用、装备、击中时可能），也会显示出来",
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "Forever 新增的装备会注明。未改动的装备不会显示任何额外内容",
   ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "Forever 现在把旧的装备效果显示为属性（如法术强度）的装备，如果实际没有改动，不再显示为已改动",
+  ["Uses less memory: only the Classic effect text for your language is kept loaded"] = "占用更少内存：只保留你所用语言的经典旧世效果文本",
 } end

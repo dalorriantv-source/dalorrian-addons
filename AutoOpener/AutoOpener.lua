@@ -13,7 +13,21 @@ local Tr = ns.Tr or function(s) return s end
 local function Say(msg) P("|cffffd100Auto Opener:|r " .. msg) end
 local Tip = ns.Tip or GameTooltip
 
-local tries, later   -- (1.1.1) set up with the auto opening further down
+local later   -- (1.1.1) set up with the auto opening further down
+-- (1.2.1) item IDs whose tooltip neither opens nor shows a lock: skipped without reading the tooltip again.
+-- Only kept for this session, and only as big as the number of different items you've carried.
+local never = {}
+local function Cached(id)
+  if C_Item and C_Item.IsItemDataCachedByID then
+    local ok, c = pcall(C_Item.IsItemDataCachedByID, id)
+    if ok then return c and true or false end
+  end
+  if GetItemInfo then
+    local ok, name = pcall(GetItemInfo, id)
+    return ok and name ~= nil
+  end
+  return false
+end
 local GetInfo = C_Container and C_Container.GetContainerItemInfo
 local NumSlots = (C_Container and C_Container.GetContainerNumSlots) or GetContainerNumSlots
 local LOCKED_TEXT = LOCKED or "Locked"
@@ -55,13 +69,17 @@ local function Openable(bag, slot)
     id = link and tonumber(link:match("item:(%d+)"))
   end
   if not id then return end
-  if DB.skip[id] or (later and later[id]) then return end
+  if DB.skip[id] or (later and later[id]) or never[id] then return end
   local lines = TooltipLines(bag, slot)
   local opens, locked = hasLoot and true or false, false
   for _, t in ipairs(lines) do
     if t == OPEN_TEXT then opens = true end
     if t == LOCKED_TEXT then locked = true end
   end
+  -- (1.2.1) a plain item: remember it, so the next bag change doesn't read its tooltip again. Only once the
+  -- item's info has loaded and the tooltip came back whole (right at login it can still be half empty).
+  -- Lockboxes show the Locked line, so they keep being read until they're picked and open.
+  if not opens and not locked and #lines >= 2 and Cached(id) then never[id] = true end
   if opens and not locked then return id, icon, count or 1 end
 end
 
@@ -162,7 +180,9 @@ end
 ---------------------------------------------------------------------------
 local Use = (C_Container and C_Container.UseContainerItem) or UseContainerItem
 local lastTry, queued = 0, false
-tries, later = {}, {}
+later = {}
+-- (1.2.1) only the same stack failing to open on back-to-back tries counts, not tries spread over the session
+local lastKey, lastN = nil, 0
 local function Shown(f) return f and f.IsShown and f:IsShown() end
 local function Busy()
   return InCombatLockdown() or UnitIsDeadOrGhost("player") or (UnitOnTaxi and UnitOnTaxi("player"))
@@ -240,13 +260,16 @@ AutoOpen = function()
   local wait = 0.6 - (GetTime() - lastTry)
   if wait > 0 then queued = true; C_Timer.After(wait, AutoOpen) return end
   local first = Scan()
-  if not first then return end
+  if not first then lastKey, lastN = nil, 0 return end   -- (1.2.1) all opened: the next one starts fresh
   -- (1.1.1) something that won't open yet (a gift before its day, say) is left alone for the rest of the session
   -- instead of being tried over and over
   local key = first.bag .. ":" .. first.slot .. ":" .. first.id .. ":" .. (first.count or 1)   -- a stack going down is progress
-  tries[key] = (tries[key] or 0) + 1
-  if tries[key] > 2 then
+  -- (1.2.1) counted only while the very same stack is still sitting there try after try: the old per-key
+  -- count was never cleared, so a new item landing in a slot an old one had used could be given up on
+  if key == lastKey then lastN = lastN + 1 else lastKey, lastN = key, 1 end
+  if lastN > 2 then
     later[first.id] = true
+    lastKey, lastN = nil, 0
     queued = true; C_Timer.After(0.3, AutoOpen)
     return
   end
@@ -330,6 +353,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.2.1", "Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session" },
     { v = "1.2.0", "One quiet line in chat after a batch: what you opened and what came out, gold included" },
     { v = "1.1.1", "Something that can't be opened yet is left alone instead of being tried again and again" },
     { v = "1.1.0", "Opens everything by itself, one after another, whenever you're out of combat. Turn Open Automatically off to get the button back" },

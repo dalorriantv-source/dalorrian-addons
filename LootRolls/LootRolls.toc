@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Loot Rolls
 ## Notes: Clean Need, Greed and Pass bars you can put anywhere: shift-drag any bar to move them. After a roll, see who won. Type /rolls help for settings.
 ## Author: Dalorrian
-## Version: 1.1.1
+## Version: 1.1.2
 ## IconTexture: Interface\Icons\INV_Misc_Dice_01
 ## AddonCompartmentFunc: LootRolls_OnCompartmentClick
 ## SavedVariables: LootRollsDB, LootRolls_Lang

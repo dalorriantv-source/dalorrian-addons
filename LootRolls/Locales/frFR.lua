@@ -75,4 +75,5 @@ ns.LOCALES.frFR = function() return {
   ["Shift-drag any roll bar to move them all"] = "Maj-glisser n'importe quelle barre de jet les déplace toutes",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Première version : des barres nettes Besoin, Cupidité et Passer à placer où tu veux",
   ["Settings rows with four choices fit inside the window now"] = "Les lignes de réglages à quatre choix tiennent maintenant dans la fenêtre",
+  ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Correction d'une fuite de mémoire : les jets lus dans le chat sont libérés dès que leurs barres se ferment",
 } end

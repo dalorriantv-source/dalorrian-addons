@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Classic Gear Compare
 ## Notes: Hover any gear to see what it did in Classic: the stats Forever changed, its old Use, Equip and Chance on hit effects, and which gear is new in Forever. Type /gearcompare for settings.
 ## Author: Dalorrian
-## Version: 1.0.1
+## Version: 1.0.2
 ## IconTexture: Interface\Icons\INV_Helmet_03
 ## AddonCompartmentFunc: ClassicGearCompare_OnCompartmentClick
 ## SavedVariables: ClassicGearCompareDB, ClassicGearCompare_Lang

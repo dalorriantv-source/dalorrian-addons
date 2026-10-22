@@ -118,4 +118,5 @@ ns.LOCALES.koKR = function() return {
   ["The All Characters total shows gold, silver and copper"] = "모든 캐릭터 합계가 골드, 실버, 코퍼로 보입니다",
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "플레이 시간과 전문 기술 열이 생겼습니다. 플레이 시간은 접속 몇 초 뒤 자동으로 채워집니다. 전문 기술은 주 전문 기술의 아이콘과 숙련도를 보여 줍니다",
   ["The window is a bit wider to fit them"] = "열이 들어가도록 창이 조금 넓어졌습니다",
+  ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "메모리 누수 수정: 어떤 캐릭터도 더 이상 가지고 있지 않은 아이템의 저장된 이름은 삭제됩니다",
 } end

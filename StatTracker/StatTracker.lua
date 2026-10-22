@@ -19,12 +19,14 @@ local ICON = "Interface\\Icons\\INV_Misc_Note_01"
 -- call goes through Safe: anything it can't read comes back nil, and a nil stat is simply not shown.
 ---------------------------------------------------------------------------
 local function Secret(v) return issecretvalue and issecretvalue(v) end
+local function SafeRet(ok, ...)
+  if not ok then return nil end
+  if issecretvalue then for i = 1, select("#", ...) do if Secret((select(i, ...))) then return nil end end end
+  return ...
+end
 local function Safe(fn, ...)
   if type(fn) ~= "function" then return nil end
-  local r = { pcall(fn, ...) }
-  if not r[1] then return nil end
-  for i = 2, #r do if Secret(r[i]) then return nil end end
-  return unpack(r, 2, #r)
+  return SafeRet(pcall(fn, ...))
 end
 local function G(name) return _G[name] end   -- a global that may not exist in this client
 local function Num(v) v = tonumber(v); if v and v == v and v ~= math.huge then return v end end
@@ -314,8 +316,9 @@ local function Row(i)
 end
 
 -- (1.1.0) every stat by key, so your spec can put them in its own order
-local function Lines(spec)
-  local ranged = spec and spec.ranged
+-- (1.1.1) built once for melee and once for ranged, not on every repaint (nothing in them changes)
+local linesFor = {}
+local function BuildLines(ranged)
   return {
     WDPS = ranged and { "Weapon DPS", RangedDPS, function(v) return v and Dec(v) end, "TIP_RangedDPS" }
       or { "Weapon DPS", MeleeDPS, function(v) return v and Dec(v) end, "TIP_MeleeDPS" },
@@ -345,6 +348,12 @@ local function Lines(spec)
     PARRY = { "Parry", function() return Num(Safe(GetParryChance)) end, Pct, "TIP_Parry" },
     BLOCK = { "Block", function() return Num(Safe(GetBlockChance)) end, Pct, "TIP_Block" },
   }
+end
+local function Lines(spec)
+  local ranged = (spec and spec.ranged) and true or false
+  local L = linesFor[ranged]
+  if not L then L = BuildLines(ranged); linesFor[ranged] = L end
+  return L
 end
 -- the rest, after your spec's stats
 local EXTRA = {
@@ -466,8 +475,8 @@ PaintGear = function()
 end
 ns.PaintGear = PaintGear
 
-local function Paint()
-  PaintGear()
+local Paint
+local function PaintPanel()
   if not (panel and panel:IsShown()) then return end
   local y, n = -34, 0
   local function Head(text)
@@ -509,13 +518,14 @@ local function Paint()
   -- your most important stats, best first
   local L = Lines(spec)
   local w = spec and spec.weights or {}
+  local isHunter = ClassToken() == "HUNTER"
   local keys = {}
   for k in pairs(L) do keys[#keys + 1] = k end
   table.sort(keys, function(a, b) local x, z = w[a] or 0, w[b] or 0; if x ~= z then return x > z end return a < b end)
   local top, rest = {}, {}
   for _, k in ipairs(keys) do
     -- a hunter's attack power on gear counts for shots too, but the melee number is not one to watch
-    local watch = not (k == "AP" and ClassToken() == "HUNTER")
+    local watch = not (k == "AP" and isHunter)
     -- a stat this client can't read (Expertise before gear has it) waits in More Stats instead of showing a dash
     local readable = k == "WDPS"
     if watch and (w[k] or 0) >= 0.5 and #top < 6 and not readable then
@@ -554,6 +564,7 @@ local function Paint()
   for i = n + 1, #rows do rows[i]:Hide() end
   panel:SetHeight(-y + 6)
 end
+Paint = function() PaintGear(); PaintPanel() end
 
 local function Place()
   if not panel then return end
@@ -594,8 +605,9 @@ local function Build()
   local line = panel:CreateTexture(nil, "ARTWORK"); line:SetTexture(W); line:SetVertexColor(GOLD[1], GOLD[2], GOLD[3], 0.35)
   line:SetPoint("TOPLEFT", 8, -28); line:SetPoint("TOPRIGHT", -8, -28); line:SetHeight(1)
   -- speed changes as you move, and durability as you fight: a light refresh every second while it's open
+  -- (1.1.1) the tick repaints this panel only. Gear labels repaint on gear, stat and item events and when the window opens
   local acc = 0
-  panel:SetScript("OnUpdate", function(_, el) acc = acc + el; if acc >= 1 then acc = 0; Paint() end end)
+  panel:SetScript("OnUpdate", function(_, el) acc = acc + el; if acc >= 1 then acc = 0; PaintPanel() end end)
   panel:Hide()
 end
 
@@ -683,6 +695,7 @@ ns.HelpConfig = {
       get = function() return DB.gear and true or false end, set = function(v) DB.gear = v; Paint() end },
   },
   notes = {
+    { v = "1.1.1", "Uses less memory: the gear stats on your character window now update when your gear changes, not every second" },
     { v = "1.1.0", "Pick your spec (or let it read your talents) and the panel puts your most important stats first",
       "On your character window, each piece of gear shows its stats in green when they're good for your spec, gray when they're so-so and red when they're wrong for you",
       "A Gear Stats button on your character window turns those on and off",

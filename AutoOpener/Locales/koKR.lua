@@ -70,4 +70,5 @@ ns.LOCALES.koKR = function() return {
   ["nothing"] = "없음",
   ["opened %s: %s"] = "%s 열기: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "한 번에 연 뒤 채팅에 조용히 한 줄: 무엇을 열었고 무엇이 나왔는지, 골드 포함",
+  ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "메모리 누수를 수정하고 가방 확인을 더 빠르게 했습니다. 이제 세션 도중에 아이템이 저절로 열리지 않게 되는 일이 없습니다",
 } end

@@ -79,4 +79,5 @@ ns.LOCALES.ptBR = function() return {
   ["Shift-drag any roll bar to move them all"] = "Shift e arraste qualquer barra de rolagem para mover todas",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Primeira versão: barras limpas de Necessidade, Ganância e Passar que você coloca onde quiser",
   ["Settings rows with four choices fit inside the window now"] = "Linhas de configuração com quatro opções agora cabem na janela",
+  ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Corrigido um vazamento de memória: as rolagens lidas do chat são liberadas quando as barras delas fecham",
 } end

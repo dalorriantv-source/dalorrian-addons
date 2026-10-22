@@ -69,4 +69,5 @@ ns.LOCALES.zhCN = function() return {
   ["nothing"] = "无",
   ["opened %s: %s"] = "打开了 %s：%s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "每批打开后在聊天里安静地显示一行：打开了什么、得到了什么，包括金币",
+  ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "修复了内存泄漏，背包检查更快了。物品不会再在游戏中途停止自动打开",
 } end

@@ -150,4 +150,5 @@ ns.LOCALES.ruRU = function() return {
   ["A Gear Stats button on your character window turns those on and off"] = "Кнопка в окне персонажа включает и выключает характеристики снаряжения",
   ["Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count"] = "Приоритеты следуют текущим гайдам WoW: Forever: урон оружия первым для ближнего боя и охотников, охотники Выживания сражаются в ближнем бою, и скорость и мастерство учитываются",
   ["Most Important Stats"] = "Самые важные характеристики",
+  ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Расходует меньше памяти: характеристики снаряжения в окне персонажа теперь обновляются при смене снаряжения, а не каждую секунду",
 } end

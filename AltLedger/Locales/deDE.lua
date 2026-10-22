@@ -114,4 +114,5 @@ ns.LOCALES.deDE = function() return {
   ["The All Characters total shows gold, silver and copper"] = "Die Summe aller Charaktere zeigt Gold, Silber und Kupfer",
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "Neue Spalten Gespielt und Berufe. Gespielt füllt sich ein paar Sekunden nach dem Einloggen von selbst. Berufe zeigt Symbol und Fertigkeit jedes Hauptberufs",
   ["The window is a bit wider to fit them"] = "Das Fenster ist etwas breiter, damit sie passen",
+  ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "Speicherleck behoben: Gespeicherte Gegenstandsnamen werden gelöscht, sobald keiner deiner Charaktere den Gegenstand mehr hat",
 } end

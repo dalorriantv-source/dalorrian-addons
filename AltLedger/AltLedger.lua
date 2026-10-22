@@ -331,6 +331,31 @@ local function Sent()
 end
 local function Letters(c) return c.mail and c.mail.letters or 0 end
 
+-- (1.4.1) item names were saved for every item any character ever carried and never let go. Once per login,
+-- only the names of items one of your characters still has (bags, bank, equipped or mail) are kept.
+local function PruneNames()
+  if type(DB.names) ~= "table" or type(DB.chars) ~= "table" then return end
+  local keep = {}
+  for _, list in pairs(DB.chars) do
+    if type(list) == "table" then
+      for _, c in pairs(list) do
+        if type(c) == "table" then
+          local sets = { c.bags, c.bank, c.worn, type(c.mail) == "table" and c.mail.items or nil }
+          for i = 1, 4 do
+            local set = sets[i]
+            if type(set) == "table" then for id in pairs(set) do keep[tonumber(id) or id] = true end end
+          end
+        end
+      end
+    end
+  end
+  local gone = 0
+  for id in pairs(DB.names) do
+    if not keep[tonumber(id) or id] then DB.names[id] = nil; gone = gone + 1 end
+  end
+  return gone
+end
+
 -- (1.2.0) characters you haven't logged into since installing Alt Ledger: if Syndicator (Baganator's data
 -- addon) knows them, their class, gold, bags, bank, mail and gear come from there until you log in on them
 local function CountInto(t, into)
@@ -475,11 +500,12 @@ local function Chars()
 end
 
 -- every character holding an item: { { name, realm, class, bags, bank, worn, total }, ... }, grand total
+local EMPTY = {}   -- (1.4.1) shared and only ever read: no new table per character on every tooltip
 local function Holders(id)
   local out, total = {}, 0
   for realm, list in pairs(DB.chars) do
     for name, c in pairs(list) do
-      if not FactionOK(c) then c = {} end   -- the other side's characters don't count
+      if not FactionOK(c) then c = EMPTY end   -- the other side's characters don't count
       local b, k, w = c.bags and c.bags[id] or 0, c.bank and c.bank[id] or 0, c.worn and c.worn[id] or 0
       local m = c.mail and c.mail.items and c.mail.items[id] or 0
       local t = b + k + w + m
@@ -1003,6 +1029,7 @@ ev:SetScript("OnEvent", function(_, e, a1)
     -- item counts on tooltips: on, unless another addon already shows them
     if DB.tips == nil then DB.tips = not (Loaded("Syndicator") or Loaded("Altoholic") or Loaded("BagBrother") or Loaded("DataStore")) end
     Snapshot(); ScanProfs(); ScanBags()
+    pcall(PruneNames)   -- (1.4.1) after this character's bags are read, so what it carries now is kept
     if HasNewMail then C.mailNew = HasNewMail() and true or false end
     pcall(HookTooltips)
     pcall(WatchSends)
@@ -1055,6 +1082,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() Toggle("chars") end },
   },
   notes = {
+    { v = "1.4.1", "Fixed a memory leak: saved item names are cleared once none of your characters has that item" },
     { v = "1.4.0", "New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill", "The window is a bit wider to fit them" },
     { v = "1.3.1", "The All Characters total shows gold, silver and copper" },
     { v = "1.3.0", "Horde and Alliance apart: you see your own side, and the Faction button switches to the other side or both", "Find An Item lists one line per character, with where it is (bags, bank, mail, equipped) in its own column" },

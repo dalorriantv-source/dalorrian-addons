@@ -69,4 +69,5 @@ ns.LOCALES.zhTW = function() return {
   ["nothing"] = "無",
   ["opened %s: %s"] = "打開了 %s：%s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "每批打開後在聊天裡安靜地顯示一行：打開了什麼、得到了什麼，包括金幣",
+  ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "修正了記憶體洩漏，背包檢查更快了。物品不會再在遊戲中途停止自動開啟",
 } end

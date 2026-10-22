@@ -51,4 +51,5 @@ ns.LOCALES.esES = function() return {
   ["First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them"] = "Primera versión: pasa el ratón por cualquier pieza de equipo para ver qué hacía en Classic. Las estadísticas que Forever cambió aparecen coloreadas, y sus antiguos efectos (Uso, Equipar, Probabilidad al acertar) se muestran cuando Forever los cambió",
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "El equipo nuevo en Forever lo indica. El equipo sin cambios no muestra nada más",
   ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "El equipo cuyo antiguo efecto de Equipar ahora Forever muestra como estadística (como el poder con hechizos) ya no aparece como cambiado si no cambió nada",
+  ["Uses less memory: only the Classic effect text for your language is kept loaded"] = "Usa menos memoria: solo se mantiene cargado el texto de efectos de Classic de tu idioma",
 } end

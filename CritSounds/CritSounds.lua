@@ -182,8 +182,14 @@ end
 local CRIT_COLORS = { purple = { 0.72, 0.4, 1 }, orange = { 1, 0.6, 0.1 }, gold = { 1, 0.82, 0 },
   cyan = { 0.3, 0.9, 1 }, red = { 1, 0.2, 0.2 }, pink = { 1, 0.35, 0.8 }, white = { 1, 1, 1 }, lime = { 0.6, 1, 0.2 } }
 local function ShowNumber(amount, heal, guid)
+  -- (1.4.6) everything that can fail happens before a number frame leaves the pool: a frame taken and then
+  -- dropped on an error never came back, one lost frame per hit
+  if not holder:IsVisible() then return end   -- UI hidden (Alt+Z): numbers can't play out, so none are made
+  local okT, txt = pcall(function() return Commas(math.floor(amount + 0.5)) end)
+  if not okT or type(txt) ~= "string" then return end
+  local okP, plate = pcall(PlateFor, guid)
+  if not okP then plate = nil end
   local f = GetNum()
-  local plate = PlateFor(guid)
   f.anchor = plate or holder
   -- crits on the same mob stack upward a little so they don't sit on top of each other
   local same = 0
@@ -192,7 +198,7 @@ local function ShowNumber(amount, heal, guid)
   f.y = (plate and 0 or 120) + math.min(same, 4) * ((DB.size or 64) * 0.6)
   f.text:SetFont(NUMFONT, DB.size or 64, "THICKOUTLINE")
   if heal then f.text:SetTextColor(0.3, 1, 0.35) else f.text:SetTextColor(unpack(CRIT_COLORS[DB.critColor or "purple"] or CRIT_COLORS.purple)) end   -- (1.3.10) Crit Color
-  f.text:SetText(Commas(math.floor(amount + 0.5)))
+  f.text:SetText(txt)
   f.small = nil
   f.t = 0
   live[f] = true
@@ -204,15 +210,21 @@ end
 
 -- (1.3.0) a normal hit, small and plain like the game's: white for weapon hits, yellow for spells
 local function ShowSmall(amount, guid, school)
+  -- (1.4.6) everything that can fail happens before a number frame leaves the pool: a frame taken and then
+  -- dropped on an error never came back, one lost frame per hit
+  if not holder:IsVisible() then return end   -- UI hidden (Alt+Z): numbers can't play out, so none are made
+  local okT, txt = pcall(function() return Commas(math.floor(amount + 0.5)) end)
+  if not okT or type(txt) ~= "string" then return end
+  local okP, plate = pcall(PlateFor, guid)
+  if not okP then plate = nil end
   local f = GetNum()
-  local plate = PlateFor(guid)
   f.anchor = plate or holder
   f.small = true
   f.x = (math.random() * 2 - 1) * 26
   f.y = plate and 0 or 120
   f.text:SetFont(NUMFONT, DB.hitSize or 28, "OUTLINE")   -- (1.3.6) Hit Number Size
   if school and school ~= 1 then f.text:SetTextColor(1, 0.88, 0.25) else f.text:SetTextColor(1, 1, 1) end
-  f.text:SetText(Commas(math.floor(amount + 0.5)))
+  f.text:SetText(txt)
   f.t = 0
   live[f] = true
   f:SetAlpha(1)
@@ -734,6 +746,7 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.6", "Fixed a memory leak: number frames could be lost on hits where the game hides the damage amount" },
     { v = "1.4.5", "Only your hits and your pet's hits get numbers now. Forever doesn't tell addons who hit a mob, so Crit Numbers checks the mob's threat list: if anyone else is fighting it, their hits stay off your screen",
       "In a group, your normal hits use the game's own numbers (they only ever show yours). Big crit numbers and crit sounds still play in dungeons: on a mob your group shares, a crit counts when it lines up with your own swing or spell" },
     { v = "1.4.4", "New sound packs from Dalorrian under Sound: Halo Pack and Wow Pack" },

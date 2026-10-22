@@ -104,4 +104,5 @@ ns.LOCALES.zhTW = function() return {
   ["Crit Number Size now reads Big, Bigger and Huge"] = "暴擊數字大小現在顯示為大、更大和超大",
   ["Only your hits and your pet's hits get numbers now. Forever doesn't tell addons who hit a mob, so Crit Numbers checks the mob's threat list: if anyone else is fighting it, their hits stay off your screen"] = "現在只有你和你寵物的攻擊會顯示數字。Forever 不會告訴插件是誰打了怪物，所以 Crit Numbers 會查看怪物的仇恨列表：只要有其他人在和它戰鬥，他們的攻擊就不會出現在你的螢幕上",
   ["In a group, your normal hits use the game's own numbers (they only ever show yours). Big crit numbers and crit sounds still play in dungeons: on a mob your group shares, a crit counts when it lines up with your own swing or spell"] = "組隊時，你的普通攻擊使用遊戲本身的數字（它只顯示你的）。大號致命一擊數字和致命一擊音效在地城裡照常出現：在全隊一起打的怪物上，只有和你自己的攻擊或法術對得上的致命一擊才算",
+  ["Fixed a memory leak: number frames could be lost on hits where the game hides the damage amount"] = "修正了記憶體洩漏：在遊戲隱藏傷害數值的命中上，數字框架可能會遺失",
 } end

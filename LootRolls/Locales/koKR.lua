@@ -79,4 +79,5 @@ ns.LOCALES.koKR = function() return {
   ["Shift-drag any roll bar to move them all"] = "아무 주사위 바나 Shift-드래그하면 모두 이동",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "첫 출시: 어디든 둘 수 있는 깔끔한 입찰, 차비, 포기 바",
   ["Settings rows with four choices fit inside the window now"] = "선택지가 네 개인 설정 줄이 이제 창 안에 들어갑니다",
+  ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "메모리 누수 수정: 채팅에서 읽은 주사위 결과는 막대가 닫히면 비워집니다",
 } end

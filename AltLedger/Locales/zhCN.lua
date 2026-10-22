@@ -117,4 +117,5 @@ ns.LOCALES.zhCN = function() return {
   ["The All Characters total shows gold, silver and copper"] = "所有角色的总额显示金、银、铜",
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "新增游戏时间和专业技能两栏。游戏时间会在登录几秒后自动填好。专业技能显示每个主专业的图标和等级",
   ["The window is a bit wider to fit them"] = "窗口稍微加宽以放下它们",
+  ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "修复了内存泄漏：当你的角色都不再拥有某件物品时，会清除其保存的物品名称",
 } end

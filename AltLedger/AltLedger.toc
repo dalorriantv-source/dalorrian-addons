@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Alt Ledger
 ## Notes: Every character you play in one window: level, gold, rested XP, free bag space, professions and where you left them. Find any item across all of them. Type /alts to open it.
 ## Author: Dalorrian
-## Version: 1.4.0
+## Version: 1.4.1
 ## IconTexture: Interface\Icons\INV_Misc_GroupNeedMore
 ## AddonCompartmentFunc: AltLedger_OnCompartmentClick
 ## SavedVariables: AltLedgerDB, AltLedger_Lang

@@ -114,4 +114,5 @@ ns.LOCALES.frFR = function() return {
   ["The All Characters total shows gold, silver and copper"] = "Le total de tous les personnages affiche or, argent et cuivre",
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "Nouvelles colonnes Temps joué et Métiers. Temps joué se remplit tout seul quelques secondes après la connexion. Métiers montre l'icône et le niveau de chaque métier principal",
   ["The window is a bit wider to fit them"] = "La fenêtre est un peu plus large pour les accueillir",
+  ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "Correction d'une fuite de mémoire : les noms d'objets enregistrés sont effacés quand aucun de tes personnages n'a plus cet objet",
 } end

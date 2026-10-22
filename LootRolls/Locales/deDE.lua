@@ -75,4 +75,5 @@ ns.LOCALES.deDE = function() return {
   ["Shift-drag any roll bar to move them all"] = "Shift-Ziehen an einer Wurfleiste verschiebt alle",
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Erste Version: klare Leisten für Bedarf, Gier und Passen, die du überall hinlegen kannst",
   ["Settings rows with four choices fit inside the window now"] = "Einstellungszeilen mit vier Auswahlen passen jetzt ins Fenster",
+  ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Speicherleck behoben: Aus dem Chat gelesene Würfe werden freigegeben, sobald ihre Leisten schließen",
 } end

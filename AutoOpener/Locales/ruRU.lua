@@ -70,4 +70,5 @@ ns.LOCALES.ruRU = function() return {
   ["nothing"] = "ничего",
   ["opened %s: %s"] = "открыто %s: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "Одна тихая строка в чате после каждой партии: что открыто и что выпало, включая золото",
+  ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "Исправлена утечка памяти, проверка сумок стала быстрее. Предметы больше не перестают открываться сами посреди сеанса",
 } end

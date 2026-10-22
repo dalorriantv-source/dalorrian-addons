@@ -68,4 +68,5 @@ ns.LOCALES.esMX = function() return {
   ["nothing"] = "nada",
   ["opened %s: %s"] = "abierto %s: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "Una línea discreta en el chat tras cada tanda: lo que abriste y lo que salió, oro incluido",
+  ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "Corregida una fuga de memoria y las revisiones de bolsas son más rápidas. Los objetos ya no dejan de abrirse solos a mitad de una sesión",
 } end

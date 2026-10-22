@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Stat Tracker
 ## Notes: Pick your spec and see your most important stats first, where to upgrade next, and green, gray or red stats on every piece of gear. Type /stats to show it.
 ## Author: Dalorrian
-## Version: 1.1.0
+## Version: 1.1.1
 ## IconTexture: Interface\Icons\INV_Misc_Note_01
 ## AddonCompartmentFunc: StatTracker_OnCompartmentClick
 ## SavedVariables: StatTrackerDB, StatTracker_Lang
