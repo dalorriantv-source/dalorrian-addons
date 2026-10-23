@@ -18,9 +18,13 @@ local DEFAULTS = { volume = 100, margin = 5, scale = 1, sound = false, minLevel 
 -- Each pack's clips live in Sounds\<pack>\. More packs from Dalorrian are on the way.
 local PACKS = {
   dalorrian = { "careful", "hes_right_there", "hey_ya_ya_ya", "ooooo", "quiet", "tip_toe_dude", "watch_out" },
+  pack_meme_pack = { "DALOACK", "DALOBELL", "DALOCORE", "DALOENG", "DALOMOV", "DALOOBI", "DALOOMG", "DALOSPONG", "DALOTI", "DALOTYIG", "DALOWLOW" },
+  pack_halo_elite_pack = { "DALOLAUGH", "DALOLWORT", "DALONOOO", "DALOPAIN", "DALOTRYME" },
 }
 local SOUNDS = {
   { "Dalorrian Pack", "pack_dalorrian", { pack = "dalorrian" } },
+  { "Meme Pack", "pack_meme_pack", { pack = "pack_meme_pack", path = "Interface\\AddOns\\AggroAlert\\Sounds\\DALORRIAN MEME WARNING" } },
+  { "Halo Elite Pack", "pack_halo_elite_pack", { pack = "pack_halo_elite_pack", path = "Interface\\AddOns\\AggroAlert\\Sounds\\DALORRIAN_ELITE" } },
   -- (1.3.1) packs of the game's own sounds, one at random each warning
   { "Bell Pack", "pack_bells", { game = { 5274, 3081, 3175, 8960 } } },
   { "Horn Pack", "pack_horns", { game = { 44292, 8459, 37666 } } },
@@ -485,6 +489,7 @@ ns.HelpConfig = {
       set = function(v) SlashCmdList.AGGROALERT(v == "move" and "unlock" or "lock") end },
   },
   notes = {
+    { v = "1.3.2", "New sound packs from Dalorrian under Sound: Meme Pack and Halo Elite Pack" },
     { v = "1.3.1", "More sound packs under Sound: Bell, Horn and Alarm, made of the game's own sounds. Each plays one at random every warning, like the Dalorrian Pack" },
     { v = "1.3.0", "Elite mobs warn you a few meters sooner and say Elite on the warning, even at your own level" },
     { v = "1.2.0", "A Volume slider for the sound packs. The game's own sounds follow your Master volume" },
