@@ -4,6 +4,7 @@ WoW: Forever addons by Dalorrian. Each folder goes in `Interface\AddOns`.
 
 - Aggro Alert - a warning before you pull a mob
 - Auto Opener - opens clams, loot bags and crates for you
+- Blessing Button - one button that gives your group the right paladin blessings
 - Chat Copy - copy chat as plain text, clickable web links
 - Chat Saver - save your chat setup and load it on any character
 - Combo Bar - combo points and an energy tick bar
