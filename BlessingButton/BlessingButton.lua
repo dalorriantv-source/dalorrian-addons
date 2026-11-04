@@ -869,6 +869,13 @@ ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4)
     DB = BlessingButtonDB
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
     _G["BINDING_NAME_CLICK BlessingButtonCast:LeftButton"] = Tr("Cast the next blessing")
+    -- not a paladin: switch everything off. No button, no minimap icon, no messages, nothing running.
+    local _, class = UnitClass("player")
+    if class ~= "PALADIN" then
+      ev:UnregisterAllEvents()
+      ev:SetScript("OnUpdate", nil)
+      return
+    end
     if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
       C_ChatInfo.RegisterAddonMessagePrefix(PREFIX)
       C_ChatInfo.RegisterAddonMessagePrefix(PP_PREFIX)
@@ -936,6 +943,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.0.1", "Switches itself off on characters that aren't paladins: no button, no minimap icon, nothing running" },
     { v = "1.0.0", "First release: one button that buffs your group with the right blessings for WoW: Forever",
       "Paladins running it share the work out by themselves, with nothing to set up",
       "Shows only when someone needs one of your blessings. Bind a key in Key Bindings, AddOns",
@@ -971,7 +979,7 @@ local function PrintPlan()
 end
 
 MinimapButton = function()
-  if not Minimap or _G.BlessingButtonMinimapButton then return end
+  if not Minimap or _G.BlessingButtonMinimapButton or select(2, UnitClass("player")) ~= "PALADIN" then return end
   local b = CreateFrame("Button", "BlessingButtonMinimapButton", Minimap)
   b:SetSize(31, 31)
   b:SetFrameStrata("MEDIUM")
@@ -1015,11 +1023,12 @@ MinimapButton = function()
   b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
   Spot()
 end
-function BlessingButton_OnCompartmentClick() if ns.OpenHelp then ns.OpenHelp() end end
 
 SLASH_BLESSINGBUTTON1 = "/bless"
 SLASH_BLESSINGBUTTON2 = "/blessingbutton"
 SlashCmdList.BLESSINGBUTTON = function(msg)
+  local _, class = UnitClass("player")
+  if class ~= "PALADIN" then Say("this addon is for paladins. It stays off on your other characters.") return end
   local cmd = (msg or ""):lower():match("^(%S*)")
   if cmd == "plan" or cmd == "grid" then
     ns.ToggleGrid()
