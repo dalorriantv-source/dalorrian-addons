@@ -100,4 +100,5 @@ ns.LOCALES.frFR = function() return {
   ["who you bless"] = "qui vous bénissez",
   ["with the"] = "avec le",
   ["your blessings (%d paladins sharing)"] = "vos bénédictions (%d paladins se partagent)",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Maj-glisser déplace le bouton sans lancer de sort, et il reste là jusqu'à ce que vous lâchiez",
 } end

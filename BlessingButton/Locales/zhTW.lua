@@ -102,4 +102,5 @@ ns.LOCALES.zhTW = function() return {
   ["who you bless"] = "你祝福誰",
   ["with the"] = "使用",
   ["your blessings (%d paladins sharing)"] = "你的祝福（%d名聖騎士分擔）",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "按住Shift拖曳只會移動按鈕而不會施法，放開前按鈕不會消失",
 } end

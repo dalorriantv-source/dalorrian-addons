@@ -73,4 +73,10 @@ ns.LOCALES.zhCN = function() return {
   ["Quest items get a gold border"] = "任务物品带金色边框",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "首个版本：拾取的东西会一行一行干净地在屏幕上浮起",
   ["Settings rows with four choices fit inside the window now"] = "有四个选项的设置行现在不会超出窗口了",
+  ["Loot Window"] = "拾取窗口",
+  ["Hidden"] = "隐藏",
+  ["Shown"] = "显示",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "拾取窗口保持隐藏：所有物品直接进入背包。有拿不起的物品时窗口会出现。按住Shift可手动拾取，或在拾取窗口中选择显示",
+  ["Move It locks again by itself when you close the settings window"] = "关闭设置窗口时，移动会自动重新锁定",
+  ["The loot window no longer flashes open for a moment while looting"] = "拾取时拾取窗口不再闪现一下",
 } end

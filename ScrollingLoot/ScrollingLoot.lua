@@ -9,7 +9,7 @@ local GOLD = { 1, 0.82, 0 }
 local H, GAP, MAX = 24, 3, 8          -- line height, space between lines, most lines at once
 local FADE_IN, FADE_OUT = 0.15, 0.6
 
-local DEFAULTS = { scale = 1, hold = 4, money = true, up = true }
+local DEFAULTS = { scale = 1, hold = 4, money = true, up = true, window = "fast" }
 
 local P = ns.print or print   -- (1.1.0) Lang.lua: chat text in the player's language
 local Tr = ns.Tr or function(x) return x end
@@ -60,6 +60,12 @@ local function Lock(on)
   DB.unlocked = not on or nil
   anchor.box:SetShown(not on)
   anchor:EnableMouse(not on)
+  -- (1.2.0) moving it only lasts while the settings window is open: closing the window locks it again
+  local w = not on and _G[ADDON .. "HelpFrame"]
+  if w and not ns.lockHooked then
+    ns.lockHooked = true
+    w:HookScript("OnHide", function() if DB and DB.unlocked then Lock(true) end end)
+  end
 end
 
 ---------------------------------------------------------------------------
@@ -268,8 +274,51 @@ local function OnMoney(msg)
   ShowMoney(c)
 end
 
+---------------------------------------------------------------------------
+-- (1.2.0) Fast loot: everything goes straight to your bags and the loot window stays out of sight.
+-- Anything that can't be picked up (bags full, a bind on pickup check) brings the window back.
+-- Hold Shift while looting to get the window and pick things by hand.
+---------------------------------------------------------------------------
+local looting, ghosted, failed = false, false, false
+local keeper = CreateFrame("Frame")   -- (1.2.2) keeps the window see-through every frame: its own fade-in can't flash it
+local function Ghost(on)
+  ghosted = on
+  local f = _G.LootFrame
+  if not f then return end
+  pcall(f.SetAlpha, f, on and 0 or 1)
+  pcall(f.EnableMouse, f, not on)
+  keeper:SetScript("OnUpdate", on and function() if f:GetAlpha() > 0 then pcall(f.SetAlpha, f, 0) end end or nil)
+end
+local function LeftOver()
+  for i = 1, (GetNumLootItems and GetNumLootItems() or 0) do
+    if LootSlotHasItem(i) then
+      local locked = select(6, GetLootSlotInfo(i))
+      if not locked then return true end   -- locked: up for a roll, the roll frames handle it
+    end
+  end
+  return false
+end
+local function Reveal() if looting and ghosted and LeftOver() then Ghost(false) end end
+local function FastLoot()
+  if not DB or DB.window ~= "fast" or not (GetNumLootItems and LootSlot) then return end
+  if IsModifiedClick and IsModifiedClick("AUTOLOOTTOGGLE") then return end
+  local n = GetNumLootItems() or 0
+  if n == 0 then return end
+  looting, failed = true, false
+  Ghost(true)
+  for i = n, 1, -1 do
+    if LootSlotHasItem(i) and not select(6, GetLootSlotInfo(i)) then LootSlot(i) end
+  end
+  -- (1.2.2) the window only comes back when something really can't be picked up: bags full right away,
+  -- anything else (a bind on pickup check, the server being slow) after 1.5 seconds
+  C_Timer.After(1.5, Reveal)
+end
+
 local MinimapButton   -- (1.1.0) further down
 local ev = CreateFrame("Frame")
+ev:RegisterEvent("LOOT_READY")
+ev:RegisterEvent("LOOT_CLOSED")
+ev:RegisterEvent("UI_ERROR_MESSAGE")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("CHAT_MSG_LOOT")
@@ -281,7 +330,7 @@ ev:SetScript("OnEvent", function(_, e, a1)
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
   elseif e == "PLAYER_LOGIN" then
     Place()
-    Lock(not DB.unlocked)
+    Lock(true)   -- (1.2.0) always starts locked
     anchor.label:SetText(Tr("Scrolling Loot") .. ": " .. Tr("Drag Me"))
     pcall(MinimapButton)
   elseif not DB then return
@@ -289,6 +338,13 @@ ev:SetScript("OnEvent", function(_, e, a1)
     OnLoot(a1 or "")
   elseif e == "CHAT_MSG_MONEY" then
     OnMoney(a1 or "")
+  elseif e == "LOOT_READY" then
+    FastLoot()
+  elseif e == "LOOT_CLOSED" then
+    looting = false
+    Ghost(false)
+  elseif e == "UI_ERROR_MESSAGE" then
+    if looting and ghosted then C_Timer.After(0.2, Reveal) end   -- bags full or similar: show what's left
   end
 end)
 
@@ -324,6 +380,8 @@ ns.HelpConfig = {
     { label = "Scrolling Loot", choices = { { "On", "on" }, { "Off", "off" } },
       get = function() return DB.off and "off" or "on" end,
       set = function(v) DB.off = (v == "off") or nil end },
+    { label = "Loot Window", choices = { { "Hidden", "fast" }, { "Shown", "show" } },
+      get = function() return DB.window end, set = function(v) DB.window = v end },
     { label = "Show Money", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.money and true or false end, set = function(v) DB.money = v end },
     { label = "Lines Go", choices = { { "Up", true }, { "Down", false } },
@@ -343,6 +401,9 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.SCROLLINGLOOT("test") end },
   },
   notes = {
+    { v = "1.2.2", "The loot window no longer flashes open for a moment while looting" },
+    { v = "1.2.1", "Move It locks again by itself when you close the settings window" },
+    { v = "1.2.0", "The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window" },
     { v = "1.1.1", "Settings rows with four choices fit inside the window now" },
     { v = "1.1.0", "A Settings & Help window, a minimap button and 10 languages" },
     { v = "1.0.4", "Money lines take the color of the biggest coin in them" },

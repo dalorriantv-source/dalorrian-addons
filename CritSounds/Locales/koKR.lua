@@ -106,4 +106,8 @@ ns.LOCALES.koKR = function() return {
   ["Only your hits and your pet's hits get numbers now. Forever doesn't tell addons who hit a mob, so Crit Numbers checks the mob's threat list: if anyone else is fighting it, their hits stay off your screen"] = "이제 당신과 소환수의 공격에만 숫자가 표시됩니다. Forever는 누가 몹을 때렸는지 애드온에 알려주지 않으므로, Crit Numbers는 몹의 위협 목록을 확인합니다. 다른 누군가가 그 몹과 싸우고 있다면 그들의 공격은 화면에 표시되지 않습니다",
   ["In a group, your normal hits use the game's own numbers (they only ever show yours). Big crit numbers and crit sounds still play in dungeons: on a mob your group shares, a crit counts when it lines up with your own swing or spell"] = "파티 중에는 일반 공격에 게임 자체의 숫자를 사용합니다 (항상 당신의 것만 표시됩니다). 큰 치명타 숫자와 치명타 소리는 던전에서도 계속 나옵니다. 파티가 함께 싸우는 몹에서는 당신의 공격이나 주문과 시점이 맞는 치명타만 표시됩니다",
   ["Fixed a memory leak: number frames could be lost on hits where the game hides the damage amount"] = "메모리 누수 수정: 게임이 피해량을 숨기는 공격에서 숫자 프레임이 사라질 수 있던 문제를 고쳤습니다",
+  ["the game won't let addons switch its own damage numbers off. Turn them off in the game's Options, under Combat, so only Dalorrian's show"] = "게임이 애드온에게 자체 피해 숫자를 끄지 못하게 합니다. 게임 설정의 전투 항목에서 직접 끄면 Dalorrian 숫자만 보입니다",
+  ["Big crit numbers show again when the game hides the amount from addons (they used to be skipped, only the sound played)"] = "게임이 애드온에게 수치를 숨길 때도 큰 치명타 숫자가 다시 표시됩니다 (전에는 건너뛰고 소리만 났습니다)",
+  ["If the game won't let the addon switch its own damage numbers off, it tells you once so you can turn them off in Options"] = "게임이 애드온의 피해 숫자 끄기를 막으면 한 번 알려줘서 설정에서 직접 끌 수 있습니다",
+  ["Damage Numbers sticks to what you picked, in a group too. Before, joining or leaving a group switched between the game's numbers and these"] = "피해 숫자가 파티에서도 선택한 대로 유지됩니다. 전에는 파티에 들어가거나 나올 때 게임 숫자와 이 숫자가 바뀌었습니다",
 } end

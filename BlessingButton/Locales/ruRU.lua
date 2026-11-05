@@ -102,4 +102,5 @@ ns.LOCALES.ruRU = function() return {
   ["who you bless"] = "кого вы благословляете",
   ["with the"] = "с",
   ["your blessings (%d paladins sharing)"] = "ваши благословения (делят %d паладинов)",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Перетаскивание с Shift двигает кнопку без каста, и она остаётся, пока вы не отпустите",
 } end

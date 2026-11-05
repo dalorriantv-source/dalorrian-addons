@@ -73,4 +73,10 @@ ns.LOCALES.esES = function() return {
   ["Quest items get a gold border"] = "Los objetos de misión tienen un borde dorado",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Primera versión: lo que saqueas sube flotando por la pantalla, una línea limpia cada vez",
   ["Settings rows with four choices fit inside the window now"] = "Las filas de ajustes con cuatro opciones ahora caben en la ventana",
+  ["Loot Window"] = "Ventana de botín",
+  ["Hidden"] = "Oculta",
+  ["Shown"] = "Visible",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "La ventana de botín se queda oculta: todo va directo a tus bolsas. Aparece si algo no se puede recoger. Mantén Mayús para elegir a mano, o elige Visible en Ventana de botín",
+  ["Move It locks again by itself when you close the settings window"] = "Mover se bloquea solo cuando cierras la ventana de opciones",
+  ["The loot window no longer flashes open for a moment while looting"] = "La ventana de botín ya no se abre un momento al saquear",
 } end

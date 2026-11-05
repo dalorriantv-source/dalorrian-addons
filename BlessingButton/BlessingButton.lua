@@ -405,12 +405,16 @@ local function SetCast()
     btn:SetAttribute("type", nil)
   end
   btn:SetAttribute("type2", "settings")   -- right-click: not a cast (opens the settings below)
+  btn:SetAttribute("shift-type1", "move")  -- (1.0.2) Shift: you're moving it, so a click doesn't cast
 end
 
+local moving = false   -- (1.0.2) the button is being dragged
 local function Paint()
   if InCombatLockdown() or not DB then return end
   local _, class = UnitClass("player")
   local want = class == "PALADIN" and DB.show ~= "off" and (DB.show == "always" or nextCast ~= nil)
+  -- (1.0.2) never vanish from under the mouse while you're moving it (Shift held, or mid-drag)
+  if class == "PALADIN" and DB.show ~= "off" and btn:IsShown() and (moving or (IsShiftKeyDown() and btn:IsMouseOver())) then want = true end
   btn:SetShown(want and true or false)
   if not want then return end
   btn:SetScale(DB.scale or 1)
@@ -448,15 +452,17 @@ end
 
 -- each press: make sure it casts what's needed right now (only possible out of combat)
 btn:SetScript("PreClick", function(_, button)
-  if button ~= "RightButton" and not InCombatLockdown() then Pick(); SetCast() end
+  if button ~= "RightButton" and not IsShiftKeyDown() and not InCombatLockdown() then Pick(); SetCast() end
 end)
 btn:SetScript("PostClick", function(_, button)
   if button == "RightButton" then if ns.OpenHelp then ns.OpenHelp() end
   else scanDirty = true end
 end)
-btn:SetScript("OnDragStart", function(self) if IsShiftKeyDown() and not InCombatLockdown() then self:StartMoving() end end)
+btn:SetScript("OnDragStart", function(self) if IsShiftKeyDown() and not InCombatLockdown() then moving = true; self:StartMoving() end end)
 btn:SetScript("OnDragStop", function(self)
   self:StopMovingOrSizing()
+  moving = false
+  scanDirty = true
   local p, _, rp, x, y = self:GetPoint(1)
   DB.point, DB.rel, DB.x, DB.y = p, rp, x, y
 end)
@@ -943,6 +949,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.0.2", "Shift-dragging the button moves it without casting, and it stays put until you let go" },
     { v = "1.0.1", "Switches itself off on characters that aren't paladins: no button, no minimap icon, nothing running" },
     { v = "1.0.0", "First release: one button that buffs your group with the right blessings for WoW: Forever",
       "Paladins running it share the work out by themselves, with nothing to set up",

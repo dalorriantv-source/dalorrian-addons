@@ -101,4 +101,5 @@ ns.LOCALES.esMX = function() return {
   ["who you bless"] = "a quién bendices",
   ["with the"] = "con la",
   ["your blessings (%d paladins sharing)"] = "tus bendiciones (%d paladines repartiendo)",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Arrastrar con Mayús mueve el botón sin lanzar nada, y se queda hasta que sueltas",
 } end

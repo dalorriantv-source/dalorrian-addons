@@ -102,4 +102,5 @@ ns.LOCALES.koKR = function() return {
   ["who you bless"] = "축복할 대상",
   ["with the"] = "다음과 함께:",
   ["your blessings (%d paladins sharing)"] = "당신의 축복 (성기사 %d명이 나눔)",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Shift+드래그로 시전 없이 버튼을 옮기며, 놓을 때까지 사라지지 않습니다",
 } end

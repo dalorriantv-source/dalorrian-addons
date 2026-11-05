@@ -70,4 +70,10 @@ ns.LOCALES.deDE = function() return {
   ["Quest items get a gold border"] = "Questgegenstände bekommen einen goldenen Rand",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Erste Version: was du plünderst, schwebt auf dem Bildschirm nach oben, eine klare Zeile nach der anderen",
   ["Settings rows with four choices fit inside the window now"] = "Einstellungszeilen mit vier Auswahlen passen jetzt ins Fenster",
+  ["Loot Window"] = "Beutefenster",
+  ["Hidden"] = "Versteckt",
+  ["Shown"] = "Sichtbar",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "Das Beutefenster bleibt versteckt: alles geht direkt in deine Taschen. Es erscheint, wenn etwas nicht aufgehoben werden kann. Halte Umschalt, um von Hand zu wählen, oder wähle Sichtbar unter Beutefenster",
+  ["Move It locks again by itself when you close the settings window"] = "Verschieben sperrt sich von selbst wieder, wenn du das Einstellungsfenster schließt",
+  ["The loot window no longer flashes open for a moment while looting"] = "Das Beutefenster blitzt beim Plündern nicht mehr kurz auf",
 } end

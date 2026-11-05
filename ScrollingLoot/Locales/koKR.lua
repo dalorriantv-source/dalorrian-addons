@@ -74,4 +74,10 @@ ns.LOCALES.koKR = function() return {
   ["Quest items get a gold border"] = "퀘스트 아이템은 금색 테두리",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "첫 출시: 주운 전리품이 한 줄씩 깔끔하게 화면 위로 떠오릅니다",
   ["Settings rows with four choices fit inside the window now"] = "선택지가 네 개인 설정 줄이 이제 창 안에 들어갑니다",
+  ["Loot Window"] = "전리품 창",
+  ["Hidden"] = "숨김",
+  ["Shown"] = "표시",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "전리품 창이 숨겨집니다: 모든 것이 바로 가방으로 들어갑니다. 주울 수 없는 것이 있으면 창이 나타납니다. Shift를 누르고 있으면 직접 고를 수 있고, 전리품 창에서 표시를 선택할 수도 있습니다",
+  ["Move It locks again by itself when you close the settings window"] = "설정 창을 닫으면 이동이 다시 저절로 잠깁니다",
+  ["The loot window no longer flashes open for a moment while looting"] = "전리품을 주울 때 전리품 창이 잠깐 열렸다 닫히지 않습니다",
 } end

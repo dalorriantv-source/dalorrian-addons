@@ -70,4 +70,10 @@ ns.LOCALES.frFR = function() return {
   ["Quest items get a gold border"] = "Les objets de quête ont un bord doré",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Première version : ce que tu ramasses défile à l'écran, une ligne nette à la fois",
   ["Settings rows with four choices fit inside the window now"] = "Les lignes de réglages à quatre choix tiennent maintenant dans la fenêtre",
+  ["Loot Window"] = "Fenêtre de butin",
+  ["Hidden"] = "Cachée",
+  ["Shown"] = "Affichée",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "La fenêtre de butin reste cachée : tout va directement dans vos sacs. Elle s'affiche si un objet ne peut pas être ramassé. Maintenez Maj pour choisir à la main, ou choisissez Affichée sous Fenêtre de butin",
+  ["Move It locks again by itself when you close the settings window"] = "Déplacer se verrouille tout seul quand vous fermez la fenêtre des options",
+  ["The loot window no longer flashes open for a moment while looting"] = "La fenêtre de butin ne s'ouvre plus un instant pendant le ramassage",
 } end

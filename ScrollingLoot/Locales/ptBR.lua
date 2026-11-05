@@ -74,4 +74,10 @@ ns.LOCALES.ptBR = function() return {
   ["Quest items get a gold border"] = "Itens de missão ganham borda dourada",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Primeira versão: o que você saqueia sobe flutuando na tela, uma linha limpa por vez",
   ["Settings rows with four choices fit inside the window now"] = "Linhas de configuração com quatro opções agora cabem na janela",
+  ["Loot Window"] = "Janela de saque",
+  ["Hidden"] = "Oculta",
+  ["Shown"] = "Visível",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "A janela de saque fica oculta: tudo vai direto para suas bolsas. Ela aparece se algo não puder ser pego. Segure Shift para escolher à mão, ou escolha Visível em Janela de saque",
+  ["Move It locks again by itself when you close the settings window"] = "Mover trava sozinho quando você fecha a janela de opções",
+  ["The loot window no longer flashes open for a moment while looting"] = "A janela de saque não pisca mais aberta por um momento ao saquear",
 } end

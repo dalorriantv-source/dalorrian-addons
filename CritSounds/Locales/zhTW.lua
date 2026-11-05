@@ -105,4 +105,8 @@ ns.LOCALES.zhTW = function() return {
   ["Only your hits and your pet's hits get numbers now. Forever doesn't tell addons who hit a mob, so Crit Numbers checks the mob's threat list: if anyone else is fighting it, their hits stay off your screen"] = "現在只有你和你寵物的攻擊會顯示數字。Forever 不會告訴插件是誰打了怪物，所以 Crit Numbers 會查看怪物的仇恨列表：只要有其他人在和它戰鬥，他們的攻擊就不會出現在你的螢幕上",
   ["In a group, your normal hits use the game's own numbers (they only ever show yours). Big crit numbers and crit sounds still play in dungeons: on a mob your group shares, a crit counts when it lines up with your own swing or spell"] = "組隊時，你的普通攻擊使用遊戲本身的數字（它只顯示你的）。大號致命一擊數字和致命一擊音效在地城裡照常出現：在全隊一起打的怪物上，只有和你自己的攻擊或法術對得上的致命一擊才算",
   ["Fixed a memory leak: number frames could be lost on hits where the game hides the damage amount"] = "修正了記憶體洩漏：在遊戲隱藏傷害數值的命中上，數字框架可能會遺失",
+  ["the game won't let addons switch its own damage numbers off. Turn them off in the game's Options, under Combat, so only Dalorrian's show"] = "遊戲不允許插件關閉它自己的傷害數字。請在遊戲設定的戰鬥選項裡關閉，這樣只顯示Dalorrian的數字",
+  ["Big crit numbers show again when the game hides the amount from addons (they used to be skipped, only the sound played)"] = "當遊戲對插件隱藏數值時，大號致命一擊數字也會顯示了（以前會被跳過，只播放音效）",
+  ["If the game won't let the addon switch its own damage numbers off, it tells you once so you can turn them off in Options"] = "如果遊戲不允許插件關閉它的傷害數字，插件會提示一次，方便你在設定裡關閉",
+  ["Damage Numbers sticks to what you picked, in a group too. Before, joining or leaving a group switched between the game's numbers and these"] = "傷害數字會保持你的選擇，組隊時也一樣。以前加入或離開隊伍會在遊戲的數字和這些之間切換",
 } end

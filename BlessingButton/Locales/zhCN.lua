@@ -101,4 +101,5 @@ ns.LOCALES.zhCN = function() return {
   ["who you bless"] = "你祝福谁",
   ["with the"] = "带有",
   ["your blessings (%d paladins sharing)"] = "你的祝福（%d名圣骑士分担）",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "按住Shift拖动只会移动按钮而不会施法，松开前按钮不会消失",
 } end

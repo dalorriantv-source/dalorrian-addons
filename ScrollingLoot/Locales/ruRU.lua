@@ -74,4 +74,10 @@ ns.LOCALES.ruRU = function() return {
   ["Quest items get a gold border"] = "Предметы для заданий получают золотую рамку",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Первая версия: то, что ты подбираешь, всплывает на экране, по одной чистой строке",
   ["Settings rows with four choices fit inside the window now"] = "Строки настроек с четырьмя вариантами теперь помещаются в окно",
+  ["Loot Window"] = "Окно добычи",
+  ["Hidden"] = "Скрыто",
+  ["Shown"] = "Показано",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "Окно добычи остаётся скрытым: всё сразу идёт в сумки. Оно появляется, если что-то нельзя подобрать. Удерживайте Shift, чтобы выбирать вручную, или выберите Показано в Окне добычи",
+  ["Move It locks again by itself when you close the settings window"] = "Перемещение снова блокируется само, когда вы закрываете окно настроек",
+  ["The loot window no longer flashes open for a moment while looting"] = "Окно добычи больше не мелькает на секунду при сборе",
 } end

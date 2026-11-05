@@ -101,4 +101,5 @@ ns.LOCALES.itIT = function() return {
   ["who you bless"] = "chi benedici",
   ["with the"] = "con il",
   ["your blessings (%d paladins sharing)"] = "le tue benedizioni (%d paladini si dividono)",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Trascinare con Maiusc sposta il pulsante senza lanciare, e resta lì finché non lasci",
 } end

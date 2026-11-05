@@ -102,4 +102,5 @@ ns.LOCALES.ptBR = function() return {
   ["who you bless"] = "quem você abençoa",
   ["with the"] = "com o",
   ["your blessings (%d paladins sharing)"] = "suas bênçãos (%d paladinos dividindo)",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Arrastar com Shift move o botão sem lançar nada, e ele fica até você soltar",
 } end

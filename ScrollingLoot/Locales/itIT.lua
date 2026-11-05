@@ -73,4 +73,10 @@ ns.LOCALES.itIT = function() return {
   ["Quest items get a gold border"] = "Gli oggetti delle missioni hanno un bordo dorato",
   ["First release: what you loot floats up on screen, one clean line at a time"] = "Prima versione: ciò che raccogli scorre sullo schermo, una riga pulita alla volta",
   ["Settings rows with four choices fit inside the window now"] = "Le righe delle impostazioni con quattro scelte ora stanno dentro la finestra",
+  ["Loot Window"] = "Finestra del bottino",
+  ["Hidden"] = "Nascosta",
+  ["Shown"] = "Visibile",
+  ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "La finestra del bottino resta nascosta: tutto va dritto nelle tue borse. Appare se qualcosa non si può raccogliere. Tieni premuto Maiusc per scegliere a mano, o scegli Visibile in Finestra del bottino",
+  ["Move It locks again by itself when you close the settings window"] = "Sposta si blocca da solo quando chiudi la finestra delle opzioni",
+  ["The loot window no longer flashes open for a moment while looting"] = "La finestra del bottino non lampeggia più per un attimo mentre raccogli",
 } end

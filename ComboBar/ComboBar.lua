@@ -20,7 +20,10 @@ bar:SetMovable(true)
 bar:SetClampedToScreen(true)
 bar:EnableMouse(false)   -- it sits in the middle of the screen: it only catches the mouse while you hold Shift
 bar:RegisterForDrag("LeftButton")
-bar:SetScript("OnDragStart", function(self) if IsShiftKeyDown() or DB.unlocked then self:StartMoving() end end)
+bar:SetScript("OnDragStart", function(self)
+  if DB.stick == "below" or DB.stick == "above" then return end   -- (1.4.0) stuck to your character: it moves with you
+  if IsShiftKeyDown() or DB.unlocked then self:StartMoving() end
+end)
 bar:SetScript("OnDragStop", function(self)
   self:StopMovingOrSizing()
   local p, _, rp, x, y = self:GetPoint(1)
@@ -29,22 +32,44 @@ end)
 bar:Hide()
 bar.pips = {}
 
+-- (1.4.0) the points can be squares, circles, diamonds, triangles or hexagons, in a color you pick.
+-- Each point is three layers of the same shape: a black edge, a dark inside, and the colored fill.
+local TEX = "Interface\\AddOns\\ComboBar\\Textures\\"
+local SHAPES = { square = W, circle = TEX .. "circle", diamond = TEX .. "diamond", triangle = TEX .. "triangle", hexagon = TEX .. "hexagon" }
+local COLORS = { gold = GOLD, orange = { 1, 0.55, 0.1 }, red = { 0.95, 0.2, 0.2 }, pink = { 1, 0.4, 0.75 },
+  purple = { 0.7, 0.4, 1 }, blue = { 0.3, 0.55, 1 }, cyan = { 0.3, 0.9, 1 }, green = { 0.35, 0.95, 0.35 }, white = { 1, 1, 1 } }
+local function Color()
+  if DB.color == "class" then
+    local c = RAID_CLASS_COLORS and RAID_CLASS_COLORS[CLASS]
+    if c then return { c.r, c.g, c.b } end
+  end
+  return COLORS[DB.color or "gold"] or GOLD
+end
+local function Shape(p)
+  local tex = SHAPES[DB.shape or "square"] or W
+  local square = tex == W
+  for _, t in ipairs({ p.edge, p.bg, p.fill }) do t:SetTexture(tex) end
+  p.edge:SetVertexColor(0, 0, 0, 1)
+  p.bg:SetVertexColor(0.04, 0.04, 0.05, 0.85)
+  local inset = square and 3 or 4
+  p.bg:ClearAllPoints(); p.bg:SetPoint("TOPLEFT", 2, -2); p.bg:SetPoint("BOTTOMRIGHT", -2, 2)
+  p.fill:ClearAllPoints(); p.fill:SetPoint("TOPLEFT", inset, -inset); p.fill:SetPoint("BOTTOMRIGHT", -inset, inset)
+  p.square = square
+end
 local function Pip(i)
   local p = bar.pips[i]
   if p then return p end
-  p = CreateFrame("Frame", nil, bar, "BackdropTemplate")
+  p = CreateFrame("Frame", nil, bar)
   p:SetSize(SIZE, SIZE)
-  p:SetBackdrop({ bgFile = W, edgeFile = W, edgeSize = 2 })
-  p:SetBackdropColor(0.04, 0.04, 0.05, 0.8)
-  p:SetBackdropBorderColor(0, 0, 0, 1)
   p:EnableMouse(false)
+  p.edge = p:CreateTexture(nil, "BACKGROUND"); p.edge:SetAllPoints()
+  p.bg = p:CreateTexture(nil, "BORDER")
   p.fill = p:CreateTexture(nil, "ARTWORK")
-  p.fill:SetPoint("TOPLEFT", 3, -3); p.fill:SetPoint("BOTTOMRIGHT", -3, 3)
-  p.fill:SetColorTexture(GOLD[1], GOLD[2], GOLD[3], 1)
-  p.shine = p:CreateTexture(nil, "OVERLAY")      -- a thin highlight on top so it doesn't read flat
+  p.shine = p:CreateTexture(nil, "OVERLAY")      -- a thin highlight on top so it doesn't read flat (squares only)
   p.shine:SetPoint("TOPLEFT", p.fill, "TOPLEFT"); p.shine:SetPoint("TOPRIGHT", p.fill, "TOPRIGHT")
   p.shine:SetHeight(3)
   p.shine:SetColorTexture(1, 1, 1, 0.25)
+  Shape(p)
   bar.pips[i] = p
   return p
 end
@@ -152,8 +177,40 @@ local function Layout()
   bar.max = m
 end
 
+---------------------------------------------------------------------------
+-- (1.4.0) Stick To Character: the bar rides on your own nameplate (the game's Personal Resource Display),
+-- so it follows your character on screen, and grows and shrinks with it as the nameplate does.
+-- With no nameplate to ride on (it's off, or the game hides it) the bar sits in its usual spot.
+---------------------------------------------------------------------------
+local plate
+local follow = CreateFrame("Frame")
+local function SelfPlate()
+  if not (C_NamePlate and C_NamePlate.GetNamePlateForUnit) then return nil end
+  local ok, p = pcall(C_NamePlate.GetNamePlateForUnit, "player")
+  if ok and p and not (p.IsForbidden and p:IsForbidden()) then return p end
+end
+local function Sticking() return DB and (DB.stick == "below" or DB.stick == "above") end
+local function TurnOnPlate()
+  local set = (C_CVar and C_CVar.SetCVar) or SetCVar
+  if set then
+    pcall(set, "nameplateShowSelf", "1")
+    if DB.show == "always" then pcall(set, "NameplatePersonalShowAlways", "1") end
+  end
+end
 local function Place()
   bar:ClearAllPoints()
+  plate = Sticking() and SelfPlate() or nil
+  if plate then
+    if DB.stick == "above" then bar:SetPoint("BOTTOM", plate, "TOP", 0, 6)
+    else bar:SetPoint("TOP", plate, "BOTTOM", 0, -6) end
+    follow:SetScript("OnUpdate", function()
+      if not plate:IsShown() then return end
+      local s = (plate:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
+      bar:SetScale((DB.scale or 1) * s)
+    end)
+    return
+  end
+  follow:SetScript("OnUpdate", nil)
   if DB.point then bar:SetPoint(DB.point, UIParent, DB.rel or DB.point, DB.x or 0, DB.y or 0)
   else bar:SetPoint("CENTER", UIParent, "CENTER", 0, -110) end   -- just under your character
   bar:SetScale(DB.scale or 1)
@@ -164,11 +221,12 @@ local function Update()
   if not Wanted() then bar:Hide() return end
   local m, n = Max(), Points()
   if bar.max ~= m then Layout() end
-  local c = (n >= m) and FULL or GOLD
+  local base = Color()
+  local c = (n >= m) and (base == COLORS.orange and GOLD or FULL) or base   -- every point lit: ember orange
   for i = 1, m do
     local p = bar.pips[i]
     if i <= n then
-      p.fill:SetColorTexture(c[1], c[2], c[3], 1); p.fill:Show(); p.shine:Show()
+      p.fill:SetVertexColor(c[1], c[2], c[3], 1); p.fill:Show(); p.shine:SetShown(p.square)
     else
       p.fill:Hide(); p.shine:Hide()
     end
@@ -187,7 +245,7 @@ ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 for _, e in ipairs({ "UNIT_POWER_FREQUENT", "UNIT_POWER_UPDATE", "UNIT_MAXPOWER", "UNIT_DISPLAYPOWER", "PLAYER_TARGET_CHANGED",
   "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED", "UPDATE_SHAPESHIFT_FORM", "UNIT_COMBO_POINTS", "PLAYER_ENTERING_WORLD",
-  "MODIFIER_STATE_CHANGED" }) do
+  "MODIFIER_STATE_CHANGED", "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED" }) do
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, e, a1)
@@ -200,8 +258,14 @@ ev:SetScript("OnEvent", function(_, e, a1)
     return
   end
   if not DB then return end
-  if e == "MODIFIER_STATE_CHANGED" then bar:EnableMouse((IsShiftKeyDown() or DB.unlocked) and true or false) return end
-  if e == "PLAYER_LOGIN" then Place(); Layout(); pcall(MinimapButton) end
+  if e == "MODIFIER_STATE_CHANGED" then bar:EnableMouse((not Sticking() and (IsShiftKeyDown() or DB.unlocked)) and true or false) return end
+  if e == "NAME_PLATE_UNIT_ADDED" or e == "NAME_PLATE_UNIT_REMOVED" then
+    local mine = false
+    pcall(function() mine = UnitIsUnit(a1, "player") end)
+    if mine and Sticking() then Place() end
+    return
+  end
+  if e == "PLAYER_LOGIN" then if Sticking() then TurnOnPlate() end; Place(); Layout(); pcall(MinimapButton) end
   if (e == "UNIT_POWER_FREQUENT" or e == "UNIT_POWER_UPDATE" or e == "UNIT_MAXPOWER" or e == "UNIT_DISPLAYPOWER") and a1 ~= "player" then return end
   Update()
 end)
@@ -234,12 +298,21 @@ ns.HelpConfig = {
     { label = "Direction", choices = { { "Horizontal", false }, { "Vertical", true } },
       get = function() return DB.vertical and true or false end,
       set = function(v) DB.vertical = v; Layout(); Update() end },
+    { label = "Shape", choices = { { "Squares", "square" }, { "Circles", "circle" }, { "Diamonds", "diamond" }, { "Triangles", "triangle" }, { "Hexagons", "hexagon" } },
+      get = function() return DB.shape or "square" end,
+      set = function(v) DB.shape = v; for _, p in ipairs(bar.pips) do Shape(p) end; Update() end },
+    { label = "Color", cycle = true, choices = { { "Gold", "gold" }, { "Orange", "orange" }, { "Red", "red" }, { "Pink", "pink" },
+        { "Purple", "purple" }, { "Blue", "blue" }, { "Cyan", "cyan" }, { "Green", "green" }, { "White", "white" }, { "Class Color", "class" } },
+      get = function() return DB.color or "gold" end, set = function(v) DB.color = v; Update() end },
     { label = "Energy Bar", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.energy and true or false end, set = function(v) DB.energy = v; Update() end },
+    { label = "Stick To", choices = { { "Screen", "screen" }, { "Under Character", "below" }, { "Over Character", "above" } },
+      get = function() return Sticking() and DB.stick or "screen" end,
+      set = function(v) DB.stick = v; if Sticking() then TurnOnPlate() end; Place(); Update() end },
     { label = "Size", choices = { { "Small", 0.8 }, { "Normal", 1 }, { "Big", 1.3 } },
       get = function() return DB.scale or 1 end, set = function(v) DB.scale = v; Place() end },
     { label = "Show", choices = { { "Always", "always" }, { "In Combat", "combat" } },
-      get = function() return DB.show or "combat" end, set = function(v) DB.show = v; Update() end },
+      get = function() return DB.show or "combat" end, set = function(v) DB.show = v; if Sticking() then TurnOnPlate() end; Update() end },
     { label = "Move It", choices = { { "Locked", "lock" }, { "Move It", "move" }, { "Reset", "reset" } },
       get = function() return DB.unlocked and "move" or "lock" end,
       set = function(v) SlashCmdList.COMBOBAR(v == "move" and "unlock" or v) end },
@@ -247,6 +320,8 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.COMBOBAR("test") end },
   },
   notes = {
+    { v = "1.4.0", "Pick the shape of your points (squares, circles, diamonds, triangles or hexagons) and their color, class color included",
+      "New Stick To setting: Under Character or Over Character keeps the bar on your character, moving and sizing with it as the camera zooms. It rides on the game's Personal Resource Display, which it switches on for you" },
     { v = "1.3.0", "Direction now reads Horizontal or Vertical",
       "New Show setting: Always, or only In Combat",
       "The energy bar fills and drains with your energy, and it's a little thicker so it's easier to see" },
@@ -256,7 +331,7 @@ ns.HelpConfig = {
   },
   report = function()
     return { "Class " .. tostring(CLASS) .. ", max " .. tostring(Max()) .. ", vertical " .. tostring(DB.vertical) ..
-      ", show " .. tostring(DB.show) .. ", power " .. tostring(UnitPowerType("player")) .. (DB.off and ", turned off" or "") }
+      ", show " .. tostring(DB.show) .. ", stick " .. tostring(DB.stick) .. " (plate " .. tostring(plate ~= nil) .. "), power " .. tostring(UnitPowerType("player")) .. (DB.off and ", turned off" or "") }
   end,
 }
 
@@ -317,6 +392,8 @@ SlashCmdList.COMBOBAR = function(msg)
     Test()
   elseif cmd == "vertical" then
     DB.vertical = not DB.vertical; Layout(); Update(); Say(DB.vertical and "Vertical" or "Horizontal")
+  elseif (cmd == "unlock" or cmd == "move") and Sticking() then
+    Say("it's stuck to your character. Pick Screen under Stick To to move it by hand.")
   elseif cmd == "unlock" or cmd == "move" then
     DB.unlocked = true; bar:EnableMouse(true); bar:Show(); Update()
     Say("drag it where you want it, then /combo lock. Shift-drag works any time.")

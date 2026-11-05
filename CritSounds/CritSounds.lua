@@ -10,6 +10,7 @@ local DEFAULTS = { sound = true, pack = nil, volume = 100, numbers = true, size 
 local P = ns.print or print
 local function Say(msg) P("|cffffd100Dalorrian's Crit Numbers:|r " .. msg) end
 local Tip = ns.Tip or GameTooltip
+local issecret = issecretvalue or function() return false end
 
 ---------------------------------------------------------------------------
 -- sound packs. Crit sounds come from outside the game: CC0 sounds and clips Dalorrian records.
@@ -125,6 +126,13 @@ local function Commas(n)
     if k == 0 then return s end
   end
 end
+-- (1.4.7) in some fights the game hides the amount from addons (a "secret" number). Addons can't do math
+-- on it, but the game still lets it be shown, so it goes on screen as it is, just without the commas.
+local function NumText(amount)
+  if issecret(amount) then return amount end
+  local ok, txt = pcall(function() return Commas(math.floor(amount + 0.5)) end)
+  if ok and type(txt) == "string" then return txt end
+end
 local function GetNum()
   local f = table.remove(pool)
   if f then return f end
@@ -185,8 +193,8 @@ local function ShowNumber(amount, heal, guid)
   -- (1.4.6) everything that can fail happens before a number frame leaves the pool: a frame taken and then
   -- dropped on an error never came back, one lost frame per hit
   if not holder:IsVisible() then return end   -- UI hidden (Alt+Z): numbers can't play out, so none are made
-  local okT, txt = pcall(function() return Commas(math.floor(amount + 0.5)) end)
-  if not okT or type(txt) ~= "string" then return end
+  local txt = NumText(amount)
+  if txt == nil then return end
   local okP, plate = pcall(PlateFor, guid)
   if not okP then plate = nil end
   local f = GetNum()
@@ -198,7 +206,7 @@ local function ShowNumber(amount, heal, guid)
   f.y = (plate and 0 or 120) + math.min(same, 4) * ((DB.size or 64) * 0.6)
   f.text:SetFont(NUMFONT, DB.size or 64, "THICKOUTLINE")
   if heal then f.text:SetTextColor(0.3, 1, 0.35) else f.text:SetTextColor(unpack(CRIT_COLORS[DB.critColor or "purple"] or CRIT_COLORS.purple)) end   -- (1.3.10) Crit Color
-  f.text:SetText(txt)
+  if not pcall(f.text.SetText, f.text, txt) then f:Hide(); pool[#pool + 1] = f; return end
   f.small = nil
   f.t = 0
   live[f] = true
@@ -213,8 +221,8 @@ local function ShowSmall(amount, guid, school)
   -- (1.4.6) everything that can fail happens before a number frame leaves the pool: a frame taken and then
   -- dropped on an error never came back, one lost frame per hit
   if not holder:IsVisible() then return end   -- UI hidden (Alt+Z): numbers can't play out, so none are made
-  local okT, txt = pcall(function() return Commas(math.floor(amount + 0.5)) end)
-  if not okT or type(txt) ~= "string" then return end
+  local txt = NumText(amount)
+  if txt == nil then return end
   local okP, plate = pcall(PlateFor, guid)
   if not okP then plate = nil end
   local f = GetNum()
@@ -224,7 +232,7 @@ local function ShowSmall(amount, guid, school)
   f.y = plate and 0 or 120
   f.text:SetFont(NUMFONT, DB.hitSize or 28, "OUTLINE")   -- (1.3.6) Hit Number Size
   if school and school ~= 1 then f.text:SetTextColor(1, 0.88, 0.25) else f.text:SetTextColor(1, 1, 1) end
-  f.text:SetText(txt)
+  if not pcall(f.text.SetText, f.text, txt) then f:Hide(); f.small = nil; pool[#pool + 1] = f; return end
   f.t = 0
   live[f] = true
   f:SetAlpha(1)
@@ -238,7 +246,9 @@ end
 -- (1.4.5) in a group the game draws your normal hits (it only ever shows yours): Forever doesn't tell addons
 -- whose hit a mob took, and with party members on the same mob there's no telling yours from theirs
 local function Grouped() local ok, g = pcall(IsInGroup); return ok and g and true or false end
-local function Replacing() return DB and DB.replace and DB.numbers and not DB.off and not Grouped() end
+-- (1.4.8) your pick holds everywhere. It used to hand normal hits back to the game whenever you were in a
+-- group, so the numbers flipped between the game's and these every time a group formed or broke up
+local function Replacing() return DB and DB.replace and DB.numbers and not DB.off end
 -- (1.3.4) newer clients keep these under "_v2" names, and DoT ticks and pet hits have their own: all of them
 -- go off, or your numbers show twice
 local FCT = { "floatingCombatTextCombatDamage", "floatingCombatTextCombatLogPeriodicSpells",
@@ -260,6 +270,8 @@ local function GameNumbers()
         if ok and v ~= nil then
           if saved[name] == nil then saved[name] = tostring(v) end
           pcall(set, name, "0")
+          local okB, now = pcall(get, name)   -- (1.4.7) did it stick? Some clients don't let addons change it
+          if okB and now ~= nil and tostring(now) ~= "0" then ns.stuck = name end
         end
       end
     end
@@ -278,10 +290,11 @@ end
 local me, pet
 local function Crit(amount, heal, dest)
   if not DB or DB.off then return end
-  local readable = type(amount) == "number" and pcall(function() return amount > 0 end)   -- (1.2.2) the game can hide the number
+  local secret = issecret(amount)
+  local readable = not secret and type(amount) == "number" and pcall(function() return amount > 0 end)   -- (1.2.2) the game can hide the number
   if readable and amount <= 0 then return end
   if heal and not DB.heals then return end
-  if DB.numbers and readable then ShowNumber(amount, heal, dest) end
+  if DB.numbers and (readable or secret) then ShowNumber(amount, heal, dest) end   -- (1.4.7) hidden amounts show too
   if DB.sound then Sound() end
 end
 local seen = { hits = 0, crits = 0 }   -- (1.1.1) for /crits debug
@@ -682,6 +695,9 @@ ev:SetScript("OnEvent", function(_, e, a1)
     pcall(MinimapButton)
     if C_DamageMeter then HookChat(); WatchTarget() end
     pcall(GameNumbers)
+    if ns.stuck and Replacing() then
+      Say("the game won't let addons switch its own damage numbers off. Turn them off in the game's Options, under Combat, so only Dalorrian's show.")
+    end
   elseif e == "UNIT_PET" then
     pet = UnitGUID("pet")
   elseif e == "GROUP_ROSTER_UPDATE" or e == "PLAYER_REGEN_ENABLED" then
@@ -746,6 +762,9 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.8", "Damage Numbers sticks to what you picked, in a group too. Before, joining or leaving a group switched between the game's numbers and these" },
+    { v = "1.4.7", "Big crit numbers show again when the game hides the amount from addons (they used to be skipped, only the sound played)",
+      "If the game won't let the addon switch its own damage numbers off, it tells you once so you can turn them off in Options" },
     { v = "1.4.6", "Fixed a memory leak: number frames could be lost on hits where the game hides the damage amount" },
     { v = "1.4.5", "Only your hits and your pet's hits get numbers now. Forever doesn't tell addons who hit a mob, so Crit Numbers checks the mob's threat list: if anyone else is fighting it, their hits stay off your screen",
       "In a group, your normal hits use the game's own numbers (they only ever show yours). Big crit numbers and crit sounds still play in dungeons: on a mob your group shares, a crit counts when it lines up with your own swing or spell" },
@@ -846,6 +865,11 @@ SlashCmdList.CRITSOUNDS = function(msg)
     print("  target feed: events " .. (seen.uc or 0) .. ", from nameplates " .. (seen.plates or 0) .. ", crits " .. (seen.ucCrits or 0) .. ", hidden " .. (seen.ucHidden or 0) .. ", yours on shared mobs " .. (seen.claimed or 0) .. ", not yours " .. (seen.notMine or 0))
     print("  on " .. tostring(not DB.off) .. ", sound " .. tostring(DB.sound) .. " (" .. (p and p.key or "no pack") .. "), numbers " ..
       tostring(DB.numbers) .. ", packs " .. #PACKS .. ", you " .. tostring(me))
+    local get = (C_CVar and C_CVar.GetCVar) or GetCVar
+    local okC, cv = pcall(get, "floatingCombatTextCombatDamage")
+    local okV, cv2 = pcall(get, "floatingCombatTextCombatDamage_v2")
+    print("  replacing " .. tostring(Replacing()) .. ", grouped " .. tostring(Grouped()) .. ", game numbers " ..
+      tostring(okC and cv) .. "/" .. tostring(okV and cv2) .. ", stuck " .. tostring(ns.stuck))
     return
   elseif cmd == "test" then
     Test(); Say("three sample crits" .. ".")

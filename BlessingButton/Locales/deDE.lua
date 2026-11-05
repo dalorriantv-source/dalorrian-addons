@@ -102,4 +102,5 @@ ns.LOCALES.deDE = function() return {
   ["who you bless"] = "wen du segnest",
   ["with the"] = "mit dem",
   ["your blessings (%d paladins sharing)"] = "deine Segen (%d Paladine teilen sich)",
+  ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Umschalt-Ziehen verschiebt den Knopf ohne zu wirken, und er bleibt, bis du loslässt",
 } end
