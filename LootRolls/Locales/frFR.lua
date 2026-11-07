@@ -76,4 +76,5 @@ ns.LOCALES.frFR = function() return {
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Première version : des barres nettes Besoin, Cupidité et Passer à placer où tu veux",
   ["Settings rows with four choices fit inside the window now"] = "Les lignes de réglages à quatre choix tiennent maintenant dans la fenêtre",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Correction d'une fuite de mémoire : les jets lus dans le chat sont libérés dès que leurs barres se ferment",
+  ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "Compatible avec Pawn : une flèche verte sur l'objet quand c'est une amélioration pour vous, et clic droit sur l'objet pour le comparer dans Pawn, comme sur la fenêtre de jet du jeu",
 } end

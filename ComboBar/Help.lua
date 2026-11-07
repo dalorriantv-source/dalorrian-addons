@@ -12,6 +12,7 @@
 -- A setting with cycle = true is one button that steps through its choices (Language uses it).
 -- A setting with slider = { min, max, step } is a slider: get/set use numbers, format(v) is the text beside it,
 -- and release() runs when you let go of it (a sound preview, say).
+-- A setting with header = "Look" is just a small heading that groups the rows under it.
 -- Every addon gets a Language row (Lang.lua) at the bottom of its settings.
 -- Open it with ns.OpenHelp().
 
@@ -185,6 +186,13 @@ local function Build()
     local h = Text(win, "GameFontNormal"); h:SetPoint("TOPLEFT", 16, y); h:SetText("Settings")
     y = y - 24
     for _, s in ipairs(settings) do
+     if s.header then
+      -- (Combo Bar 1.6.0) a small gold heading that groups the rows under it
+      local hd = Text(win, "GameFontNormalSmall"); hd:SetPoint("TOPLEFT", 16, y - 6); hd:SetText(s.header)
+      local ln = win:CreateTexture(nil, "ARTWORK"); ln:SetTexture(FLAT); ln:SetVertexColor(GOLD[1], GOLD[2], GOLD[3], 0.25)
+      ln:SetHeight(1); ln:SetPoint("LEFT", hd, "RIGHT", 8, 0); ln:SetPoint("RIGHT", win, "RIGHT", -16, 0)
+      y = y - 24
+     else
       local lab = Text(win, "GameFontHighlightSmall"); lab:SetPoint("TOPLEFT", 16, y - 4); lab:SetWidth(150); lab:SetText(s.label)
       local row = { s = s, btns = {} }
       if s.slider then
@@ -265,6 +273,7 @@ local function Build()
       end
       win.rows[#win.rows + 1] = row
       y = y - 28
+     end
     end
     y = y - 10
   end

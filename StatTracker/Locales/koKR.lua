@@ -151,4 +151,5 @@ ns.LOCALES.koKR = function() return {
   ["Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count"] = "능력치 우선순위는 최신 WoW: Forever 가이드를 따릅니다: 근접과 사냥꾼은 무기 피해가 먼저, 생존 사냥꾼은 근접이며, 가속과 숙련도 반영됩니다",
   ["Most Important Stats"] = "가장 중요한 능력치",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "메모리를 덜 사용합니다: 캐릭터 창의 장비 능력치가 이제 매초가 아니라 장비가 바뀔 때 갱신됩니다",
+  ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "캐릭터 창에서 더 멀리 축소: 캐릭터 위에서 휠을 계속 아래로 굴리면 카메라가 뒤로 물러납니다",
 } end

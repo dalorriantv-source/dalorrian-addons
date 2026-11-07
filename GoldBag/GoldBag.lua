@@ -122,6 +122,7 @@ end
 local function Place()
   box:ClearAllPoints()
   box:SetScale(DB.scale or 1)
+  if box.SetUserPlaced then pcall(box.SetUserPlaced, box, false) end   -- (1.2.2) the game's own layout save stays out of it
   if DB.point then
     box:SetPoint(DB.point, UIParent, DB.rel or DB.point, DB.x or 0, DB.y or 0)
     return
@@ -136,12 +137,14 @@ local function Place()
     if t and t > top then top = t end
   end
   local us = box:GetEffectiveScale()
-  box:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", (bag:GetRight() * bs) / us, (top / us) + 3)
+  -- (1.2.2) hung on the bag bar itself, so it rides along when a bar addon moves the bags after login
+  box:SetPoint("BOTTOMRIGHT", bag, "TOPRIGHT", 0, (top - bag:GetTop() * bs) / us + 3)
 end
 
 box:SetScript("OnDragStart", function(self) if IsShiftKeyDown() then self:StartMoving() end end)
 box:SetScript("OnDragStop", function(self)
   self:StopMovingOrSizing()
+  if self.SetUserPlaced then pcall(self.SetUserPlaced, self, false) end
   local p, _, rp, x, y = self:GetPoint(1)
   DB.point, DB.rel, DB.x, DB.y = p, rp, x, y
 end)
@@ -206,6 +209,8 @@ ev:SetScript("OnEvent", function(_, e, a1)
     pcall(MinimapButton)
     -- bar addons (Bartender and friends) move the bag buttons a moment after login
     C_Timer.After(2, function() Place(); Update() end)
+    -- (1.2.2) and the experience and reputation bars can show up later still: look again
+    C_Timer.After(5, Place); C_Timer.After(10, Place)
   elseif e == "PLAYER_MONEY" then
     Update()
   else
@@ -235,6 +240,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.2.2", "Your gold box stays put when you log back in. It now hangs on your bag bar and checks its spot again a few seconds after login, once every bar has loaded" },
     { v = "1.2.1", "Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it" },
     { v = "1.2.0", "Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one" },
     { v = "1.1.0", "A Settings & Help window, a minimap button and 10 languages" },

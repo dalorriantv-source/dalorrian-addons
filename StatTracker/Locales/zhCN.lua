@@ -150,4 +150,5 @@ ns.LOCALES.zhCN = function() return {
   ["Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count"] = "属性优先级参照最新的 WoW: Forever 指南：近战和猎人武器伤害优先，生存猎人改为近战，急速和精准也计算在内",
   ["Most Important Stats"] = "最重要的属性",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "占用更少内存：角色窗口上的装备属性现在只在装备变化时更新，而不是每秒更新",
+  ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "角色窗口可以缩得更远：在角色上继续向下滚动鼠标滚轮即可拉远镜头",
 } end

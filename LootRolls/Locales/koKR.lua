@@ -80,4 +80,5 @@ ns.LOCALES.koKR = function() return {
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "첫 출시: 어디든 둘 수 있는 깔끔한 입찰, 차비, 포기 바",
   ["Settings rows with four choices fit inside the window now"] = "선택지가 네 개인 설정 줄이 이제 창 안에 들어갑니다",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "메모리 누수 수정: 채팅에서 읽은 주사위 결과는 막대가 닫히면 비워집니다",
+  ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "Pawn과 함께 작동합니다: 나에게 업그레이드인 아이템에 초록 화살표가 붙고, 아이템을 우클릭하면 게임 기본 주사위 창처럼 Pawn에서 비교합니다",
 } end

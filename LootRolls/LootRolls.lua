@@ -169,10 +169,22 @@ local function NewBar()
     GameTooltip:Show()
   end)
   b.item:SetScript("OnLeave", function() GameTooltip:Hide() end)
-  b.item:SetScript("OnClick", function()
+  b.item:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  b.item:SetScript("OnClick", function(_, button)
     local link = b.test and b.itemLink or (b.rollID and GetLootRollItemLink(b.rollID))
+    -- (1.2.0) with Pawn: right-click compares it to what you wear, like on the game's own roll window
+    if button == "RightButton" then
+      if link and PawnUI_SetCompareItemAndShow then pcall(PawnUI_SetCompareItemAndShow, 2, link) end
+      return
+    end
     if link and HandleModifiedItemClick then HandleModifiedItemClick(link) end
   end)
+  -- (1.2.0) Pawn's green upgrade arrow on the item when it's an upgrade for you
+  b.item.up = b.item:CreateTexture(nil, "OVERLAY")
+  b.item.up:SetTexture("Interface\\AddOns\\Pawn\\Textures\\UpgradeArrow")
+  b.item.up:SetSize(16, 16)
+  b.item.up:SetPoint("TOPLEFT", -3, 3)
+  b.item.up:Hide()
 
   b.name = b:CreateFontString(nil, "OVERLAY")
   b.name:SetFont(FONT, 12, "")
@@ -262,6 +274,23 @@ local function Enable(btn, on, reason)
   btn.reason = (not on) and reason or nil
 end
 
+-- (1.2.0) Pawn: is this item an upgrade for any of your scales? (Pawn's own setting for the loot window decides)
+local function PawnUpgrade(b, link, tries)
+  b.item.up:Hide()
+  if not (link and PawnIsItemAnUpgrade and PawnGetItemData and PawnCanItemHaveStats) then return end
+  if PawnCommon and PawnCommon.ShowLootUpgradeAdvisor == false then return end
+  local ok, can = pcall(PawnCanItemHaveStats, link)
+  if not ok or not can then return end
+  local ok2, item = pcall(PawnGetItemData, link)
+  if not ok2 or not item then
+    -- the game hasn't sent the item's stats yet: look again in a moment
+    if (tries or 0) < 5 and C_Timer then C_Timer.After(0.5, function() if b.itemLink == link then PawnUpgrade(b, link, (tries or 0) + 1) end end) end
+    return
+  end
+  local ok3, info = pcall(PawnIsItemAnUpgrade, item)
+  if ok3 and info then b.item.up:Show() end
+end
+
 -- fill a bar and show it
 local function Open(b, d)
   b.itemName, b.itemLink = d.name, d.link
@@ -270,6 +299,7 @@ local function Open(b, d)
   b.item.icon:SetTexture(d.texture or "Interface\\Icons\\INV_Misc_QuestionMark")
   b.item:SetBackdropBorderColor(r, g, bl, 1)
   b.item.count:SetText((d.count or 1) > 1 and d.count or "")
+  PawnUpgrade(b, d.link)
   b.name:SetText(d.name or "")
   b.name:SetTextColor(r, g, bl)
   b.timer:SetStatusBarColor(r, g, bl, 0.9)
@@ -499,6 +529,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.LOOTROLLS("test") end },
   },
   notes = {
+    { v = "1.2.0", "Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window" },
     { v = "1.1.2", "Fixed a memory leak: rolls read from chat are let go once their bars close" },
     { v = "1.1.1", "Settings rows with four choices fit inside the window now" },
     { v = "1.1.0", "After a roll the bar stays up a few seconds with who won and what they rolled. Pick how long under Result Stays", "A Settings & Help window, a minimap button and 10 languages" },

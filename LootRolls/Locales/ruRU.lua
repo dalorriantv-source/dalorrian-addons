@@ -80,4 +80,5 @@ ns.LOCALES.ruRU = function() return {
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Первая версия: чистые полоски Нужно, Не откажусь и Отказаться, которые можно поставить куда угодно",
   ["Settings rows with four choices fit inside the window now"] = "Строки настроек с четырьмя вариантами теперь помещаются в окно",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Исправлена утечка памяти: броски, прочитанные из чата, освобождаются, когда закрываются их полосы",
+  ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "Работает с Pawn: зелёная стрелка на предмете, если он лучше вашего, а правый клик по предмету сравнивает его в Pawn, как в стандартном окне розыгрыша",
 } end

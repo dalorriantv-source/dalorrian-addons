@@ -70,4 +70,5 @@ ns.LOCALES.zhTW = function() return {
   ["no character called %s"] = "沒有名為 %s 的角色",
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "滑鼠移到金幣袋上可看到每個角色的金幣和總數。每個角色會在你下次登入它時加入。在滑鼠懸停顯示中選擇此角色只看一個",
   ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "同名角色（WoW: Forever 的姓氏）現在在滑鼠提示裡各佔一行。每個角色在你下次登入時會重新出現",
+  ["Your gold box stays put when you log back in. It now hangs on your bag bar and checks its spot again a few seconds after login, once every bar has loaded"] = "重新登入後金幣框會留在原位。它現在掛在背包列上，並在登入幾秒後、所有動作條載入完畢時再次檢查位置",
 } end

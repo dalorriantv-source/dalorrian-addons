@@ -76,4 +76,5 @@ ns.LOCALES.deDE = function() return {
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Erste Version: klare Leisten für Bedarf, Gier und Passen, die du überall hinlegen kannst",
   ["Settings rows with four choices fit inside the window now"] = "Einstellungszeilen mit vier Auswahlen passen jetzt ins Fenster",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Speicherleck behoben: Aus dem Chat gelesene Würfe werden freigegeben, sobald ihre Leisten schließen",
+  ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "Funktioniert mit Pawn: ein grüner Pfeil auf dem Gegenstand, wenn er eine Verbesserung für dich ist, und Rechtsklick auf den Gegenstand vergleicht ihn in Pawn, wie im Würfelfenster des Spiels",
 } end

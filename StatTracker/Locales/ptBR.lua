@@ -151,4 +151,5 @@ ns.LOCALES.ptBR = function() return {
   ["Stat priorities follow the current WoW: Forever spec guides: weapon damage comes first for melee and hunters, Survival hunters are melee, and Haste and Expertise count"] = "As prioridades seguem os guias atuais de WoW: Forever: dano da arma primeiro para corpo a corpo e caçadores, caçadores de Sobrevivência lutam corpo a corpo, e Aceleração e Especialização contam",
   ["Most Important Stats"] = "Atributos mais importantes",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Usa menos memória: os atributos do equipamento na janela do personagem agora atualizam quando seu equipamento muda, não a cada segundo",
+  ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "Afaste mais a câmera na janela do personagem: continue rolando para baixo sobre o personagem para afastar a câmera",
 } end

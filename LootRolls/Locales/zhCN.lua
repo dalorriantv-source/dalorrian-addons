@@ -79,4 +79,5 @@ ns.LOCALES.zhCN = function() return {
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "首个版本：可放在任何位置的简洁需求、贪婪、放弃条",
   ["Settings rows with four choices fit inside the window now"] = "有四个选项的设置行现在不会超出窗口了",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "修复了内存泄漏：从聊天中读取的掷骰结果会在其进度条关闭后释放",
+  ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "支持 Pawn：如果物品对你是提升，图标上会有绿色箭头；右键点击物品可以在 Pawn 里对比，和游戏自带的掷骰窗口一样",
 } end

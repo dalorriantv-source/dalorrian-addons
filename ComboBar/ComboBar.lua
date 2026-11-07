@@ -20,12 +20,15 @@ bar:SetMovable(true)
 bar:SetClampedToScreen(true)
 bar:EnableMouse(false)   -- it sits in the middle of the screen: it only catches the mouse while you hold Shift
 bar:RegisterForDrag("LeftButton")
+local dragging = false   -- (1.4.1) while stuck to your character, a drag nudges it instead
 bar:SetScript("OnDragStart", function(self)
-  if DB.stick == "below" or DB.stick == "above" then return end   -- (1.4.0) stuck to your character: it moves with you
-  if IsShiftKeyDown() or DB.unlocked then self:StartMoving() end
+  if DB.stick == "target" then return end   -- (1.5.0) riding the target's nameplate
+  if IsShiftKeyDown() or DB.unlocked then dragging = true; self:StartMoving() end
 end)
 bar:SetScript("OnDragStop", function(self)
   self:StopMovingOrSizing()
+  dragging = false
+  if ns.Nudged and ns.Nudged() then return end
   local p, _, rp, x, y = self:GetPoint(1)
   DB.point, DB.rel, DB.x, DB.y = p, rp, x, y
 end)
@@ -178,36 +181,106 @@ local function Layout()
 end
 
 ---------------------------------------------------------------------------
--- (1.4.0) Stick To Character: the bar rides on your own nameplate (the game's Personal Resource Display),
--- so it follows your character on screen, and grows and shrinks with it as the nameplate does.
--- With no nameplate to ride on (it's off, or the game hides it) the bar sits in its usual spot.
+-- (1.4.1) Stick To Character: the camera always looks at your character, so the bar sits a set
+-- distance under (or over) the middle of the screen, and that distance and the bar's size follow
+-- the camera zoom. Shift-drag (or Move It) nudges it, and the nudge is kept.
+-- (1.4.0 rode on the game's Personal Resource Display, but on Forever that sits in a fixed spot,
+-- with its own health, energy and combo points, so it's no longer used and gets switched back off.)
 ---------------------------------------------------------------------------
-local plate
 local follow = CreateFrame("Frame")
-local function SelfPlate()
-  if not (C_NamePlate and C_NamePlate.GetNamePlateForUnit) then return nil end
-  local ok, p = pcall(C_NamePlate.GetNamePlateForUnit, "player")
-  if ok and p and not (p.IsForbidden and p:IsForbidden()) then return p end
+local function Sticking() return DB and (DB.stick == "below" or DB.stick == "above" or DB.stick == "left" or DB.stick == "right") end
+local function Riding() return Sticking() or (DB and DB.stick == "target") end
+local function Zoom()
+  local ok, z = pcall(GetCameraZoom)
+  if ok and type(z) == "number" and z > 0 then return z end
+  return 15
 end
-local function Sticking() return DB and (DB.stick == "below" or DB.stick == "above") end
-local function TurnOnPlate()
-  local set = (C_CVar and C_CVar.SetCVar) or SetCVar
-  if set then
-    pcall(set, "nameplateShowSelf", "1")
-    if DB.show == "always" then pcall(set, "NameplatePersonalShowAlways", "1") end
+local lastZ, spotY, spotS, spotX
+-- (1.4.2) how tall each race stands, in yards: the camera looks at the top of your head,
+-- so Over sits just above the middle of the screen and Under sits a body height below it
+local TALL = { Human = 1.9, Dwarf = 1.5, NightElf = 2.3, Gnome = 1.0, Draenei = 2.3, Worgen = 2.2,
+  Orc = 1.9, Scourge = 1.8, Tauren = 2.5, Troll = 2.2, BloodElf = 1.9, Goblin = 1.1, Pandaren = 2.0 }
+local function Tall()
+  local ok, _, race = pcall(UnitRace, "player")
+  return (ok and race and TALL[race]) or 1.9
+end
+local function Spot()
+  local d = math.max(1.5, Zoom())
+  local H = UIParent:GetHeight() or 768
+  local yard = (H / 2) / (d * 0.57)                        -- how tall a yard looks at your character
+  local s = (DB.scale or 1) * math.max(0.6, math.min(1.5, 18 / (d + 3)))   -- normal size at the usual zoom
+  local half = ((bar:GetHeight() or 30) * s) / 2           -- keep the whole bar clear of you
+  local halfW = ((bar:GetWidth() or 30) * s) / 2
+  local h = Tall()
+  local x, y = 0, 0
+  if DB.stick == "above" then y = 0.18 * h * yard + 8 + half   -- (1.4.3) a little more room over the head
+  elseif DB.stick == "left" or DB.stick == "right" then        -- (1.4.4) beside you, level with your middle
+    x = 0.3 * h * yard + 10 + halfW
+    if DB.stick == "left" then x = -x end
+    y = -0.5 * h * yard
+  else y = -(1.02 * h * yard + 6 + half) end                    -- (1.4.3) all the way under the feet
+  return y, s, x
+end
+local function Follow(force)
+  if dragging then return end
+  local z = Zoom()
+  if not force and lastZ and math.abs(z - lastZ) < 0.01 then return end
+  lastZ = z
+  spotY, spotS, spotX = Spot()
+  bar:SetScale(spotS)
+  bar:ClearAllPoints()
+  bar:SetPoint("CENTER", UIParent, "CENTER", ((spotX or 0) + (DB.stickX or 0)) / spotS, (spotY + (DB.stickY or 0)) / spotS)
+end
+function ns.Nudged()
+  if not Sticking() or not spotS then return false end
+  local cx, cy = bar:GetCenter()
+  if cx then
+    DB.stickX = cx * spotS - (UIParent:GetWidth() or 0) / 2 - (spotX or 0)
+    DB.stickY = cy * spotS - (UIParent:GetHeight() or 0) / 2 - spotY
   end
+  Follow(true)
+  return true
 end
+local function UndoPlate()   -- (1.4.1) turn off what 1.4.0 switched on, once
+  if DB.plateUndone then return end
+  DB.plateUndone = true
+  if DB.stick == nil then return end   -- never touched Stick To: 1.4.0 changed nothing for you
+  local set = (C_CVar and C_CVar.SetCVar) or SetCVar
+  if set then pcall(set, "nameplateShowSelf", "0"); pcall(set, "NameplatePersonalShowAlways", "0") end
+end
+-- (1.5.0) Over Target: the bar rides on your target's nameplate, the way NugComboBar can.
+-- No nameplate showing (nameplates off, target out of sight, or a friendly plate the game locks): it sits in its usual spot.
+local function TargetPlate()
+  if not (C_NamePlate and C_NamePlate.GetNamePlateForUnit) then return nil end
+  local ok, p = pcall(C_NamePlate.GetNamePlateForUnit, "target")
+  if not ok or not p or (p.IsForbidden and p:IsForbidden()) then return nil end
+  local uf = p.UnitFrame
+  if uf and not (uf.IsForbidden and uf:IsForbidden()) then
+    -- (1.5.1) right on top of the health bar (some nameplate looks put the name under the bar)
+    local hb = uf.healthBar or uf.HealthBar or (uf.HealthBarsContainer and uf.HealthBarsContainer.healthBar)
+    if type(hb) == "table" and hb.IsShown and hb:IsShown() then return hb end
+    if type(uf.name) == "table" and uf.name.IsShown and uf.name:IsShown() then return uf.name end
+    return uf
+  end
+  return p
+end
+local onPlate
 local function Place()
   bar:ClearAllPoints()
-  plate = Sticking() and SelfPlate() or nil
-  if plate then
-    if DB.stick == "above" then bar:SetPoint("BOTTOM", plate, "TOP", 0, 6)
-    else bar:SetPoint("TOP", plate, "BOTTOM", 0, -6) end
-    follow:SetScript("OnUpdate", function()
-      if not plate:IsShown() then return end
-      local s = (plate:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
-      bar:SetScale((DB.scale or 1) * s)
-    end)
+  onPlate = nil
+  if DB.stick == "target" then
+    follow:SetScript("OnUpdate", nil)
+    local plate = TargetPlate()
+    if plate then
+      onPlate = plate
+      bar:SetScale((DB.scale or 1) * 0.8)
+      bar:SetPoint("BOTTOM", plate, "TOP", 0, (DB.plateGap or 2) / ((DB.scale or 1) * 0.8))   -- (1.6.0) Target Height
+      return
+    end
+  end
+  if Sticking() then
+    follow:SetScript("OnUpdate", function() Follow() end)
+    Follow(true)
     return
   end
   follow:SetScript("OnUpdate", nil)
@@ -236,7 +309,7 @@ local function Update()
   if away then bar:Hide() else bar:Show() end
   en:SetShown(DB.energy and (UnitPowerType("player") == ENERGY or testing) and true or false)
   if en:IsShown() then Energy() end
-  bar:SetAlpha((n == 0 and not DB.unlocked) and 0.5 or 1)
+  bar:SetAlpha(((n == 0 and not DB.unlocked) and 0.5 or 1) * (DB.alpha or 100) / 100)   -- (1.4.2) Opacity slider
 end
 
 local MinimapButton   -- (1.1.0) further down
@@ -251,21 +324,34 @@ end
 ev:SetScript("OnEvent", function(_, e, a1)
   if e == "ADDON_LOADED" then
     if a1 ~= "ComboBar" then return end
+    -- (1.6.1) new players start with red circles over their target, shown in combat;
+    -- anyone who already had Combo Bar keeps the look they had (gold squares in their usual spot)
+    local fresh = ComboBarDB == nil
     ComboBarDB = ComboBarDB or {}
     DB = ComboBarDB
+    if fresh then
+      DB.stick, DB.shape, DB.color, DB.show = "target", "circle", "red", "combat"
+    else
+      if DB.shape == nil then DB.shape = "square" end
+      if DB.color == nil then DB.color = "gold" end
+    end
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
     if DB.show == nil then DB.show = (DB.fade == false) and "always" or "combat" end   -- (1.3.0) from the old When Empty
     return
   end
   if not DB then return end
-  if e == "MODIFIER_STATE_CHANGED" then bar:EnableMouse((not Sticking() and (IsShiftKeyDown() or DB.unlocked)) and true or false) return end
+  if e == "MODIFIER_STATE_CHANGED" then bar:EnableMouse((DB.stick ~= "target" and (IsShiftKeyDown() or DB.unlocked)) and true or false) return end
+  -- (1.5.0) Over Target: move with the target and its nameplate coming and going
   if e == "NAME_PLATE_UNIT_ADDED" or e == "NAME_PLATE_UNIT_REMOVED" then
-    local mine = false
-    pcall(function() mine = UnitIsUnit(a1, "player") end)
-    if mine and Sticking() then Place() end
+    if DB.stick == "target" then
+      local mine = false
+      pcall(function() mine = UnitIsUnit(a1, "target") end)
+      if mine or e == "NAME_PLATE_UNIT_REMOVED" then Place() end
+    end
     return
   end
-  if e == "PLAYER_LOGIN" then if Sticking() then TurnOnPlate() end; Place(); Layout(); pcall(MinimapButton) end
+  if e == "PLAYER_TARGET_CHANGED" and DB.stick == "target" then Place() end
+  if e == "PLAYER_LOGIN" then pcall(UndoPlate); Layout(); Place(); pcall(MinimapButton) end
   if (e == "UNIT_POWER_FREQUENT" or e == "UNIT_POWER_UPDATE" or e == "UNIT_MAXPOWER" or e == "UNIT_DISPLAYPOWER") and a1 ~= "player" then return end
   Update()
 end)
@@ -292,34 +378,54 @@ ns.HelpConfig = {
   title = "Combo Bar",
   tag = "Combo Bar",
   settings = {
+    -- (1.6.0) grouped: what it looks like, where it sits, when it shows
+    { header = "Look" },
     { label = "Combo Bar", choices = { { "On", "on" }, { "Off", "off" } },
       get = function() return DB.off and "off" or "on" end,
       set = function(v) DB.off = (v == "off") or nil; Update() end },
-    { label = "Direction", choices = { { "Horizontal", false }, { "Vertical", true } },
-      get = function() return DB.vertical and true or false end,
-      set = function(v) DB.vertical = v; Layout(); Update() end },
-    { label = "Shape", choices = { { "Squares", "square" }, { "Circles", "circle" }, { "Diamonds", "diamond" }, { "Triangles", "triangle" }, { "Hexagons", "hexagon" } },
+    { label = "Shape", cycle = true, choices = { { "Squares", "square" }, { "Circles", "circle" }, { "Diamonds", "diamond" }, { "Triangles", "triangle" }, { "Hexagons", "hexagon" } },
       get = function() return DB.shape or "square" end,
       set = function(v) DB.shape = v; for _, p in ipairs(bar.pips) do Shape(p) end; Update() end },
     { label = "Color", cycle = true, choices = { { "Gold", "gold" }, { "Orange", "orange" }, { "Red", "red" }, { "Pink", "pink" },
         { "Purple", "purple" }, { "Blue", "blue" }, { "Cyan", "cyan" }, { "Green", "green" }, { "White", "white" }, { "Class Color", "class" } },
       get = function() return DB.color or "gold" end, set = function(v) DB.color = v; Update() end },
+    { label = "Direction", choices = { { "Horizontal", false }, { "Vertical", true } },
+      get = function() return DB.vertical and true or false end,
+      set = function(v) DB.vertical = v; Layout(); Place(); Update() end },
     { label = "Energy Bar", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.energy and true or false end, set = function(v) DB.energy = v; Update() end },
-    { label = "Stick To", choices = { { "Screen", "screen" }, { "Under Character", "below" }, { "Over Character", "above" } },
-      get = function() return Sticking() and DB.stick or "screen" end,
-      set = function(v) DB.stick = v; if Sticking() then TurnOnPlate() end; Place(); Update() end },
     { label = "Size", choices = { { "Small", 0.8 }, { "Normal", 1 }, { "Big", 1.3 } },
       get = function() return DB.scale or 1 end, set = function(v) DB.scale = v; Place() end },
-    { label = "Show", choices = { { "Always", "always" }, { "In Combat", "combat" } },
-      get = function() return DB.show or "combat" end, set = function(v) DB.show = v; if Sticking() then TurnOnPlate() end; Update() end },
+    { label = "Opacity", slider = { 10, 100, 5 }, format = function(v) return v .. "%" end,
+      get = function() return DB.alpha or 100 end, set = function(v) DB.alpha = v; Update() end },
+    { header = "Position" },
+    { label = "Stick To", cycle = true, choices = { { "Screen", "screen" }, { "Under Character", "below" }, { "Over Character", "above" },
+        { "Left of Character", "left" }, { "Right of Character", "right" }, { "Over Target", "target" } },
+      get = function() return Riding() and DB.stick or "screen" end,
+      set = function(v) DB.stick = v; Place(); Update() end },
+    { label = "Target Height", slider = { 0, 60, 2 }, format = function(v) return "+" .. v end,
+      get = function() return DB.plateGap or 2 end, set = function(v) DB.plateGap = v; Place() end },
     { label = "Move It", choices = { { "Locked", "lock" }, { "Move It", "move" }, { "Reset", "reset" } },
       get = function() return DB.unlocked and "move" or "lock" end,
       set = function(v) SlashCmdList.COMBOBAR(v == "move" and "unlock" or v) end },
+    { header = "Showing" },
+    { label = "Show", choices = { { "Always", "always" }, { "In Combat", "combat" } },
+      get = function() return DB.show or "combat" end, set = function(v) DB.show = v; Update() end },
     { label = "Preview", choices = { { "Show Me", "test" } },
       get = function() return nil end, set = function() SlashCmdList.COMBOBAR("test") end },
   },
   notes = {
+    { v = "1.6.1", "New players start with red circles over their target, shown in combat. If you already use Combo Bar, nothing changes" },
+    { v = "1.6.0", "Settings are grouped now: Look, Position and Showing",
+      "New Target Height slider: how far over your target's health bar the points sit with Over Target, so you can leave room for its buffs and debuffs" },
+    { v = "1.5.1", "Over Target sits right on top of the target's health bar now, not up in the air" },
+    { v = "1.5.0", "New Stick To choice: Over Target puts your points on your target's nameplate, like NugComboBar. Needs enemy nameplates on (V key). With no nameplate showing it sits in its usual spot" },
+    { v = "1.4.4", "Stick To has Left of Character and Right of Character now, made for the Vertical bar. Stick To is one button that cycles, so it fits" },
+    { v = "1.4.3", "Over Character sits a bit higher over your head, and Under Character sits fully under your feet" },
+    { v = "1.4.2", "Over Character and Under Character sit right on your character now: just over your head, or just under your feet",
+      "New Opacity slider to make the bar see-through" },
+    { v = "1.4.1", "Stick To Character now follows your character and sizes with the camera zoom. Shift-drag nudges it into place. It no longer turns on the game's Personal Resource Display (the extra health, energy and combo points), and switches it back off",
+      "Shape is one button now, like Color, so the settings fit" },
     { v = "1.4.0", "Pick the shape of your points (squares, circles, diamonds, triangles or hexagons) and their color, class color included",
       "New Stick To setting: Under Character or Over Character keeps the bar on your character, moving and sizing with it as the camera zooms. It rides on the game's Personal Resource Display, which it switches on for you" },
     { v = "1.3.0", "Direction now reads Horizontal or Vertical",
@@ -331,7 +437,7 @@ ns.HelpConfig = {
   },
   report = function()
     return { "Class " .. tostring(CLASS) .. ", max " .. tostring(Max()) .. ", vertical " .. tostring(DB.vertical) ..
-      ", show " .. tostring(DB.show) .. ", stick " .. tostring(DB.stick) .. " (plate " .. tostring(plate ~= nil) .. "), power " .. tostring(UnitPowerType("player")) .. (DB.off and ", turned off" or "") }
+      ", show " .. tostring(DB.show) .. ", stick " .. tostring(DB.stick) .. " (zoom " .. string.format("%.1f", Zoom()) .. "), power " .. tostring(UnitPowerType("player")) .. (DB.off and ", turned off" or "") }
   end,
 }
 
@@ -391,9 +497,7 @@ SlashCmdList.COMBOBAR = function(msg)
     if not Wanted() then Say("your class doesn't use combo points, but here's how it looks.") end
     Test()
   elseif cmd == "vertical" then
-    DB.vertical = not DB.vertical; Layout(); Update(); Say(DB.vertical and "Vertical" or "Horizontal")
-  elseif (cmd == "unlock" or cmd == "move") and Sticking() then
-    Say("it's stuck to your character. Pick Screen under Stick To to move it by hand.")
+    DB.vertical = not DB.vertical; Layout(); Place(); Update(); Say(DB.vertical and "Vertical" or "Horizontal")
   elseif cmd == "unlock" or cmd == "move" then
     DB.unlocked = true; bar:EnableMouse(true); bar:Show(); Update()
     Say("drag it where you want it, then /combo lock. Shift-drag works any time.")
@@ -413,7 +517,7 @@ SlashCmdList.COMBOBAR = function(msg)
   elseif cmd == "off" then
     DB.off = not DB.off or nil; Update(); Say(DB.off and "turned off" or "turned on")
   elseif cmd == "reset" then
-    DB.point, DB.rel, DB.x, DB.y, DB.scale = nil, nil, nil, nil, 1; Place(); Say("back under your character.")
+    DB.point, DB.rel, DB.x, DB.y, DB.scale, DB.stickX, DB.stickY = nil, nil, nil, nil, 1, nil, nil; Place(); Say("back under your character.")
   elseif cmd == "help" or cmd == "settings" then
     if ns.OpenHelp then ns.OpenHelp() end
   else

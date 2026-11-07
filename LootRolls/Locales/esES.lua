@@ -79,4 +79,5 @@ ns.LOCALES.esES = function() return {
   ["First release: clean Need, Greed and Pass bars you can put anywhere"] = "Primera versión: barras limpias de Necesidad, Codicia y Pasar que puedes poner donde quieras",
   ["Settings rows with four choices fit inside the window now"] = "Las filas de ajustes con cuatro opciones ahora caben en la ventana",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "Corregida una fuga de memoria: las tiradas leídas del chat se liberan cuando se cierran sus barras",
+  ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "Funciona con Pawn: una flecha verde en el objeto cuando es una mejora para ti, y clic derecho en el objeto para compararlo en Pawn, como en la ventana de tiradas del juego",
 } end

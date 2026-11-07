@@ -71,4 +71,5 @@ ns.LOCALES.ruRU = function() return {
   ["no character called %s"] = "нет персонажа с именем %s",
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "Наведи на кошель, чтобы увидеть золото каждого персонажа и общую сумму. Персонаж появится, когда ты в следующий раз зайдёшь им. Выбери Этот персонаж в При наведении, чтобы видеть только одного",
   ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "У персонажей с одинаковым именем (фамилии в WoW: Forever) теперь своя строка в подсказке. Каждый снова появится, когда ты зайдёшь им в следующий раз",
+  ["Your gold box stays put when you log back in. It now hangs on your bag bar and checks its spot again a few seconds after login, once every bar has loaded"] = "Окошко с золотом остаётся на месте после повторного входа. Теперь оно прикреплено к панели сумок и проверяет своё место через несколько секунд после входа, когда все панели загрузятся",
 } end

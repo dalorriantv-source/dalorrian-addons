@@ -626,8 +626,40 @@ end
 ns.ToggleStats = Toggle
 ns.StatSections = Sections
 
+-- (1.2.0) the character model zooms out further. Newer clients use a model scene (its camera gets a longer
+-- reach); older ones a plain model (scrolling down past its usual limit pulls the camera back)
+local function ZoomOut()
+  local scene = _G.CharacterModelScene
+  if scene and not scene.statTrackerZoom then
+    scene.statTrackerZoom = true
+    local function Widen()
+      local cam = scene.GetActiveCamera and scene:GetActiveCamera()
+      if cam and not cam.statTrackerWide and cam.SetMaxZoomDistance and cam.GetMaxZoomDistance then
+        local ok, far = pcall(cam.GetMaxZoomDistance, cam)
+        if ok and type(far) == "number" and far > 0 then cam.statTrackerWide = true; pcall(cam.SetMaxZoomDistance, cam, far * 1.8) end
+      end
+    end
+    scene:HookScript("OnShow", function() C_Timer.After(0, Widen) end)
+    Widen()
+  end
+  local m = _G.CharacterModelFrame
+  if m and m.SetCamDistanceScale and not m.statTrackerZoom then
+    m.statTrackerZoom = true
+    local far = 1
+    if m.EnableMouseWheel then m:EnableMouseWheel(true) end
+    m:HookScript("OnMouseWheel", function(self, delta)
+      local z = self.GetPortraitZoom and self:GetPortraitZoom() or 0
+      if delta < 0 and z <= 0.001 then far = math.min(2.2, far + 0.15)
+      elseif delta > 0 and far > 1 then far = math.max(1, far - 0.15) end
+      self:SetCamDistanceScale(far)
+    end)
+    m:HookScript("OnShow", function(self) self:SetCamDistanceScale(far) end)
+  end
+end
+
 -- riding along with the character window
 local function HookCharacter()
+  pcall(ZoomOut)
   local cf = _G.CharacterFrame
   if not cf or cf.statTrackerHooked then return end
   cf.statTrackerHooked = true
@@ -695,6 +727,7 @@ ns.HelpConfig = {
       get = function() return DB.gear and true or false end, set = function(v) DB.gear = v; Paint() end },
   },
   notes = {
+    { v = "1.2.0", "Zoom out further on your character window: keep scrolling down on your character to pull the camera back" },
     { v = "1.1.1", "Uses less memory: the gear stats on your character window now update when your gear changes, not every second" },
     { v = "1.1.0", "Pick your spec (or let it read your talents) and the panel puts your most important stats first",
       "On your character window, each piece of gear shows its stats in green when they're good for your spec, gray when they're so-so and red when they're wrong for you",

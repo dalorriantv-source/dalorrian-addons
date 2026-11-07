@@ -70,4 +70,5 @@ ns.LOCALES.esES = function() return {
   ["no character called %s"] = "ningún personaje llamado %s",
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "Pasa el ratón por la bolsa para ver el oro de cada personaje y el total. Cada personaje aparece la próxima vez que entres con él. Elige Este personaje en Al pasar el ratón para ver solo uno",
   ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "Los personajes que comparten nombre (apellidos de WoW: Forever) tienen cada uno su línea al pasar el ratón. Cada uno vuelve a aparecer la próxima vez que entres con él",
+  ["Your gold box stays put when you log back in. It now hangs on your bag bar and checks its spot again a few seconds after login, once every bar has loaded"] = "Tu caja de oro se queda en su sitio al volver a entrar. Ahora va pegada a tu barra de bolsas y revisa su posición unos segundos después de entrar, cuando todas las barras han cargado",
 } end
