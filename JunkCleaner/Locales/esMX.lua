@@ -101,4 +101,5 @@ ns.LOCALES.esMX = function() return {
   ["%s is locked and off the junk list"] = "%s está bloqueado y fuera de la lista de basura",
   ["%s is unlocked and back on the junk list"] = "%s está desbloqueado y vuelve a la lista de basura",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "Solo los objetos grises entran en la lista. Clic derecho en uno para bloquearlo, y Bloqueados muestra lo que has bloqueado",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en calabozos y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
 } end

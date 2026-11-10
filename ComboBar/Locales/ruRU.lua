@@ -124,4 +124,6 @@ ns.LOCALES.ruRU = function() return {
   ["Settings are grouped now: Look, Position and Showing"] = "Настройки теперь сгруппированы: Вид, Положение и Показ",
   ["New Target Height slider: how far over your target's health bar the points sit with Over Target, so you can leave room for its buffs and debuffs"] = "Новый ползунок Высота над целью: насколько выше полосы здоровья цели стоят очки в режиме Над целью, чтобы оставить место для её баффов и дебаффов",
   ["New players start with red circles over their target, shown in combat. If you already use Combo Bar, nothing changes"] = "Новые игроки начинают с красными кругами над целью, видимыми в бою. Если вы уже пользуетесь Combo Bar, ничего не меняется",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Ещё исправления для подземелий и рейдов: ещё несколько скрытых там игрой данных (например, отошёл ли игрок) теперь тихо пропускаются без ошибок",
 } end

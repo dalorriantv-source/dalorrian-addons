@@ -2,6 +2,24 @@
 -- Shift-drag to move it. /goldbag for options.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitName, UnitClass = SafeApi(UnitName), SafeApi(UnitClass)
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
@@ -123,6 +141,11 @@ local function Place()
   box:ClearAllPoints()
   box:SetScale(DB.scale or 1)
   if box.SetUserPlaced then pcall(box.SetUserPlaced, box, false) end   -- (1.2.2) the game's own layout save stays out of it
+  if DB.cx and DB.cy then   -- (1.2.3) where you dropped it, in screen pixels: comes back exactly there
+    local es = box:GetEffectiveScale()
+    box:SetPoint("CENTER", UIParent, "BOTTOMLEFT", DB.cx / es, DB.cy / es)
+    return
+  end
   if DB.point then
     box:SetPoint(DB.point, UIParent, DB.rel or DB.point, DB.x or 0, DB.y or 0)
     return
@@ -145,8 +168,15 @@ box:SetScript("OnDragStart", function(self) if IsShiftKeyDown() then self:StartM
 box:SetScript("OnDragStop", function(self)
   self:StopMovingOrSizing()
   if self.SetUserPlaced then pcall(self.SetUserPlaced, self, false) end
-  local p, _, rp, x, y = self:GetPoint(1)
-  DB.point, DB.rel, DB.x, DB.y = p, rp, x, y
+  -- (1.2.3) the old way saved the game's own anchor, which came back a little lower after a reload. Now the
+  -- box's center is saved in screen pixels and it's put back right away, so what you see is what reloads.
+  local cx, cy = self:GetCenter()
+  if cx and cy then
+    local es = self:GetEffectiveScale()
+    DB.point, DB.rel, DB.x, DB.y = "CENTER", nil, nil, nil
+    DB.cx, DB.cy = cx * es, cy * es
+    Place()
+  end
 end)
 box:SetScript("OnEnter", function(self)
   self:SetBackdropBorderColor(GOLD[1], GOLD[2], GOLD[3], 1)
@@ -194,6 +224,7 @@ ev:RegisterEvent("PLAYER_ENTERING_WORLD")
 ev:RegisterEvent("PLAYER_MONEY")
 for _, e in ipairs({ "PLAYER_LEVEL_UP", "UPDATE_FACTION", "DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED" }) do pcall(ev.RegisterEvent, ev, e) end
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= "GoldBag" then return end
     GoldBagDB = GoldBagDB or {}
@@ -237,9 +268,11 @@ ns.HelpConfig = {
       get = function() return DB.scale or 1 end, set = function(v) DB.scale = v; Place() end },
     { label = "Spot", choices = { { "Stick To Bags", "stick" } },
       get = function() return DB.point and "moved" or "stick" end,
-      set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
+      set = function() DB.point, DB.rel, DB.x, DB.y, DB.cx, DB.cy = nil, nil, nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.2.4", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
+    { v = "1.2.3", "Fixed for real: a gold box you moved no longer slides down after a reload or a new login. It now remembers its exact spot on your screen. Move it once more after updating" },
     { v = "1.2.2", "Your gold box stays put when you log back in. It now hangs on your bag bar and checks its spot again a few seconds after login, once every bar has loaded" },
     { v = "1.2.1", "Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it" },
     { v = "1.2.0", "Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one" },
@@ -311,7 +344,7 @@ SlashCmdList.GOLDBAG = function(msg)
   elseif cmd == "scale" and tonumber(arg) then
     DB.scale = math.max(0.5, math.min(2, tonumber(arg))); Place(); Say("size " .. DB.scale .. ".")
   elseif cmd == "reset" or cmd == "stick" then
-    DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil
+    DB.point, DB.rel, DB.x, DB.y, DB.cx, DB.cy = nil, nil, nil, nil, nil, nil
     if cmd == "reset" then DB.scale = 1 end
     Place(); Say("stuck to your bag bar. It follows the bags wherever your bar is.")
   elseif cmd == "hide" then

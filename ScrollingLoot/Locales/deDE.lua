@@ -76,4 +76,5 @@ ns.LOCALES.deDE = function() return {
   ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "Das Beutefenster bleibt versteckt: alles geht direkt in deine Taschen. Es erscheint, wenn etwas nicht aufgehoben werden kann. Halte Umschalt, um von Hand zu wählen, oder wähle Sichtbar unter Beutefenster",
   ["Move It locks again by itself when you close the settings window"] = "Verschieben sperrt sich von selbst wieder, wenn du das Einstellungsfenster schließt",
   ["The loot window no longer flashes open for a moment while looting"] = "Das Beutefenster blitzt beim Plündern nicht mehr kurz auf",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funktioniert in Dungeons und Schlachtzügen ohne Fehler. WoW: Forever verbirgt dort einige Details vor Addons, und dieses Addon überspringt sie jetzt still",
 } end

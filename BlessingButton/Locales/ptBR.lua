@@ -103,4 +103,6 @@ ns.LOCALES.ptBR = function() return {
   ["with the"] = "com o",
   ["your blessings (%d paladins sharing)"] = "suas bênçãos (%d paladinos dividindo)",
   ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Arrastar com Shift move o botão sem lançar nada, e ele fica até você soltar",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona em masmorras e raides sem erros. O WoW: Forever esconde ali alguns detalhes dos addons, e este addon agora os ignora sem alarde",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Mais correções para masmorras e raides: alguns outros detalhes que o jogo esconde ali (como se alguém está ausente) agora são ignorados sem erros",
 } end

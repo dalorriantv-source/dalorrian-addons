@@ -123,4 +123,6 @@ ns.LOCALES.zhTW = function() return {
   ["Settings are grouped now: Look, Position and Showing"] = "設定現在分成了外觀、位置和顯示三組",
   ["New Target Height slider: how far over your target's health bar the points sit with Over Target, so you can leave room for its buffs and debuffs"] = "新增目標上方高度滑桿：使用目標上方時，連擊點離目標生命條有多高，可以給它的增益和減益效果留出位置",
   ["New players start with red circles over their target, shown in combat. If you already use Combo Bar, nothing changes"] = "新玩家預設在戰鬥中於目標上方顯示紅色圓形。已經在用 Combo Bar 的玩家不受影響",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地城和團隊副本修復：遊戲在那裡隱藏的更多資訊（例如某人是否暫離）現在會被默默略過，不再報錯",
 } end

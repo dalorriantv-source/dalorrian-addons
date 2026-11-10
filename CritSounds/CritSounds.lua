@@ -3,6 +3,29 @@
 -- find the mob's nameplate (heals, nameplates off). /crits for options.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitExists, UnitGUID, UnitIsUnit = SafeApi(UnitExists), SafeApi(UnitGUID), SafeApi(UnitIsUnit)
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo and function()
+  local t = { CombatLogGetCurrentEventInfo() }
+  for i = 1, #t do if issecretvalue(t[i]) then return end end
+  return unpack(t)
+end
 local DB
 local FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
 local NUMFONT = DAMAGE_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
@@ -294,8 +317,9 @@ local function Crit(amount, heal, dest)
   local readable = not secret and type(amount) == "number" and pcall(function() return amount > 0 end)   -- (1.2.2) the game can hide the number
   if readable and amount <= 0 then return end
   if heal and not DB.heals then return end
-  if DB.numbers and (readable or secret) then ShowNumber(amount, heal, dest) end   -- (1.4.7) hidden amounts show too
-  if DB.sound then Sound() end
+  -- (1.4.12) the sound goes first, so a number that can't be shown never takes the sound with it
+  if DB.sound then pcall(Sound) end
+  if DB.numbers and (readable or secret) then pcall(ShowNumber, amount, heal, dest) end   -- (1.4.7) hidden amounts show too
 end
 local seen = { hits = 0, crits = 0 }   -- (1.1.1) for /crits debug
 local function OnCombat()
@@ -529,7 +553,18 @@ local function OnRangedSwing()
 end
 local function OnSwing(...)
   local ranged = (Enum and Enum.PlayerSwingType and Enum.PlayerSwingType.Ranged) or 2
-  for i = 1, select("#", ...) do if select(i, ...) == ranged then return OnRangedSwing() end end
+  local hidden = false
+  for i = 1, select("#", ...) do
+    local v = select(i, ...)
+    if issecretvalue(v) then hidden = true elseif v == ranged then return OnRangedSwing() end
+  end
+  -- (1.4.13) in dungeons the game can hide which kind of swing it was: Auto Shot or Shoot running means ranged
+  if hidden then
+    local auto = false
+    pcall(function() auto = (IsAutoRepeatSpell and (IsAutoRepeatSpell(GetSpellInfo and GetSpellInfo(75) or "Auto Shot")
+      or IsAutoRepeatSpell(GetSpellInfo and GetSpellInfo(5019) or "Shoot"))) and true or false end)
+    if auto == true then return OnRangedSwing() end
+  end
   local now = GetTime()
   Prune(swings, now, 1.5)
   swings[#swings + 1] = { t = now }
@@ -635,12 +670,17 @@ Mine = function(u, guid, crit, amount, school)
 end
 local feed = CreateFrame("Frame")
 feed:SetScript("OnEvent", function(_, e, unit, a, b, c, d)
+  -- (1.4.11) only a hidden unit is skipped. The damage amount is hidden from addons on Forever everywhere, and
+  -- this part already handles that (1.4.7 shows hidden amounts); 1.4.9 skipped every hit for it, so no numbers showed
+  -- (1.4.13) a swing's first value is the kind of swing, not a unit: in dungeons the game hides it, and skipping
+  -- it here lost every melee swing there, so your plain white hits never showed in a group
+  if e == "PLAYER_SWING" then if DB and not DB.off then pcall(OnSwing, unit, a, b) end return end
+  if issecretvalue(unit) then return end
   if not DB or DB.off then return end
   if e == "UNIT_SPELLCAST_SUCCEEDED" then
     if unit == "player" then acted = GetTime() end
     pcall(OnCast, unit, b)   -- unit, cast, spell
     return
-  elseif e == "PLAYER_SWING" then pcall(OnSwing, unit, a, b) return
   elseif e == "UNIT_SPELLCAST_CHANNEL_START" then
     local desc, at
     pcall(function() desc = C_Spell.GetSpellDescription(b) end)
@@ -674,6 +714,7 @@ ev:RegisterEvent("PLAYER_REGEN_ENABLED")
 -- older clients still hand addons the combat log; Forever (which has C_DamageMeter) blocks asking for it
 if not C_DamageMeter then ev:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") end
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "COMBAT_LOG_EVENT_UNFILTERED" then
     if DB then OnCombat() end
   elseif e == "ADDON_LOADED" then
@@ -762,6 +803,11 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.13", "Your plain white hits show in dungeons again: the game hides which kind of swing it was there, and those swings were skipped" },
+    { v = "1.4.12", "The Halo Pack and Wow Pack sounds are back: their sound files were missing from the download, so picking either one played nothing. Crit sounds also play even if the big number can't be shown" },
+    { v = "1.4.11", "Fixed Dalorrian's crit numbers not showing at all (since 1.4.9). The game's own numbers were unaffected" },
+    { v = "1.4.10", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
+    { v = "1.4.9", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.4.8", "Damage Numbers sticks to what you picked, in a group too. Before, joining or leaving a group switched between the game's numbers and these" },
     { v = "1.4.7", "Big crit numbers show again when the game hides the amount from addons (they used to be skipped, only the sound played)",
       "If the game won't let the addon switch its own damage numbers off, it tells you once so you can turn them off in Options" },

@@ -2,6 +2,24 @@
 -- /rolls for options. /rolls test shows sample rolls without needing a drop.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitName = SafeApi(UnitName)
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
@@ -62,6 +80,16 @@ end
 -- one roll bar: icon, name, Need / Greed / Disenchant / Pass, a timer draining along the bottom
 ---------------------------------------------------------------------------
 local bars, shown = {}, {}
+-- (1.2.2) rolls you've already answered: the game offers the same roll again when you reopen the corpse
+-- (or after a /reload), and the bar must not ask twice. Kept a few minutes, then let go
+local function Done(id) return id and DB and DB.done and DB.done[id] and (time() - DB.done[id]) < 600 end
+local function MarkDone(id)
+  if not (id and DB) then return end
+  DB.done = DB.done or {}
+  local now = time()
+  for k, t in pairs(DB.done) do if now - t >= 600 then DB.done[k] = nil end end
+  DB.done[id] = now
+end
 local rolls = {}   -- item name -> player -> { kind, roll }   (1.1.2) up here so Close can empty it
 local CHOICES = {
   { key = "need", id = 1, tex = "Interface\\Buttons\\UI-GroupLoot-Dice", tip = NEED or "Need" },
@@ -81,7 +109,7 @@ end
 
 local function Close(b)
   b:Hide()
-  b.rollID, b.test, b.result, b.picked, b.won = nil, nil, nil, nil, nil
+  b.rollID, b.test, b.result, b.picked, b.won, b.rid, b.sid = nil, nil, nil, nil, nil, nil, nil
   for i, s in ipairs(shown) do if s == b then table.remove(shown, i) break end end
   -- (1.1.2) no bars left: nothing can use the rolls read from chat any more. Before, they were only let go
   -- when a matching "won" line came in, so items nobody won (or that you never saw) piled up all session
@@ -125,10 +153,24 @@ local function Choose(b, choice)
     return
   elseif b.rollID then
     RollOnLoot(b.rollID, choice.id)
+    -- Bind on Pickup only counts once you say yes to the game's "are you sure" (ConfirmLootRoll marks it then)
+    if not (b.bop and choice.id ~= 0) then MarkDone(b.rollID) end
     -- Bind on Pickup asks the game's usual "are you sure" first: the bar waits until the game says the roll is in
     if b.bop and choice.id ~= 0 then b:SetAlpha(0.5) end
     if DB.winner then Picked(b, choice) return end
     if b.bop and choice.id ~= 0 then return end
+  elseif b.sid then
+    -- (1.2.5) a roll the game hides from addons: the game still takes the answer
+    if not pcall(RollOnLoot, b.sid, choice.id) then
+      Close(b)
+      if ns.KeepBox then ns.KeepBox() end   -- it didn't: the game's own window comes back so you can still roll
+      return
+    end
+    Picked(b, choice)
+    b.result, b.left, b.sid = true, 3, nil
+    for _, btn in pairs(b.buttons) do btn:Hide() end
+    b.timer:Hide()
+    return
   end
   Close(b)
 end
@@ -165,7 +207,8 @@ local function NewBar()
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     if b.test then
       if b.itemLink then GameTooltip:SetHyperlink(b.itemLink) else GameTooltip:AddLine(b.itemName or "") end
-    elseif b.rollID then GameTooltip:SetLootRollItem(b.rollID) end
+    elseif b.rollID then GameTooltip:SetLootRollItem(b.rollID)
+    elseif b.sid then pcall(GameTooltip.SetLootRollItem, GameTooltip, b.sid) end
     GameTooltip:Show()
   end)
   b.item:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -244,6 +287,9 @@ local function NewBar()
       left = self.left
     elseif self.rollID then
       left = (GetLootRollTimeLeft(self.rollID) or 0) / 1000
+    elseif self.sid then   -- (1.2.5) a hidden roll's time can't be read: the usual minute
+      self.left = (self.left or 0) - el
+      left = self.left
     end
     if not left then return end
     if left <= 0 then
@@ -338,12 +384,13 @@ local function Open(b, d)
 end
 
 local function OpenRoll(rollID, rollTime)
-  if not rollID then return end
+  if not rollID or issecretvalue(rollID) then return end
   for _, b in ipairs(shown) do if b.rollID == rollID then return end end
+  if Done(rollID) then return end
   local texture, name, count, quality, bop, canNeed, canGreed, canDE, rN, rG = GetLootRollItemInfo(rollID)
   if not name then return end
   local b = Free()
-  b.rollID, b.test = rollID, nil
+  b.rollID, b.test, b.rid = rollID, nil, rollID
   Open(b, {
     texture = texture, name = name, count = count, quality = quality, bop = bop,
     canNeed = canNeed, canGreed = canGreed, canDE = canDE,
@@ -352,14 +399,89 @@ local function OpenRoll(rollID, rollTime)
   })
 end
 
+-- (1.2.5) in dungeons the game can hide a roll from addons (a "secret" roll). Addons can't read or compare it,
+-- but they can still show its item and send the answer, so it gets a bar too. Ineligible buttons can't be told
+-- apart, so all show; the game turns down a Need you can't make, the same as on its own window.
+local function OpenSecret(sid)
+  local b = Free()
+  b.rollID, b.test, b.rid, b.sid = nil, nil, nil, sid
+  local texture, name
+  pcall(function() texture, name = GetLootRollItemInfo(sid) end)
+  Open(b, { time = 60, canNeed = true, canGreed = true, canDE = false })
+  b.left = 60
+  if texture ~= nil then pcall(b.item.icon.SetTexture, b.item.icon, texture) end
+  b.name:SetText(Tr("Loot roll"))
+  if name ~= nil then pcall(b.name.SetText, b.name, name) end
+end
+local keepBox = 0
+-- a hidden roll's answer didn't go through: leave the game's own window up for the rest of the roll
+ns.KeepBox = function()
+  keepBox = GetTime() + 65
+  if GroupLootContainer then pcall(GroupLootContainer.Show, GroupLootContainer) end
+end
+
 -- the game's own roll windows step aside for ours
 local function HideBlizzard(rollID)
+  if GetTime() < keepBox then return end
+  -- (1.2.3) WoW: Forever builds its roll windows from a pool with no names, so the game's whole roll box steps aside
+  local gc = GroupLootContainer
+  if gc and not (DB and DB.off) then
+    if not gc.lootRollsHooked and gc.HookScript then
+      gc.lootRollsHooked = true
+      -- only while our bars are up: if ours couldn't open, the game's stays so you can still roll
+      gc:HookScript("OnShow", function(self)
+        if not DB or DB.off or GetTime() < keepBox then return end
+        if #shown == 0 and ns.Sync then C_Timer.After(0, ns.Sync) end   -- (1.2.4) bars for the rolls it holds first
+        if #shown > 0 then self:Hide() end
+      end)
+    end
+    if gc:IsShown() and (#shown > 0 or (rollID and Done(rollID))) then gc:Hide() end
+  end
   for i = 1, (NUM_GROUP_LOOT_FRAMES or 4) do
     local f = _G["GroupLootFrame" .. i]
     if f and f:IsShown() and (not rollID or f.rollID == rollID) then
       if GroupLootContainer_RemoveFrame and GroupLootContainer then GroupLootContainer_RemoveFrame(GroupLootContainer, f)
       else f:Hide() end
     end
+  end
+end
+
+-- (1.2.4) every roll the game has open gets a bar, then the game's box steps aside. Run whenever a roll starts
+-- or the game's box shows: in dungeons the start event can arrive with its roll hidden from addons, and then
+-- the game's own box used to stay up
+local secretSeen = {}   -- (1.2.5) when each hidden roll got its bar
+local function Sync()
+  if not DB or DB.off then return end
+  if GetActiveLootRollIDs then
+    local ok, ids = pcall(GetActiveLootRollIDs)
+    if ok and type(ids) == "table" and not issecretvalue(ids) then
+      local hidden = {}
+      for _, id in ipairs(ids) do if issecretvalue(id) then hidden[#hidden + 1] = id else OpenRoll(id) end end
+      -- (1.2.5) hidden rolls can't be told apart, so they're counted: new ones get bars, older ones already have one
+      -- a roll lasts about a minute, so one opened longer ago than that is over
+      local now = GetTime()
+      for i = #secretSeen, 1, -1 do if now - secretSeen[i] > 65 then table.remove(secretSeen, i) end end
+      for i = #secretSeen + 1, #hidden do secretSeen[#secretSeen + 1] = now; pcall(OpenSecret, hidden[i]) end
+    end
+  end
+  HideBlizzard()
+end
+ns.Sync = Sync
+-- (1.2.5) a hidden roll just started: it's the newest one. Counting alone can miss it when an older roll ended
+-- early (everyone already rolled), so it always gets a bar here
+ns.SecretStart = function()
+  if not DB or DB.off or not GetActiveLootRollIDs then return end
+  local ok, ids = pcall(GetActiveLootRollIDs)
+  if not (ok and type(ids) == "table") or issecretvalue(ids) then return end
+  local hidden = {}
+  for _, id in ipairs(ids) do if issecretvalue(id) then hidden[#hidden + 1] = id end end
+  if #hidden == 0 then return end
+  local now = GetTime()
+  for i = #secretSeen, 1, -1 do if now - secretSeen[i] > 65 then table.remove(secretSeen, i) end end
+  if #hidden <= #secretSeen then
+    table.remove(secretSeen, 1)
+    secretSeen[#secretSeen + 1] = now
+    pcall(OpenSecret, hidden[#hidden])
   end
 end
 
@@ -431,6 +553,62 @@ local function OnRollChat(msg)
   end
 end
 
+-- (1.2.4) who won, read from the game's loot history instead of chat (chat is hidden from addons in dungeons).
+-- Classic keeps a list of rolls by roll ID; newer clients keep drops per boss fight. Both are tried
+local function Vis(v) if issecretvalue(v) then return nil end return v end
+local KINDS = { [1] = NEED or "Need", [2] = GREED or "Greed", [3] = ROLL_DISENCHANT or "Disenchant" }
+local function IsMe(name)
+  if not name then return false end
+  local me = UnitName("player")
+  local full = GetUnitName and GetUnitName("player", true)
+  return name == me or name == full or (YOU and name == YOU) or false
+end
+local function Won(b, who, kind, roll)
+  if not b or b.won then return end
+  b.won = who and { who = who, me = IsMe(who), kind = kind, roll = roll } or "allpass"
+  if b.result then ShowResult(b) end
+end
+function ns.HistoryWinner(e, a1, a2)
+  local LH = C_LootHistory
+  if not LH or #shown == 0 then return end
+  if LH.GetNumItems and LH.GetItem and LH.GetPlayerInfo then
+    for i = 1, (Vis(LH.GetNumItems()) or 0) do
+      local rollID, _, _, isDone, winnerIdx = LH.GetItem(i)
+      rollID = Vis(rollID)
+      if rollID and Vis(isDone) then
+        for _, b in ipairs(shown) do
+          if not b.test and b.rid == rollID and not b.won then
+            winnerIdx = Vis(winnerIdx)
+            if winnerIdx then
+              local name, _, rollType, roll = LH.GetPlayerInfo(i, winnerIdx)
+              name = Vis(name)
+              if name then Won(b, name, KINDS[Vis(rollType) or 0], Vis(roll)) end
+            else
+              Won(b, nil)
+            end
+          end
+        end
+      end
+    end
+  end
+  if e == "LOOT_HISTORY_UPDATE_DROP" and LH.GetSortedInfoForDrop and not issecretvalue(a1) and not issecretvalue(a2) then
+    local info = LH.GetSortedInfoForDrop(a1, a2)
+    if type(info) ~= "table" or issecretvalue(info) then return end
+    local link = Vis(info.itemHyperlink)
+    local b = link and BarFor(ItemName(link))
+    if not b or b.won then return end
+    if Vis(info.allPassed) then Won(b, nil) return end
+    local w = info.winner
+    local who = type(w) == "table" and Vis(w.playerName)
+    if not who then return end
+    local roll
+    for _, ri in ipairs(type(info.rollInfos) == "table" and info.rollInfos or {}) do
+      if type(ri) == "table" and Vis(ri.isWinner) then roll = Vis(ri.roll) end
+    end
+    Won(b, who, nil, roll)
+  end
+end
+
 ---------------------------------------------------------------------------
 -- events
 ---------------------------------------------------------------------------
@@ -441,7 +619,19 @@ ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("START_LOOT_ROLL")
 ev:RegisterEvent("CANCEL_LOOT_ROLL")
+-- (1.2.4) who won, from the game's loot history: works in dungeons, where the chat lines are hidden from addons
+for _, e in ipairs({ "LOOT_HISTORY_ROLL_COMPLETE", "LOOT_HISTORY_FULL_UPDATE", "LOOT_HISTORY_UPDATE_DROP" }) do pcall(ev.RegisterEvent, ev, e) end
 ev:SetScript("OnEvent", function(_, e, a1, a2)
+  if e == "START_LOOT_ROLL" and DB and not DB.off and AnySecret(a1, a2) then
+    -- (1.2.4) the roll is hidden from addons here: ask the game which rolls are open instead
+    C_Timer.After(0, function() pcall(ns.SecretStart); Sync() end); C_Timer.After(0.3, Sync)
+    return
+  end
+  if e == "LOOT_HISTORY_ROLL_COMPLETE" or e == "LOOT_HISTORY_UPDATE_DROP" or e == "LOOT_HISTORY_FULL_UPDATE" then
+    if DB and not DB.off and DB.winner and ns.HistoryWinner then C_Timer.After(0.1, function() pcall(ns.HistoryWinner, e, a1, a2) end) end
+    return
+  end
+  if AnySecret(a1, a2) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" and a1 == "LootRolls" then
     LootRollsDB = LootRollsDB or {}
     DB = LootRollsDB
@@ -454,9 +644,12 @@ ev:SetScript("OnEvent", function(_, e, a1, a2)
     anchor.label:SetText(Tr("Loot Rolls") .. ": " .. Tr("Drag Me"))
     pcall(MinimapButton)
     -- after a /reload mid-roll, the game reopens its windows: ours take over from them
+    if ConfirmLootRoll then hooksecurefunc("ConfirmLootRoll", function(id) MarkDone(id) end) end
     if GroupLootFrame_OpenNewFrame then
       hooksecurefunc("GroupLootFrame_OpenNewFrame", function(id, t)
         if DB.off then return end
+        if issecretvalue(id) then C_Timer.After(0, Sync); return end
+        if Done(id) then HideBlizzard(id) return end
         OpenRoll(id, t); HideBlizzard(id)
       end)
     end
@@ -468,6 +661,7 @@ ev:SetScript("OnEvent", function(_, e, a1, a2)
   elseif e == "START_LOOT_ROLL" then
     OpenRoll(a1, a2)
     C_Timer.After(0, function() HideBlizzard(a1) end)
+    C_Timer.After(0.3, Sync)
   elseif e == "CANCEL_LOOT_ROLL" then
     for _, b in ipairs(shown) do if b.rollID == a1 then Result(b) break end end
   elseif e == "CHAT_MSG_LOOT" then
@@ -529,6 +723,11 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.LOOTROLLS("test") end },
   },
   notes = {
+    { v = "1.2.5", "Loot rolls the game hides from addons in dungeons now get a Loot Rolls bar too, so the game's own roll window stays away. If the game won't take an answer from the bar, its own window comes back so you can still roll" },
+    { v = "1.2.4", "The game's own roll window no longer sneaks back in dungeons: every roll the game has open gets a Loot Rolls bar, even when the game hides the roll's details from addons", "The bar shows who won (and their roll) in dungeons too, read from the game's loot history instead of chat" },
+    { v = "1.2.3", "The game's own roll window no longer pops up next to the Loot Rolls bars" },
+    { v = "1.2.2", "Picking an item up again after you rolled on it no longer asks you to roll a second time" },
+    { v = "1.2.1", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.2.0", "Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window" },
     { v = "1.1.2", "Fixed a memory leak: rolls read from chat are let go once their bars close" },
     { v = "1.1.1", "Settings rows with four choices fit inside the window now" },

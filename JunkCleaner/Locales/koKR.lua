@@ -103,4 +103,5 @@ ns.LOCALES.koKR = function() return {
   ["%s is locked and off the junk list"] = "%s 이(가) 잠겨 잡동사니 목록에서 빠졌습니다",
   ["%s is unlocked and back on the junk list"] = "%s 의 잠금이 풀려 다시 잡동사니 목록에 있습니다",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "회색 아이템만 목록에 들어갑니다. 오른쪽 클릭으로 잠그고, 잠금에서 잠근 것을 볼 수 있습니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
 } end

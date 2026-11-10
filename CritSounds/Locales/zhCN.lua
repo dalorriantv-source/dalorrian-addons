@@ -109,4 +109,9 @@ ns.LOCALES.zhCN = function() return {
   ["Big crit numbers show again when the game hides the amount from addons (they used to be skipped, only the sound played)"] = "当游戏对插件隐藏数值时，大号暴击数字也会显示了（以前会被跳过，只播放音效）",
   ["If the game won't let the addon switch its own damage numbers off, it tells you once so you can turn them off in Options"] = "如果游戏不允许插件关闭它的伤害数字，插件会提示一次，方便你在设置里关闭",
   ["Damage Numbers sticks to what you picked, in a group too. Before, joining or leaving a group switched between the game's numbers and these"] = "伤害数字会保持你的选择，组队时也一样。以前加入或离开队伍会在游戏的数字和这些之间切换",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地下城和团队副本修复：游戏在那里隐藏的更多信息（例如某人是否暂离）现在会被默默跳过，不再报错",
+  ["Fixed Dalorrian's crit numbers not showing at all (since 1.4.9). The game's own numbers were unaffected"] = "修复：Dalorrian 的暴击数字完全不显示的问题（自 1.4.9 起）。游戏自带的数字不受影响",
+  ["The Halo Pack and Wow Pack sounds are back: their sound files were missing from the download, so picking either one played nothing. Crit sounds also play even if the big number can't be shown"] = "Halo Pack 和 Wow Pack 的音效回来了：下载中缺少它们的声音文件，所以选择任一个都没有声音。即使无法显示大数字，暴击音效也会播放",
+  ["Your plain white hits show in dungeons again: the game hides which kind of swing it was there, and those swings were skipped"] = "地下城中你的普通白色伤害数字重新显示：游戏在那里隐藏了攻击类型，这些攻击之前被跳过",
 } end

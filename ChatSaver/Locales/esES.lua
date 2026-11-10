@@ -81,4 +81,5 @@ ns.LOCALES.esES = function() return {
   ["Load works on the first click. No more clicking it twice"] = "Cargar funciona al primer clic. Ya no hace falta pulsar dos veces",
   ["Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out"] = "Nombrar una configuración nueva usa la ventana propia de Chat Saver, así que no puede causar errores de \"acción bloqueada\" al salir",
   ["The Delete button is red, so it's hard to hit by mistake"] = "El botón Borrar es rojo, para que no se pulse sin querer",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en mazmorras y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
 } end

@@ -2,6 +2,39 @@
 -- A quiet line in chat when you beat a record, and one clean window with all of them. /crittracker for options.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitDebuff, UnitGUID, UnitIsUnit, UnitLevel, UnitName = SafeApi(UnitDebuff), SafeApi(UnitGUID), SafeApi(UnitIsUnit), SafeApi(UnitLevel), SafeApi(UnitName)
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo and function()
+  local t = { CombatLogGetCurrentEventInfo() }
+  for i = 1, #t do if issecretvalue(t[i]) then return end end
+  return unpack(t)
+end
+local C_UnitAuras = C_UnitAuras and setmetatable({}, { __index = function(_, k)
+  local f = C_UnitAuras[k]
+  if type(f) ~= "function" then return f end
+  return function(...)
+    local r = f(...)
+    if type(r) == "table" and (issecretvalue(r.spellId) or issecretvalue(r.name) or issecretvalue(r.expirationTime)) then return nil end
+    if issecretvalue(r) then return nil end
+    return r
+  end
+end })
 local DB, REC   -- settings (account), records (this character)
 local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
@@ -74,6 +107,13 @@ local function Record(name, spellId, amount, crit, heal, isPet, target)
         line = string.format(Tr(crit and "First %s crit: %s" or "First %s hit: %s"), who, Commas(amount))
       end
       print("|cffffd100" .. Tr("Crit Tracker") .. ":|r " .. line)
+    end
+    -- (1.3.0) /crittracker whisper Name: beaten records go to a friend too (not first-ever ones, so leveling
+    -- doesn't flood them, and at most one every 5 seconds). The friend sees English: it's your whisper
+    if DB.whisper and was and crit and SendChatMessage and (GetTime() - (ns.lastWhisper or -10)) >= 5 then
+      ns.lastWhisper = GetTime()
+      local who = (isPet and "Pet " or "") .. Nice(name)
+      pcall(SendChatMessage, string.format("Crit Tracker: new best %s crit: %s (was %s)", who, Commas(amount), Commas(was)), "WHISPER", nil, DB.whisper)
     end
   end
   if Refresh then Refresh() end
@@ -192,6 +232,7 @@ local function Debuffed(c)
 end
 local function OnFeed(unit, action, flag, amount, school)
   feedSeen.events = feedSeen.events + 1
+  if (feedSeen.chat or 0) > 0 then return end   -- (1.3.2) the combat log lines work this session: they're exact
   local ok, isHit, isHeal, isCrit = pcall(function()
     return action == "WOUND", action == "HEAL", flag == "CRITICAL"
   end)
@@ -237,12 +278,79 @@ local function OnFeed(unit, action, flag, amount, school)
 end
 local feed = CreateFrame("Frame")
 feed:SetScript("OnEvent", function(_, e, unit, a, b, c, d)
+  -- (1.3.1) only a hidden unit is skipped here: 1.2.1 skipped every hit with any hidden detail (like its spell
+  -- school), so hits that could be read were lost too. Hits that can't be read are still counted and skipped below
+  if issecretvalue(unit) then return end
   if not DB or DB.off then return end
   if e == "UNIT_SPELLCAST_SUCCEEDED" then pcall(OnCast, b) return end   -- unit, castGUID, spellID
   local ok = pcall(OnFeed, unit, a, b, c, d)
   if not ok then feedSeen.hidden = feedSeen.hidden + 1 end
 end)
+-- (1.3.2) Forever hides the damage amount from addons on the target feed, so records come from the combat log
+-- lines the game writes in chat instead ("Your Arcane Shot hit Boar 56 Arcane. (Critical)"), the same way
+-- Dalorrian's Crit Numbers reads its crits. Only your own lines (starting with You or Your) count.
+local CRIT_MARK = TEXT_MODE_A_STRING_RESULT_CRITICAL or "(Critical)"
+local CRIT_SPELL = TEXT_MODE_A_STRING_RESULT_CRITICAL_SPELL
+local function Clean(t)
+  t = t:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1"):gsub("|T.-|t", "")
+  return (t:gsub("^%s+", ""))
+end
+local lastLine, lastAt = nil, 0
+local function ReadLine(text)
+  if type(text) ~= "string" or not DB or DB.off then return end
+  local t = Clean(text)
+  local name, heal, critWord
+  local your = t:match("^Your (.+)$")
+  if your then
+    -- the spell's name runs up to the first hit / crit / heal word ("Your Sinister Strike hit ...")
+    local at, word
+    for _, w in ipairs({ " hit ", " hits ", " crit ", " crits ", " critically ", " heal ", " heals " }) do
+      local p = your:find(w, 1, true)
+      if p and (not at or p < at) then at, word = p, w end
+    end
+    if not at or at < 2 then return end
+    heal = word == " heal " or word == " heals " or (word == " critically " and your:find(" critically heal", 1, true) == at)
+    name = your:sub(1, at - 1)
+    critWord = word:find("crit", 1, true) ~= nil
+  else
+    local verb = t:match("^You (%a+) ")
+    if not verb then return end
+    verb = verb:lower()
+    if not (verb:find("^hit") or verb:find("^crit")) then return end
+    critWord = verb:find("^crit") ~= nil
+    name = AutoName()
+  end
+  local crit = t:find(CRIT_MARK, 1, true) or (CRIT_SPELL and t:find(CRIT_SPELL, 1, true)) or critWord
+  local cut = t:find(CRIT_MARK, 1, true) or #t + 1
+  local body = t:sub(1, cut - 1):gsub("%b()", "")
+  local amount
+  for n in body:gmatch("%d[%d,%.]*") do amount = n end
+  amount = amount and tonumber((amount:gsub("[,%.]", "")))
+  if not amount or amount <= 0 then return end
+  -- one line can show up in two chat windows: count it once
+  local now = GetTime()
+  if t == lastLine and now - lastAt < 0.2 then return end
+  lastLine, lastAt = t, now
+  feedSeen.chat = (feedSeen.chat or 0) + 1
+  local id = cast.name == name and cast.id or nil
+  local target
+  pcall(function() target = UnitName("target") end)
+  if heal then target = nil end
+  feedSeen.last = name .. " " .. amount .. (crit and " crit" or "") .. " (chat)"
+  Record(name, id, amount, crit and true or false, heal or false, false, target)
+end
+local hookedChat = {}
+local function HookChat()
+  for i = 1, (NUM_CHAT_WINDOWS or 10) do
+    local f = _G["ChatFrame" .. i]
+    if f and not hookedChat[f] and f.AddMessage then
+      hookedChat[f] = true
+      hooksecurefunc(f, "AddMessage", function(_, text) pcall(ReadLine, text) end)
+    end
+  end
+end
 local function WatchFeed()
+  pcall(HookChat)
   if not feed.RegisterUnitEvent then return end
   pcall(feed.RegisterUnitEvent, feed, "UNIT_COMBAT", "target", "player")
   pcall(feed.RegisterUnitEvent, feed, "UNIT_SPELLCAST_SUCCEEDED", "player")
@@ -484,6 +592,7 @@ ev:RegisterEvent("UNIT_PET")
 -- older clients still hand addons the combat log; Forever (which has C_DamageMeter) blocks asking for it
 if not C_DamageMeter then ev:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") end
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "COMBAT_LOG_EVENT_UNFILTERED" then
     if DB then OnCombat() end
   elseif e == "ADDON_LOADED" then
@@ -524,6 +633,11 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() Toggle() end },
   },
   notes = {
+    { v = "1.3.2", "Records come in again: the game hides the damage amount from addons, so Crit Tracker now reads your hits and crits from the combat log lines in chat, like Crit Numbers does" },
+    { v = "1.3.1", "Records keep coming in: since 1.2.1 a hit with any detail hidden by the game was skipped whole, even when its damage could be read" },
+    { v = "1.3.0", "New: whisper your records to a friend. Type /crittracker whisper Name, and every time you beat one of your best crits they get a whisper with the new number. /crittracker whisper off stops it" },
+    { v = "1.2.2", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
+    { v = "1.2.1", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.2.0", "New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage" },
     { v = "1.1.5", "Column headers keep their colors: Best Crit gold, Best Hit white, like the numbers under them" },
     { v = "1.1.4", "Removed the Crit % column. The window shows each ability's best crit and best hit" },
@@ -595,10 +709,21 @@ SlashCmdList.CRITTRACKER = function(msg)
   local cmd = (msg or ""):lower():match("^(%S*)")
   if cmd == "" or cmd == "show" or cmd == "records" then
     Toggle()
+  elseif cmd == "whisper" then
+    -- (1.3.0) whisper new records to a friend: /crittracker whisper Name (or "off")
+    local who = (msg or ""):match("^%S+%s+(.-)%s*$")
+    if not who or who == "" then
+      Say(DB.whisper and string.format(Tr("whispering new records to %s. /crittracker whisper off to stop"), DB.whisper) or Tr("type /crittracker whisper Name to whisper your new records to a friend"))
+    elseif who:lower() == "off" then
+      DB.whisper = nil; Say(Tr("stopped whispering new records"))
+    else
+      DB.whisper = who; Say(string.format(Tr("new records will be whispered to %s"), who))
+    end
   elseif cmd == "off" then
     DB.off = not DB.off or nil; Say(DB.off and "turned off" or "turned on")
   elseif cmd == "debug" then
     print("|cffffd100Crit Tracker debug|r")
+    print("  combat log lines read " .. (feedSeen.chat or 0) .. (feedSeen.last and (", last " .. feedSeen.last) or ""))
     print("  target feed: events " .. feedSeen.events .. ", hits counted " .. feedSeen.hits .. ", crits " .. feedSeen.crits .. ", hidden " .. feedSeen.hidden .. ", skipped " .. (feedSeen.skipped or 0))
     print("  auto shot on " .. tostring(AutoRepeat(75)) .. ", melee on " .. tostring(Meleeing()) .. ", in group " .. tostring(IsInGroup and IsInGroup() or false))
     print("  last cast: " .. tostring(cast.name) .. " (counts as damage " .. tostring(cast.harm) .. ")")

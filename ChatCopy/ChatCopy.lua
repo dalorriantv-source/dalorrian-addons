@@ -2,6 +2,23 @@
 -- already selected, so Ctrl+C copies it. /chatcopy opens the main chat window too.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
 local DB
 local DEFAULTS = { lines = 500, bright = false, links = true }
 local CF = ns.CreateFrame or CreateFrame   -- (1.1.0) Lang.lua: text on these frames is translated
@@ -272,6 +289,7 @@ local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     ChatCopyDB = ChatCopyDB or {}
@@ -309,6 +327,7 @@ ns.HelpConfig = {
       get = function() return DB.lines or 500 end, set = function(v) DB.lines = v end },
   },
   notes = {
+    { v = "1.2.2", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.2.1", "Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box" },
     { v = "1.2.0", "Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy" },
     { v = "1.1.0", "A Settings & Help window, a minimap button and 10 languages. Pick how many lines to copy and how the button looks" },

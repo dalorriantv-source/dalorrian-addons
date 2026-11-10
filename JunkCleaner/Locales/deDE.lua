@@ -99,4 +99,5 @@ ns.LOCALES.deDE = function() return {
   ["%s is locked and off the junk list"] = "%s ist gesperrt und nicht auf der Plunderliste",
   ["%s is unlocked and back on the junk list"] = "%s ist entsperrt und wieder auf der Plunderliste",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "Nur graue Gegenstände kommen auf die Liste. Rechtsklick sperrt einen, und Gesperrt zeigt, was du gesperrt hast",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funktioniert in Dungeons und Schlachtzügen ohne Fehler. WoW: Forever verbirgt dort einige Details vor Addons, und dieses Addon überspringt sie jetzt still",
 } end

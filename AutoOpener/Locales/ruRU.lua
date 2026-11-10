@@ -71,4 +71,7 @@ ns.LOCALES.ruRU = function() return {
   ["opened %s: %s"] = "открыто %s: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "Одна тихая строка в чате после каждой партии: что открыто и что выпало, включая золото",
   ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "Исправлена утечка памяти, проверка сумок стала быстрее. Предметы больше не перестают открываться сами посреди сеанса",
+  ["Clams and other containers open by themselves again. Forever colors some tooltip lines, which hid them from the old check; it now also knows every container in the game by name"] = "Моллюски и другие контейнеры снова открываются сами. Forever окрашивает некоторые строки подсказки, и старая проверка их не видела; теперь аддон также знает каждый контейнер в игре",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Ещё исправления для подземелий и рейдов: ещё несколько скрытых там игрой данных (например, отошёл ли игрок) теперь тихо пропускаются без ошибок",
 } end

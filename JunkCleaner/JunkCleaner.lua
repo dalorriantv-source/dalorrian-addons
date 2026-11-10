@@ -3,6 +3,23 @@
 -- Only gray items ever make the list. Selling is left to the game or your other addons. /junk opens it.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
@@ -318,6 +335,7 @@ ev:RegisterEvent("PLAYER_LOGIN")
 for _, e in ipairs({ "BAG_UPDATE_DELAYED", "GET_ITEM_INFO_RECEIVED" }) do pcall(ev.RegisterEvent, ev, e) end
 local pending
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     JunkCleanerDB = JunkCleanerDB or {}
@@ -351,6 +369,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() if not (win and win:IsShown()) then Toggle() end end },
   },
   notes = {
+    { v = "1.1.1", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.1.0", "Junk Cleaner is now a Junk Items list: every gray item in your bags, cheapest first. Destroy Next Item throws away the top one, one click at a time, so you stop whenever you want",
       "Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked",
       "Selling is gone: the game and your other addons already handle that" },

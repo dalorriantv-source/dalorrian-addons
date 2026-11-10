@@ -52,4 +52,5 @@ ns.LOCALES.itIT = function() return {
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "L'equipaggiamento nuovo in Forever lo indica. Quello invariato non mostra nulla in più",
   ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "L'equipaggiamento il cui vecchio effetto Equipaggiato ora Forever mostra come statistica (come il potere magico) non risulta più cambiato quando non è cambiato nulla",
   ["Uses less memory: only the Classic effect text for your language is kept loaded"] = "Usa meno memoria: resta caricato solo il testo degli effetti Classic della tua lingua",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funziona in spedizioni e incursioni senza errori. WoW: Forever lì nasconde alcuni dettagli agli addon, e ora questo addon li salta in silenzio",
 } end

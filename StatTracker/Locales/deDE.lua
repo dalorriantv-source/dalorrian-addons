@@ -148,4 +148,8 @@ ns.LOCALES.deDE = function() return {
   ["Most Important Stats"] = "Wichtigste Werte",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Braucht weniger Speicher: Die Ausrüstungswerte im Charakterfenster werden jetzt aktualisiert, wenn sich deine Ausrüstung ändert, nicht jede Sekunde",
   ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "Im Charakterfenster weiter herauszoomen: Scroll auf deinem Charakter weiter nach unten, um die Kamera zurückzuziehen",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funktioniert in Dungeons und Schlachtzügen ohne Fehler. WoW: Forever verbirgt dort einige Details vor Addons, und dieses Addon überspringt sie jetzt still",
+  ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Herauszoomen im Charakterfenster klappt jedes Mal, wenn du es öffnest, und es öffnet immer im normalen Abstand",
+  ["Zooming out keeps working after you press the reset button on your character window"] = "Herauszoomen funktioniert weiter, nachdem du im Charakterfenster den Zurücksetzen-Knopf drückst",
+  ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Das Werte-Fenster öffnet sich jetzt nur noch mit dem Charakter-Reiter, nicht mit Ehre (H), Ruf, Fertigkeiten oder den anderen Reitern desselben Fensters",
 } end

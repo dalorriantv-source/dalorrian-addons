@@ -123,4 +123,6 @@ ns.LOCALES.esES = function() return {
   ["Settings are grouped now: Look, Position and Showing"] = "Los ajustes están agrupados: Aspecto, Posición y Mostrar",
   ["New Target Height slider: how far over your target's health bar the points sit with Over Target, so you can leave room for its buffs and debuffs"] = "Nuevo control Altura sobre objetivo: cuánto por encima de la barra de salud del objetivo quedan los puntos con Sobre el objetivo, para dejar sitio a sus beneficios y perjuicios",
   ["New players start with red circles over their target, shown in combat. If you already use Combo Bar, nothing changes"] = "Los jugadores nuevos empiezan con círculos rojos sobre su objetivo, mostrados en combate. Si ya usas Combo Bar, no cambia nada",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en mazmorras y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Más arreglos para mazmorras y bandas: algunos datos más que el juego oculta ahí (como si alguien está ausente) ahora se omiten sin errores",
 } end

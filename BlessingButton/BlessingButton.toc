@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Blessing Button
 ## Notes: One button that gives your group the right paladin blessings. Paladins using it split the work by themselves. Shows only when someone needs a blessing. Type /bless help for settings.
 ## Author: Dalorrian
-## Version: 1.0.2
+## Version: 1.0.4
 ## IconTexture: Interface\Icons\Spell_Magic_MageArmor
 ## SavedVariables: BlessingButtonDB, BlessingButton_Lang
 

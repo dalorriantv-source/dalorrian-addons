@@ -110,4 +110,9 @@ ns.LOCALES.koKR = function() return {
   ["Big crit numbers show again when the game hides the amount from addons (they used to be skipped, only the sound played)"] = "게임이 애드온에게 수치를 숨길 때도 큰 치명타 숫자가 다시 표시됩니다 (전에는 건너뛰고 소리만 났습니다)",
   ["If the game won't let the addon switch its own damage numbers off, it tells you once so you can turn them off in Options"] = "게임이 애드온의 피해 숫자 끄기를 막으면 한 번 알려줘서 설정에서 직접 끌 수 있습니다",
   ["Damage Numbers sticks to what you picked, in a group too. Before, joining or leaving a group switched between the game's numbers and these"] = "피해 숫자가 파티에서도 선택한 대로 유지됩니다. 전에는 파티에 들어가거나 나올 때 게임 숫자와 이 숫자가 바뀌었습니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
+  ["Fixed Dalorrian's crit numbers not showing at all (since 1.4.9). The game's own numbers were unaffected"] = "수정: Dalorrian의 치명타 숫자가 전혀 표시되지 않던 문제(1.4.9부터). 게임 자체 숫자는 영향이 없었습니다",
+  ["The Halo Pack and Wow Pack sounds are back: their sound files were missing from the download, so picking either one played nothing. Crit sounds also play even if the big number can't be shown"] = "Halo Pack과 Wow Pack 소리가 돌아왔습니다: 다운로드에 소리 파일이 빠져 있어 둘 중 하나를 골라도 아무 소리도 나지 않았습니다. 큰 숫자를 표시할 수 없을 때도 치명타 소리가 재생됩니다",
+  ["Your plain white hits show in dungeons again: the game hides which kind of swing it was there, and those swings were skipped"] = "던전에서 일반 흰색 타격 숫자가 다시 표시됩니다: 던전에서는 게임이 공격 종류를 숨겨 그 공격들이 건너뛰어졌습니다",
 } end

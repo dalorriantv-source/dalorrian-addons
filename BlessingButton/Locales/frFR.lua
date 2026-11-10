@@ -101,4 +101,6 @@ ns.LOCALES.frFR = function() return {
   ["with the"] = "avec le",
   ["your blessings (%d paladins sharing)"] = "vos bénédictions (%d paladins se partagent)",
   ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Maj-glisser déplace le bouton sans lancer de sort, et il reste là jusqu'à ce que vous lâchiez",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Fonctionne dans les donjons et raids sans erreurs. WoW: Forever y cache certains détails aux addons, et cet addon les ignore désormais discrètement",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Encore des correctifs pour les donjons et raids : quelques détails de plus que le jeu y cache (comme le fait qu'un joueur soit absent) sont désormais ignorés sans erreur",
 } end

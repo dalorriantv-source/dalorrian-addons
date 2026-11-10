@@ -119,4 +119,6 @@ ns.LOCALES.koKR = function() return {
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "플레이 시간과 전문 기술 열이 생겼습니다. 플레이 시간은 접속 몇 초 뒤 자동으로 채워집니다. 전문 기술은 주 전문 기술의 아이콘과 숙련도를 보여 줍니다",
   ["The window is a bit wider to fit them"] = "열이 들어가도록 창이 조금 넓어졌습니다",
   ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "메모리 누수 수정: 어떤 캐릭터도 더 이상 가지고 있지 않은 아이템의 저장된 이름은 삭제됩니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
 } end

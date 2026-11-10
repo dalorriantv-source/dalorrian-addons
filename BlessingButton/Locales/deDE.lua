@@ -103,4 +103,6 @@ ns.LOCALES.deDE = function() return {
   ["with the"] = "mit dem",
   ["your blessings (%d paladins sharing)"] = "deine Segen (%d Paladine teilen sich)",
   ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Umschalt-Ziehen verschiebt den Knopf ohne zu wirken, und er bleibt, bis du loslässt",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funktioniert in Dungeons und Schlachtzügen ohne Fehler. WoW: Forever verbirgt dort einige Details vor Addons, und dieses Addon überspringt sie jetzt still",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Weitere Fehlerbehebungen für Dungeons und Schlachtzüge: Ein paar weitere Details, die das Spiel dort verbirgt (etwa ob jemand abwesend ist), werden jetzt still übersprungen statt Fehler zu verursachen",
 } end

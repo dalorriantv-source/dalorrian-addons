@@ -53,4 +53,5 @@ ns.LOCALES.koKR = function() return {
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "Forever 신규 장비는 그렇게 표시됩니다. 바뀌지 않은 장비는 아무것도 추가로 표시하지 않습니다",
   ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "예전 착용 효과를 Forever가 이제 능력치(주문력 등)로 보여 주는 장비는, 실제로 바뀐 게 없으면 더 이상 바뀐 것으로 표시되지 않습니다",
   ["Uses less memory: only the Classic effect text for your language is kept loaded"] = "메모리를 덜 사용합니다: 사용 중인 언어의 클래식 효과 문구만 불러와 둡니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
 } end

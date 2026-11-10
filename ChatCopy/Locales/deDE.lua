@@ -50,4 +50,5 @@ ns.LOCALES.deDE = function() return {
   ["Clickable Links"] = "Klickbare Links",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "Weblinks im Chat werden golden und klickbar: Ein Klick öffnet ein kleines Feld mit dem Link, bereit zum Kopieren",
   ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "„Blockierte Aktion“-Fehler beim Drücken von Esc oder beim Ausloggen behoben. Angeklickte Links öffnen sich jetzt in Chat Copys eigenem Feld",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funktioniert in Dungeons und Schlachtzügen ohne Fehler. WoW: Forever verbirgt dort einige Details vor Addons, und dieses Addon überspringt sie jetzt still",
 } end

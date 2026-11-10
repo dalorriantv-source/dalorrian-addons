@@ -16,6 +16,34 @@
 -- The plan and the button only change out of combat (the game locks both in combat).
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitBuff, UnitClass, UnitExists, UnitGUID, UnitGroupRolesAssigned, UnitInRange, UnitIsConnected, UnitIsDeadOrGhost, UnitIsGroupAssistant, UnitIsGroupLeader, UnitIsUnit, UnitIsVisible, UnitLevel, UnitName, UnitOnTaxi, UnitPowerType = SafeApi(UnitBuff), SafeApi(UnitClass), SafeApi(UnitExists), SafeApi(UnitGUID), SafeApi(UnitGroupRolesAssigned), SafeApi(UnitInRange), SafeApi(UnitIsConnected), SafeApi(UnitIsDeadOrGhost), SafeApi(UnitIsGroupAssistant), SafeApi(UnitIsGroupLeader), SafeApi(UnitIsUnit), SafeApi(UnitIsVisible), SafeApi(UnitLevel), SafeApi(UnitName), SafeApi(UnitOnTaxi), SafeApi(UnitPowerType)
+local C_UnitAuras = C_UnitAuras and setmetatable({}, { __index = function(_, k)
+  local f = C_UnitAuras[k]
+  if type(f) ~= "function" then return f end
+  return function(...)
+    local r = f(...)
+    if type(r) == "table" and (issecretvalue(r.spellId) or issecretvalue(r.name) or issecretvalue(r.expirationTime)) then return nil end
+    if issecretvalue(r) then return nil end
+    return r
+  end
+end })
 local P = ns.print or print
 local Tr = ns.Tr or function(x) return x end
 local Tip = ns.Tip or GameTooltip
@@ -869,6 +897,7 @@ for _, e in ipairs({ "ADDON_LOADED", "PLAYER_ENTERING_WORLD", "GROUP_ROSTER_UPDA
   "INSPECT_READY" }) do Reg(e) end
 
 ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4)
+  if AnySecret(a1, a2, a3, a4) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     BlessingButtonDB = BlessingButtonDB or {}
@@ -949,6 +978,8 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.0.4", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
+    { v = "1.0.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.0.2", "Shift-dragging the button moves it without casting, and it stays put until you let go" },
     { v = "1.0.1", "Switches itself off on characters that aren't paladins: no button, no minimap icon, nothing running" },
     { v = "1.0.0", "First release: one button that buffs your group with the right blessings for WoW: Forever",

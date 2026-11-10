@@ -97,4 +97,7 @@ ns.LOCALES.esMX = function() return {
   ["Elite"] = "Élite",
   ["Elites Warn Earlier"] = "Élites: avisar antes",
   ["Elite mobs warn you a few meters sooner and say Elite on the warning, even at your own level"] = "Los enemigos élite te avisan unos metros antes y muestran Élite en el aviso, incluso a tu nivel",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en calabozos y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Más arreglos para calabozos y bandas: algunos datos más que el juego oculta ahí (como si alguien está ausente) ahora se omiten sin errores",
+  ["The Meme Pack and Halo Elite Pack sounds are back: their sound files were missing from the download, so picking either one played nothing"] = "Vuelven los sonidos de Meme Pack y Halo Elite Pack: sus archivos de sonido faltaban en la descarga, así que elegir cualquiera no reproducía nada",
 } end

@@ -71,4 +71,7 @@ ns.LOCALES.koKR = function() return {
   ["opened %s: %s"] = "%s 열기: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "한 번에 연 뒤 채팅에 조용히 한 줄: 무엇을 열었고 무엇이 나왔는지, 골드 포함",
   ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "메모리 누수를 수정하고 가방 확인을 더 빠르게 했습니다. 이제 세션 도중에 아이템이 저절로 열리지 않게 되는 일이 없습니다",
+  ["Clams and other containers open by themselves again. Forever colors some tooltip lines, which hid them from the old check; it now also knows every container in the game by name"] = "조개와 다른 상자가 다시 저절로 열립니다. Forever가 일부 툴팁 줄에 색을 넣어 이전 검사에서 보이지 않았습니다. 이제 게임의 모든 상자도 알고 있습니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
 } end

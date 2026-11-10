@@ -102,4 +102,6 @@ ns.LOCALES.zhCN = function() return {
   ["with the"] = "带有",
   ["your blessings (%d paladins sharing)"] = "你的祝福（%d名圣骑士分担）",
   ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "按住Shift拖动只会移动按钮而不会施法，松开前按钮不会消失",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地下城和团队副本修复：游戏在那里隐藏的更多信息（例如某人是否暂离）现在会被默默跳过，不再报错",
 } end

@@ -102,4 +102,6 @@ ns.LOCALES.esES = function() return {
   ["with the"] = "con el",
   ["your blessings (%d paladins sharing)"] = "tus bendiciones (%d paladines repartiendo)",
   ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Arrastrar con Mayús mueve el botón sin lanzar nada, y se queda hasta que sueltas",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en mazmorras y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Más arreglos para mazmorras y bandas: algunos datos más que el juego oculta ahí (como si alguien está ausente) ahora se omiten sin errores",
 } end

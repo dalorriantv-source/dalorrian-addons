@@ -80,4 +80,11 @@ ns.LOCALES.zhCN = function() return {
   ["Settings rows with four choices fit inside the window now"] = "有四个选项的设置行现在不会超出窗口了",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "修复了内存泄漏：从聊天中读取的掷骰结果会在其进度条关闭后释放",
   ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "支持 Pawn：如果物品对你是提升，图标上会有绿色箭头；右键点击物品可以在 Pawn 里对比，和游戏自带的掷骰窗口一样",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
+  ["Picking an item up again after you rolled on it no longer asks you to roll a second time"] = "对已经掷过骰的物品再次拾取时，不会再要求你第二次掷骰",
+  ["The game's own roll window no longer pops up next to the Loot Rolls bars"] = "游戏自带的掷骰窗口不再在 Loot Rolls 条旁边弹出",
+  ["The game's own roll window no longer sneaks back in dungeons: every roll the game has open gets a Loot Rolls bar, even when the game hides the roll's details from addons"] = "游戏自带的掷骰窗口不会再在地下城中冒出来：即使游戏对插件隐藏细节，每个进行中的掷骰都会有 Loot Rolls 条",
+  ["The bar shows who won (and their roll) in dungeons too, read from the game's loot history instead of chat"] = "在地下城中，条上也会显示谁赢了（以及点数），改为读取游戏的拾取记录而不是聊天",
+  ["Loot rolls the game hides from addons in dungeons now get a Loot Rolls bar too, so the game's own roll window stays away. If the game won't take an answer from the bar, its own window comes back so you can still roll"] = "地下城中游戏对插件隐藏的拾取掷骰现在也会显示 Loot Rolls 条，游戏自带的掷骰窗口不再弹出。如果游戏不接受条上的选择，它自己的窗口会回来，你仍然可以掷骰",
+  ["Loot roll"] = "拾取掷骰",
 } end

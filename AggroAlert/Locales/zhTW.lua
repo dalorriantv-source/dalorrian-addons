@@ -98,4 +98,7 @@ ns.LOCALES.zhTW = function() return {
   ["Elite"] = "精英",
   ["Elites Warn Earlier"] = "精英提前警告",
   ["Elite mobs warn you a few meters sooner and say Elite on the warning, even at your own level"] = "精英怪會提前幾公尺警告，並在警告中標出精英，即使和你同級",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地城和團隊副本修復：遊戲在那裡隱藏的更多資訊（例如某人是否暫離）現在會被默默略過，不再報錯",
+  ["The Meme Pack and Halo Elite Pack sounds are back: their sound files were missing from the download, so picking either one played nothing"] = "Meme Pack 和 Halo Elite Pack 的音效回來了：下載中缺少它們的聲音檔案，所以選擇任一個都沒有聲音",
 } end

@@ -4,6 +4,23 @@
 -- Gear that didn't exist in Classic says "New in Forever". /gearcompare opens the settings.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
 local DB
 local DEFAULTS = { on = true, newLine = true }
 local ICON = "Interface\\Icons\\INV_Helmet_03"
@@ -247,6 +264,7 @@ ns.HelpConfig = {
       get = function() return DB.newLine and true or false end, set = function(v) DB.newLine = v end },
   },
   notes = {
+    { v = "1.0.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.0.2", "Uses less memory: only the Classic effect text for your language is kept loaded" },
     { v = "1.0.1", "Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed" },
     { v = "1.0.0", "First release: hover any piece of gear to see what it did in Classic. Stats Forever changed are tinted, and its old Use, Equip and Chance on hit effects show when Forever changed them",
@@ -317,6 +335,7 @@ local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     ClassicGearCompareDB = ClassicGearCompareDB or {}

@@ -99,4 +99,7 @@ ns.LOCALES.koKR = function() return {
   ["Elite"] = "정예",
   ["Elites Warn Earlier"] = "정예는 더 일찍 경고",
   ["Elite mobs warn you a few meters sooner and say Elite on the warning, even at your own level"] = "정예 몹은 몇 미터 더 일찍 경고하고, 내 레벨이어도 경고에 정예라고 표시합니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
+  ["The Meme Pack and Halo Elite Pack sounds are back: their sound files were missing from the download, so picking either one played nothing"] = "Meme Pack과 Halo Elite Pack 소리가 돌아왔습니다: 다운로드에 소리 파일이 빠져 있어 둘 중 하나를 골라도 아무 소리도 나지 않았습니다",
 } end

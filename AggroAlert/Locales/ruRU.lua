@@ -99,4 +99,7 @@ ns.LOCALES.ruRU = function() return {
   ["Elite"] = "Элита",
   ["Elites Warn Earlier"] = "Элита: предупреждать раньше",
   ["Elite mobs warn you a few meters sooner and say Elite on the warning, even at your own level"] = "Элитные мобы предупреждают на несколько метров раньше и помечаются как Элита, даже твоего уровня",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Ещё исправления для подземелий и рейдов: ещё несколько скрытых там игрой данных (например, отошёл ли игрок) теперь тихо пропускаются без ошибок",
+  ["The Meme Pack and Halo Elite Pack sounds are back: their sound files were missing from the download, so picking either one played nothing"] = "Звуки Meme Pack и Halo Elite Pack вернулись: их звуковых файлов не было в загрузке, поэтому при выборе любого из них ничего не звучало",
 } end

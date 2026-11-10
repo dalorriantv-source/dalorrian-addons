@@ -69,4 +69,7 @@ ns.LOCALES.esMX = function() return {
   ["opened %s: %s"] = "abierto %s: %s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "Una línea discreta en el chat tras cada tanda: lo que abriste y lo que salió, oro incluido",
   ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "Corregida una fuga de memoria y las revisiones de bolsas son más rápidas. Los objetos ya no dejan de abrirse solos a mitad de una sesión",
+  ["Clams and other containers open by themselves again. Forever colors some tooltip lines, which hid them from the old check; it now also knows every container in the game by name"] = "Las almejas y otros contenedores vuelven a abrirse solos. Forever colorea algunas líneas del tooltip y la revisión anterior no las veía; ahora además conoce todos los contenedores del juego",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en calabozos y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Más arreglos para calabozos y bandas: algunos datos más que el juego oculta ahí (como si alguien está ausente) ahora se omiten sin errores",
 } end

@@ -82,4 +82,5 @@ ns.LOCALES.koKR = function() return {
   ["Load works on the first click. No more clicking it twice"] = "불러오기가 한 번 클릭으로 됩니다. 이제 두 번 누를 필요 없습니다",
   ["Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out"] = "새 설정 이름은 Chat Saver 자체 창에서 정하므로 로그아웃 때 \"차단된 동작\" 오류가 생기지 않습니다",
   ["The Delete button is red, so it's hard to hit by mistake"] = "삭제 버튼이 빨간색이라 실수로 누르기 어렵습니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
 } end

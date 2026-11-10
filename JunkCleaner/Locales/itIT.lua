@@ -102,4 +102,5 @@ ns.LOCALES.itIT = function() return {
   ["%s is locked and off the junk list"] = "%s è bloccato e fuori dalla lista spazzatura",
   ["%s is unlocked and back on the junk list"] = "%s è sbloccato e di nuovo nella lista spazzatura",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "Solo gli oggetti grigi finiscono nella lista. Clic destro su uno per bloccarlo, e Bloccati mostra cosa hai bloccato",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funziona in spedizioni e incursioni senza errori. WoW: Forever lì nasconde alcuni dettagli agli addon, e ora questo addon li salta in silenzio",
 } end

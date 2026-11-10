@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Combo Bar
 ## Notes: Your combo points as clean gold squares just under your character. Rogues always, druids in cat form. Shift-drag to move. Type /combo help for settings.
 ## Author: Dalorrian
-## Version: 1.6.1
+## Version: 1.6.3
 ## IconTexture: Interface\Icons\Ability_Rogue_SliceDice
 ## AddonCompartmentFunc: ComboBar_OnCompartmentClick
 ## SavedVariables: ComboBarDB, ComboBar_Lang

@@ -109,4 +109,9 @@ ns.LOCALES.zhTW = function() return {
   ["Big crit numbers show again when the game hides the amount from addons (they used to be skipped, only the sound played)"] = "當遊戲對插件隱藏數值時，大號致命一擊數字也會顯示了（以前會被跳過，只播放音效）",
   ["If the game won't let the addon switch its own damage numbers off, it tells you once so you can turn them off in Options"] = "如果遊戲不允許插件關閉它的傷害數字，插件會提示一次，方便你在設定裡關閉",
   ["Damage Numbers sticks to what you picked, in a group too. Before, joining or leaving a group switched between the game's numbers and these"] = "傷害數字會保持你的選擇，組隊時也一樣。以前加入或離開隊伍會在遊戲的數字和這些之間切換",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地城和團隊副本修復：遊戲在那裡隱藏的更多資訊（例如某人是否暫離）現在會被默默略過，不再報錯",
+  ["Fixed Dalorrian's crit numbers not showing at all (since 1.4.9). The game's own numbers were unaffected"] = "修正：Dalorrian 的致命一擊數字完全不顯示的問題（自 1.4.9 起）。遊戲內建的數字不受影響",
+  ["The Halo Pack and Wow Pack sounds are back: their sound files were missing from the download, so picking either one played nothing. Crit sounds also play even if the big number can't be shown"] = "Halo Pack 和 Wow Pack 的音效回來了：下載中缺少它們的聲音檔案，所以選擇任一個都沒有聲音。即使無法顯示大數字，致命一擊音效也會播放",
+  ["Your plain white hits show in dungeons again: the game hides which kind of swing it was there, and those swings were skipped"] = "地城中你的普通白色傷害數字重新顯示：遊戲在那裡隱藏了攻擊類型，這些攻擊之前被跳過",
 } end

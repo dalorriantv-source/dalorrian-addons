@@ -83,4 +83,13 @@ ns.LOCALES.koKR = function() return {
   ["Best Heal"] = "최고 치유량",
   ["Best Heal (Crit)"] = "최고 치유량 (치명타)",
   ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "새 최고 치유량 열(녹색): 각 치유 주문의 가장 큰 치유량. 최고 치명타와 최고 일반은 피해용입니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
+  ["New: whisper your records to a friend. Type /crittracker whisper Name, and every time you beat one of your best crits they get a whisper with the new number. /crittracker whisper off stops it"] = "새 기능: 기록을 친구에게 귓속말로 보냅니다. /crittracker whisper 이름 을 입력하면, 최고 치명타를 경신할 때마다 친구에게 새 수치가 귓속말로 갑니다. /crittracker whisper off 로 끕니다",
+  ["whispering new records to %s. /crittracker whisper off to stop"] = "새 기록을 %s에게 귓속말로 보내는 중. /crittracker whisper off 로 중지",
+  ["type /crittracker whisper Name to whisper your new records to a friend"] = "/crittracker whisper 이름 을 입력해 새 기록을 친구에게 귓속말로 보내세요",
+  ["stopped whispering new records"] = "새 기록 귓속말을 멈췄습니다",
+  ["new records will be whispered to %s"] = "새 기록이 %s에게 귓속말로 갑니다",
+  ["Records keep coming in: since 1.2.1 a hit with any detail hidden by the game was skipped whole, even when its damage could be read"] = "기록이 다시 쌓입니다. 1.2.1부터는 게임이 숨긴 정보가 하나라도 있으면 피해량을 읽을 수 있어도 타격 전체를 건너뛰었습니다",
+  ["Records come in again: the game hides the damage amount from addons, so Crit Tracker now reads your hits and crits from the combat log lines in chat, like Crit Numbers does"] = "기록이 다시 쌓입니다: 게임이 애드온에 피해량을 숨기므로 Crit Tracker가 이제 Crit Numbers처럼 채팅의 전투 기록 줄에서 타격과 치명타를 읽습니다",
 } end

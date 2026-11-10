@@ -54,4 +54,5 @@ ns.LOCALES.koKR = function() return {
   ["Clickable Links"] = "클릭 가능한 링크",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "채팅의 웹 링크가 금색으로 바뀌고 클릭할 수 있습니다. 클릭하면 복사할 수 있게 링크가 담긴 작은 상자가 열립니다",
   ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Esc를 누르거나 로그아웃할 때 생기던 \"차단된 동작\" 오류를 고쳤습니다. 클릭한 링크는 이제 Chat Copy 자체 창에서 열립니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
 } end

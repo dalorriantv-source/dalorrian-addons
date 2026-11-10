@@ -52,4 +52,5 @@ ns.LOCALES.esMX = function() return {
   ["Clickable Links"] = "Enlaces clicables",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "Los enlaces web del chat se vuelven dorados y clicables: un clic abre un cuadrito con el enlace listo para copiar",
   ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Corregidos los errores de \"acción bloqueada\" al pulsar Esc o al salir. Los enlaces pulsados ahora se abren en la ventana propia de Chat Copy",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en calabozos y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
 } end

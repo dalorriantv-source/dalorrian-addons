@@ -103,4 +103,5 @@ ns.LOCALES.ruRU = function() return {
   ["%s is locked and off the junk list"] = "%s закреплён и убран из списка хлама",
   ["%s is unlocked and back on the junk list"] = "%s откреплён и снова в списке хлама",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "В список попадают только серые предметы. Правый клик закрепляет предмет, а Закреплённые показывает, что ты закрепил",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
 } end

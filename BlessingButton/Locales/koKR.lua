@@ -103,4 +103,6 @@ ns.LOCALES.koKR = function() return {
   ["with the"] = "다음과 함께:",
   ["your blessings (%d paladins sharing)"] = "당신의 축복 (성기사 %d명이 나눔)",
   ["Shift-dragging the button moves it without casting, and it stays put until you let go"] = "Shift+드래그로 시전 없이 버튼을 옮기며, 놓을 때까지 사라지지 않습니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
 } end

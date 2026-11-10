@@ -83,4 +83,13 @@ ns.LOCALES.ptBR = function() return {
   ["Best Heal"] = "Melhor cura",
   ["Best Heal (Crit)"] = "Melhor cura (Crítico)",
   ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "Nova coluna Melhor cura em verde: sua maior cura com cada feitiço de cura. Melhor crítico e Melhor golpe são para dano",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona em masmorras e raides sem erros. O WoW: Forever esconde ali alguns detalhes dos addons, e este addon agora os ignora sem alarde",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Mais correções para masmorras e raides: alguns outros detalhes que o jogo esconde ali (como se alguém está ausente) agora são ignorados sem erros",
+  ["New: whisper your records to a friend. Type /crittracker whisper Name, and every time you beat one of your best crits they get a whisper with the new number. /crittracker whisper off stops it"] = "Novo: sussurre seus recordes para um amigo. Digite /crittracker whisper Nome e, sempre que você bater um dos seus melhores críticos, ele recebe um sussurro com o novo número. /crittracker whisper off para",
+  ["whispering new records to %s. /crittracker whisper off to stop"] = "sussurrando novos recordes para %s. /crittracker whisper off para parar",
+  ["type /crittracker whisper Name to whisper your new records to a friend"] = "digite /crittracker whisper Nome para sussurrar seus novos recordes para um amigo",
+  ["stopped whispering new records"] = "novos recordes não são mais sussurrados",
+  ["new records will be whispered to %s"] = "novos recordes serão sussurrados para %s",
+  ["Records keep coming in: since 1.2.1 a hit with any detail hidden by the game was skipped whole, even when its damage could be read"] = "Os recordes voltam a ser registrados: desde a 1.2.1 um golpe com qualquer detalhe escondido pelo jogo era ignorado inteiro, mesmo com o dano legível",
+  ["Records come in again: the game hides the damage amount from addons, so Crit Tracker now reads your hits and crits from the combat log lines in chat, like Crit Numbers does"] = "Os recordes voltaram: o jogo esconde o valor do dano dos addons, então o Crit Tracker agora lê seus golpes e críticos nas linhas do registro de combate no chat, como o Crit Numbers",
 } end

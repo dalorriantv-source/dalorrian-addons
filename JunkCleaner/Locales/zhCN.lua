@@ -102,4 +102,5 @@ ns.LOCALES.zhCN = function() return {
   ["%s is locked and off the junk list"] = "%s 已锁定，不在垃圾列表中",
   ["%s is unlocked and back on the junk list"] = "%s 已解锁，回到垃圾列表",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "只有灰色物品会进入列表。右键点击可锁定，已锁定里能看到你锁定的物品",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
 } end

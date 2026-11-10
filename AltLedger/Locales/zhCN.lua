@@ -118,4 +118,6 @@ ns.LOCALES.zhCN = function() return {
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "新增游戏时间和专业技能两栏。游戏时间会在登录几秒后自动填好。专业技能显示每个主专业的图标和等级",
   ["The window is a bit wider to fit them"] = "窗口稍微加宽以放下它们",
   ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "修复了内存泄漏：当你的角色都不再拥有某件物品时，会清除其保存的物品名称",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地下城和团队副本修复：游戏在那里隐藏的更多信息（例如某人是否暂离）现在会被默默跳过，不再报错",
 } end

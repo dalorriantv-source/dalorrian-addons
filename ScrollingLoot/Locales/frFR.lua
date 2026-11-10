@@ -76,4 +76,5 @@ ns.LOCALES.frFR = function() return {
   ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "La fenêtre de butin reste cachée : tout va directement dans vos sacs. Elle s'affiche si un objet ne peut pas être ramassé. Maintenez Maj pour choisir à la main, ou choisissez Affichée sous Fenêtre de butin",
   ["Move It locks again by itself when you close the settings window"] = "Déplacer se verrouille tout seul quand vous fermez la fenêtre des options",
   ["The loot window no longer flashes open for a moment while looting"] = "La fenêtre de butin ne s'ouvre plus un instant pendant le ramassage",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Fonctionne dans les donjons et raids sans erreurs. WoW: Forever y cache certains détails aux addons, et cet addon les ignore désormais discrètement",
 } end

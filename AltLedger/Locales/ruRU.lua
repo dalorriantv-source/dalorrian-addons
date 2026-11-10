@@ -119,4 +119,6 @@ ns.LOCALES.ruRU = function() return {
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "Новые столбцы «Наиграно» и «Профессии». «Наиграно» заполняется само через несколько секунд после входа. «Профессии» показывает значок и навык каждой основной профессии",
   ["The window is a bit wider to fit them"] = "Окно стало чуть шире, чтобы всё поместилось",
   ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "Исправлена утечка памяти: сохранённые названия предметов удаляются, когда ни у одного из твоих персонажей больше нет этого предмета",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Ещё исправления для подземелий и рейдов: ещё несколько скрытых там игрой данных (например, отошёл ли игрок) теперь тихо пропускаются без ошибок",
 } end

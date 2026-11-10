@@ -70,4 +70,7 @@ ns.LOCALES.zhTW = function() return {
   ["opened %s: %s"] = "打開了 %s：%s",
   ["One quiet line in chat after a batch: what you opened and what came out, gold included"] = "每批打開後在聊天裡安靜地顯示一行：打開了什麼、得到了什麼，包括金幣",
   ["Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session"] = "修正了記憶體洩漏，背包檢查更快了。物品不會再在遊戲中途停止自動開啟",
+  ["Clams and other containers open by themselves again. Forever colors some tooltip lines, which hid them from the old check; it now also knows every container in the game by name"] = "蚌殼和其他容器又會自動打開了。Forever 給部分提示行加了顏色，舊的檢查因此看不到它們；現在插件還認識遊戲裡的每一種容器",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地城和團隊副本修復：遊戲在那裡隱藏的更多資訊（例如某人是否暫離）現在會被默默略過，不再報錯",
 } end

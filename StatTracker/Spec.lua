@@ -2,6 +2,24 @@
 -- Weights: 1 is what you want most, 0 does nothing for you. The game's own talent tab names are used when it has them.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitName = SafeApi(UnitName)
 
 -- stat keys: WDPS (weapon damage) STR AGI STA INT SPI AP RAP CRIT HIT EXP HASTE SP HEAL SCRIT MP5 DEF DODGE PARRY BLOCK ARMOR
 -- (1.1.0) from the WoW: Forever spec guides (Icy Veins, Oct 2026, level 30 beta). Forever merges melee, ranged and

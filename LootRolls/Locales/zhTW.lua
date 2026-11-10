@@ -80,4 +80,11 @@ ns.LOCALES.zhTW = function() return {
   ["Settings rows with four choices fit inside the window now"] = "有四個選項的設定列現在不會超出視窗了",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "修正了記憶體洩漏：從聊天中讀取的擲骰結果會在其進度條關閉後釋放",
   ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "支援 Pawn：如果物品對你是提升，圖示上會有綠色箭頭；右鍵點擊物品可以在 Pawn 裡比較，和遊戲內建的擲骰視窗一樣",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
+  ["Picking an item up again after you rolled on it no longer asks you to roll a second time"] = "對已經擲過骰的物品再次拾取時，不會再要求你第二次擲骰",
+  ["The game's own roll window no longer pops up next to the Loot Rolls bars"] = "遊戲內建的擲骰視窗不再在 Loot Rolls 條旁邊彈出",
+  ["The game's own roll window no longer sneaks back in dungeons: every roll the game has open gets a Loot Rolls bar, even when the game hides the roll's details from addons"] = "遊戲內建的擲骰視窗不會再在地城中冒出來：即使遊戲對插件隱藏細節，每個進行中的擲骰都會有 Loot Rolls 條",
+  ["The bar shows who won (and their roll) in dungeons too, read from the game's loot history instead of chat"] = "在地城中，條上也會顯示誰贏了（以及點數），改為讀取遊戲的拾取紀錄而不是聊天",
+  ["Loot rolls the game hides from addons in dungeons now get a Loot Rolls bar too, so the game's own roll window stays away. If the game won't take an answer from the bar, its own window comes back so you can still roll"] = "地城中遊戲對插件隱藏的拾取擲骰現在也會顯示 Loot Rolls 條，遊戲自帶的擲骰視窗不再彈出。如果遊戲不接受條上的選擇，它自己的視窗會回來，你仍然可以擲骰",
+  ["Loot roll"] = "拾取擲骰",
 } end

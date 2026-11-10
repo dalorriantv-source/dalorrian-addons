@@ -80,4 +80,5 @@ ns.LOCALES.ptBR = function() return {
   ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "A janela de saque fica oculta: tudo vai direto para suas bolsas. Ela aparece se algo não puder ser pego. Segure Shift para escolher à mão, ou escolha Visível em Janela de saque",
   ["Move It locks again by itself when you close the settings window"] = "Mover trava sozinho quando você fecha a janela de opções",
   ["The loot window no longer flashes open for a moment while looting"] = "A janela de saque não pisca mais aberta por um momento ao saquear",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona em masmorras e raides sem erros. O WoW: Forever esconde ali alguns detalhes dos addons, e este addon agora os ignora sem alarde",
 } end

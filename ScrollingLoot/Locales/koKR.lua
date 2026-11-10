@@ -80,4 +80,5 @@ ns.LOCALES.koKR = function() return {
   ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "전리품 창이 숨겨집니다: 모든 것이 바로 가방으로 들어갑니다. 주울 수 없는 것이 있으면 창이 나타납니다. Shift를 누르고 있으면 직접 고를 수 있고, 전리품 창에서 표시를 선택할 수도 있습니다",
   ["Move It locks again by itself when you close the settings window"] = "설정 창을 닫으면 이동이 다시 저절로 잠깁니다",
   ["The loot window no longer flashes open for a moment while looting"] = "전리품을 주울 때 전리품 창이 잠깐 열렸다 닫히지 않습니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
 } end

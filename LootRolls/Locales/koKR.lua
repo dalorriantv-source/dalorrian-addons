@@ -81,4 +81,11 @@ ns.LOCALES.koKR = function() return {
   ["Settings rows with four choices fit inside the window now"] = "선택지가 네 개인 설정 줄이 이제 창 안에 들어갑니다",
   ["Fixed a memory leak: rolls read from chat are let go once their bars close"] = "메모리 누수 수정: 채팅에서 읽은 주사위 결과는 막대가 닫히면 비워집니다",
   ["Works with Pawn: a green arrow on the item when it's an upgrade for you, and right-click the item to compare it in Pawn, like on the game's own roll window"] = "Pawn과 함께 작동합니다: 나에게 업그레이드인 아이템에 초록 화살표가 붙고, 아이템을 우클릭하면 게임 기본 주사위 창처럼 Pawn에서 비교합니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["Picking an item up again after you rolled on it no longer asks you to roll a second time"] = "이미 주사위를 굴린 아이템을 다시 주우려 해도 더 이상 두 번째로 굴리라고 묻지 않습니다",
+  ["The game's own roll window no longer pops up next to the Loot Rolls bars"] = "게임 자체의 주사위 창이 더 이상 Loot Rolls 막대 옆에 뜨지 않습니다",
+  ["The game's own roll window no longer sneaks back in dungeons: every roll the game has open gets a Loot Rolls bar, even when the game hides the roll's details from addons"] = "던전에서 게임 자체의 주사위 창이 더 이상 다시 뜨지 않습니다. 게임이 애드온에게 세부 정보를 숨겨도 열린 모든 주사위에 Loot Rolls 막대가 생깁니다",
+  ["The bar shows who won (and their roll) in dungeons too, read from the game's loot history instead of chat"] = "던전에서도 막대에 누가 이겼는지(와 주사위 값)가 표시됩니다. 채팅 대신 게임의 전리품 기록에서 읽습니다",
+  ["Loot rolls the game hides from addons in dungeons now get a Loot Rolls bar too, so the game's own roll window stays away. If the game won't take an answer from the bar, its own window comes back so you can still roll"] = "던전에서 게임이 애드온에 숨기는 전리품 주사위에도 이제 Loot Rolls 막대가 생겨 게임의 주사위 창이 뜨지 않습니다. 게임이 막대의 선택을 받지 않으면 게임 창이 다시 나타나 그래도 주사위를 굴릴 수 있습니다",
+  ["Loot roll"] = "전리품 주사위",
 } end

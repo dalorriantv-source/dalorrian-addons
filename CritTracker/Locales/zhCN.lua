@@ -82,4 +82,13 @@ ns.LOCALES.zhCN = function() return {
   ["Best Heal"] = "最高治疗",
   ["Best Heal (Crit)"] = "最高治疗（暴击）",
   ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "新增绿色的最高治疗列：每个治疗法术的最大治疗量。最高暴击和最高普通用于伤害",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地下城和团队副本修复：游戏在那里隐藏的更多信息（例如某人是否暂离）现在会被默默跳过，不再报错",
+  ["New: whisper your records to a friend. Type /crittracker whisper Name, and every time you beat one of your best crits they get a whisper with the new number. /crittracker whisper off stops it"] = "新功能：把你的记录密语给好友。输入 /crittracker whisper 名字，每当你打破一项最佳暴击，对方就会收到一条带新数字的密语。/crittracker whisper off 可以停止",
+  ["whispering new records to %s. /crittracker whisper off to stop"] = "正在把新记录密语给 %s。输入 /crittracker whisper off 停止",
+  ["type /crittracker whisper Name to whisper your new records to a friend"] = "输入 /crittracker whisper 名字，把你的新记录密语给好友",
+  ["stopped whispering new records"] = "已停止密语新记录",
+  ["new records will be whispered to %s"] = "新记录将密语给 %s",
+  ["Records keep coming in: since 1.2.1 a hit with any detail hidden by the game was skipped whole, even when its damage could be read"] = "记录恢复更新：自 1.2.1 起，只要游戏隐藏了任何细节，即使伤害可读，整次命中也会被跳过",
+  ["Records come in again: the game hides the damage amount from addons, so Crit Tracker now reads your hits and crits from the combat log lines in chat, like Crit Numbers does"] = "记录重新开始累积：游戏对插件隐藏了伤害数值，所以 Crit Tracker 现在像 Crit Numbers 一样从聊天中的战斗记录行读取你的命中和暴击",
 } end

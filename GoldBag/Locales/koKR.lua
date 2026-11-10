@@ -72,4 +72,6 @@ ns.LOCALES.koKR = function() return {
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "골드 주머니에 마우스를 올리면 모든 캐릭터의 골드와 합계가 보입니다. 각 캐릭터는 다음에 그 캐릭터로 접속할 때 추가됩니다. 하나만 보려면 마우스를 올리면에서 이 캐릭터를 고르세요",
   ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "이름이 같은 캐릭터(WoW: Forever 성)가 이제 툴팁에서 각자 한 줄씩 나옵니다. 각 캐릭터는 다음에 접속하면 다시 나타납니다",
   ["Your gold box stays put when you log back in. It now hangs on your bag bar and checks its spot again a few seconds after login, once every bar has loaded"] = "다시 접속해도 골드 상자가 제자리에 있습니다. 이제 가방 바에 붙어 있고, 모든 바가 불러와진 뒤 접속 몇 초 후에 위치를 다시 확인합니다",
+  ["Fixed for real: a gold box you moved no longer slides down after a reload or a new login. It now remembers its exact spot on your screen. Move it once more after updating"] = "제대로 고쳤습니다: 옮겨 둔 골드 상자가 리로드나 재접속 후 더 이상 아래로 밀리지 않습니다. 이제 화면의 정확한 위치를 기억합니다. 업데이트 후 한 번 더 옮겨 주세요",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
 } end

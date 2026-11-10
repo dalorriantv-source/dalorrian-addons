@@ -3,6 +3,23 @@
 -- /stats shows it on its own.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
@@ -629,17 +646,32 @@ ns.StatSections = Sections
 -- (1.2.0) the character model zooms out further. Newer clients use a model scene (its camera gets a longer
 -- reach); older ones a plain model (scrolling down past its usual limit pulls the camera back)
 local function ZoomOut()
+  -- (1.2.2) widen the reach every time the window opens (the game resets its camera then), but keep the zoom it
+  -- opens at, so it never starts out far away. The plain model starts at its normal distance on every open.
   local scene = _G.CharacterModelScene
   if scene and not scene.statTrackerZoom then
     scene.statTrackerZoom = true
     local function Widen()
       local cam = scene.GetActiveCamera and scene:GetActiveCamera()
-      if cam and not cam.statTrackerWide and cam.SetMaxZoomDistance and cam.GetMaxZoomDistance then
-        local ok, far = pcall(cam.GetMaxZoomDistance, cam)
-        if ok and type(far) == "number" and far > 0 then cam.statTrackerWide = true; pcall(cam.SetMaxZoomDistance, cam, far * 1.8) end
+      if not (cam and cam.SetMaxZoomDistance and cam.GetMaxZoomDistance) then return end
+      local ok, cur = pcall(cam.GetMaxZoomDistance, cam)
+      if not ok or type(cur) ~= "number" or cur <= 0 then return end
+      cam.statTrackerBase = cam.statTrackerBase or cur
+      local want = cam.statTrackerBase * 1.8
+      if cur >= want - 0.01 then return end
+      local z = cam.GetZoomDistance and select(2, pcall(cam.GetZoomDistance, cam))
+      pcall(cam.SetMaxZoomDistance, cam, want)
+      if type(z) == "number" and cam.SetZoomDistance then
+        pcall(cam.SetZoomDistance, cam, z)
+        if cam.SnapAllInterpolatedValues then pcall(cam.SnapAllInterpolatedValues, cam) end
       end
     end
-    scene:HookScript("OnShow", function() C_Timer.After(0, Widen) end)
+    scene:HookScript("OnShow", function() Widen(); C_Timer.After(0, Widen); C_Timer.After(0.2, Widen) end)
+    -- (1.2.3) the reset button (and anything else) can hand the scene a fresh camera: check again on every
+    -- scroll and a few times a second while the window is open, so the extra reach is always there
+    scene:HookScript("OnMouseWheel", Widen)
+    local wait = 0
+    scene:HookScript("OnUpdate", function(_, el) wait = wait - el; if wait <= 0 then wait = 0.25; Widen() end end)
     Widen()
   end
   local m = _G.CharacterModelFrame
@@ -653,7 +685,7 @@ local function ZoomOut()
       elseif delta > 0 and far > 1 then far = math.max(1, far - 0.15) end
       self:SetCamDistanceScale(far)
     end)
-    m:HookScript("OnShow", function(self) self:SetCamDistanceScale(far) end)
+    m:HookScript("OnShow", function(self) far = 1; self:SetCamDistanceScale(1) end)
   end
 end
 
@@ -663,7 +695,16 @@ local function HookCharacter()
   local cf = _G.CharacterFrame
   if not cf or cf.statTrackerHooked then return end
   cf.statTrackerHooked = true
-  cf:HookScript("OnShow", function() if DB and DB.attach and not standalone then Open(false) end; C_Timer.After(0.05, ns.PaintGear) end)
+  -- (1.2.4) only beside the Character tab itself: the same window also holds Honor (H), Reputation, Skills and
+  -- the rest, and the panel used to open with those too. It follows the Character tab as you switch tabs
+  local pd = _G.PaperDollFrame
+  if pd and pd.HookScript then
+    pd:HookScript("OnShow", function() if DB and DB.attach and not standalone then Open(false) end end)
+    pd:HookScript("OnHide", function() if panel and not standalone then panel:Hide() end end)
+    cf:HookScript("OnShow", function() C_Timer.After(0.05, ns.PaintGear) end)
+  else
+    cf:HookScript("OnShow", function() if DB and DB.attach and not standalone then Open(false) end; C_Timer.After(0.05, ns.PaintGear) end)
+  end
   cf:HookScript("OnHide", function() if panel and not standalone then panel:Hide() end end)
 end
 
@@ -695,6 +736,7 @@ if ev.RegisterUnitEvent then
   end
 end
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     StatTrackerDB = StatTrackerDB or {}
@@ -727,6 +769,10 @@ ns.HelpConfig = {
       get = function() return DB.gear and true or false end, set = function(v) DB.gear = v; Paint() end },
   },
   notes = {
+    { v = "1.2.4", "The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window" },
+    { v = "1.2.3", "Zooming out keeps working after you press the reset button on your character window" },
+    { v = "1.2.2", "Zooming out on your character window works every time you open it, and it always opens at the normal distance" },
+    { v = "1.2.1", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.2.0", "Zoom out further on your character window: keep scrolling down on your character to pull the camera back" },
     { v = "1.1.1", "Uses less memory: the gear stats on your character window now update when your gear changes, not every second" },
     { v = "1.1.0", "Pick your spec (or let it read your talents) and the panel puts your most important stats first",

@@ -103,4 +103,5 @@ ns.LOCALES.ptBR = function() return {
   ["%s is locked and off the junk list"] = "%s está travado e fora da lista de lixo",
   ["%s is unlocked and back on the junk list"] = "%s foi destravado e voltou para a lista de lixo",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "Só itens cinza entram na lista. Clique direito num deles para travá-lo, e Travados mostra o que você travou",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona em masmorras e raides sem erros. O WoW: Forever esconde ali alguns detalhes dos addons, e este addon agora os ignora sem alarde",
 } end

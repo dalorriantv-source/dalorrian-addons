@@ -79,4 +79,5 @@ ns.LOCALES.zhTW = function() return {
   ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "拾取視窗保持隱藏：所有物品直接進入背包。有拿不起的物品時視窗會出現。按住Shift可手動拾取，或在拾取視窗中選擇顯示",
   ["Move It locks again by itself when you close the settings window"] = "關閉設定視窗時，移動會自動重新鎖定",
   ["The loot window no longer flashes open for a moment while looting"] = "拾取時拾取視窗不再閃現一下",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
 } end

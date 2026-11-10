@@ -152,4 +152,8 @@ ns.LOCALES.koKR = function() return {
   ["Most Important Stats"] = "가장 중요한 능력치",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "메모리를 덜 사용합니다: 캐릭터 창의 장비 능력치가 이제 매초가 아니라 장비가 바뀔 때 갱신됩니다",
   ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "캐릭터 창에서 더 멀리 축소: 캐릭터 위에서 휠을 계속 아래로 굴리면 카메라가 뒤로 물러납니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "캐릭터 창을 열 때마다 축소가 제대로 되며, 항상 기본 거리로 열립니다",
+  ["Zooming out keeps working after you press the reset button on your character window"] = "캐릭터 창의 초기화 버튼을 누른 뒤에도 축소가 계속 됩니다",
+  ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "이제 능력치 창은 캐릭터 탭에서만 열리고, 같은 창의 명예(H), 평판, 기술 등 다른 탭에서는 열리지 않습니다",
 } end

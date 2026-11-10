@@ -148,4 +148,8 @@ ns.LOCALES.frFR = function() return {
   ["Most Important Stats"] = "Statistiques les plus importantes",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Utilise moins de mémoire : les stats d'équipement dans la fenêtre du personnage se mettent à jour quand votre équipement change, et non plus chaque seconde",
   ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "Dézoome davantage dans la fenêtre du personnage : continue de faire défiler vers le bas sur ton personnage pour reculer la caméra",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Fonctionne dans les donjons et raids sans erreurs. WoW: Forever y cache certains détails aux addons, et cet addon les ignore désormais discrètement",
+  ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Le dézoom de la fenêtre du personnage fonctionne à chaque ouverture, et elle s'ouvre toujours à la distance normale",
+  ["Zooming out keeps working after you press the reset button on your character window"] = "Le dézoom continue de fonctionner après avoir appuyé sur le bouton de réinitialisation de la fenêtre du personnage",
+  ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Le panneau des statistiques ne s'ouvre plus qu'avec l'onglet Personnage, pas avec Honneur (H), Réputation, Compétences ni les autres onglets de la même fenêtre",
 } end

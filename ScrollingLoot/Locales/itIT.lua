@@ -79,4 +79,5 @@ ns.LOCALES.itIT = function() return {
   ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "La finestra del bottino resta nascosta: tutto va dritto nelle tue borse. Appare se qualcosa non si può raccogliere. Tieni premuto Maiusc per scegliere a mano, o scegli Visibile in Finestra del bottino",
   ["Move It locks again by itself when you close the settings window"] = "Sposta si blocca da solo quando chiudi la finestra delle opzioni",
   ["The loot window no longer flashes open for a moment while looting"] = "La finestra del bottino non lampeggia più per un attimo mentre raccogli",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funziona in spedizioni e incursioni senza errori. WoW: Forever lì nasconde alcuni dettagli agli addon, e ora questo addon li salta in silenzio",
 } end

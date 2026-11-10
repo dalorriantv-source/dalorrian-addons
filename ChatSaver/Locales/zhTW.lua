@@ -81,4 +81,5 @@ ns.LOCALES.zhTW = function() return {
   ["Load works on the first click. No more clicking it twice"] = "載入點一次就生效，不用再點兩次",
   ["Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out"] = "為新設定命名改用 Chat Saver 自己的框，登出時不會再出現「動作被阻擋」錯誤",
   ["The Delete button is red, so it's hard to hit by mistake"] = "刪除按鈕變成紅色，不容易誤點",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
 } end

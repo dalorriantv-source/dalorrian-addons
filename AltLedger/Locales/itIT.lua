@@ -118,4 +118,6 @@ ns.LOCALES.itIT = function() return {
   ["New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill"] = "Nuove colonne Giocato e Professioni. Giocato si riempie da solo pochi secondi dopo l'accesso. Professioni mostra icona e livello di ogni professione principale",
   ["The window is a bit wider to fit them"] = "La finestra è un po' più larga per farle stare",
   ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "Corretta una perdita di memoria: i nomi degli oggetti salvati vengono cancellati quando nessuno dei tuoi personaggi ha più quell'oggetto",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funziona in spedizioni e incursioni senza errori. WoW: Forever lì nasconde alcuni dettagli agli addon, e ora questo addon li salta in silenzio",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Altre correzioni per spedizioni e incursioni: alcuni altri dettagli che il gioco lì nasconde (come se qualcuno è assente) ora vengono saltati senza errori",
 } end

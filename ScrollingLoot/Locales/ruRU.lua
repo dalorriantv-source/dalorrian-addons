@@ -80,4 +80,5 @@ ns.LOCALES.ruRU = function() return {
   ["The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window"] = "Окно добычи остаётся скрытым: всё сразу идёт в сумки. Оно появляется, если что-то нельзя подобрать. Удерживайте Shift, чтобы выбирать вручную, или выберите Показано в Окне добычи",
   ["Move It locks again by itself when you close the settings window"] = "Перемещение снова блокируется само, когда вы закрываете окно настроек",
   ["The loot window no longer flashes open for a moment while looting"] = "Окно добычи больше не мелькает на секунду при сборе",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
 } end

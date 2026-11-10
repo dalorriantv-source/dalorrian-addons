@@ -78,4 +78,5 @@ ns.LOCALES.deDE = function() return {
   ["Load works on the first click. No more clicking it twice"] = "Laden klappt beim ersten Klick. Kein doppeltes Klicken mehr",
   ["Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out"] = "Das Benennen eines neuen Setups nutzt Chat Savers eigenes Feld und kann beim Ausloggen keine „Blockierte Aktion“-Fehler mehr auslösen",
   ["The Delete button is red, so it's hard to hit by mistake"] = "Der Löschen-Knopf ist rot, damit man ihn nicht aus Versehen drückt",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funktioniert in Dungeons und Schlachtzügen ohne Fehler. WoW: Forever verbirgt dort einige Details vor Addons, und dieses Addon überspringt sie jetzt still",
 } end

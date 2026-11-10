@@ -152,4 +152,8 @@ ns.LOCALES.ruRU = function() return {
   ["Most Important Stats"] = "Самые важные характеристики",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Расходует меньше памяти: характеристики снаряжения в окне персонажа теперь обновляются при смене снаряжения, а не каждую секунду",
   ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "Персонажа в окне персонажа можно отдалить сильнее: продолжайте крутить колесо вниз над персонажем, чтобы отвести камеру",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
+  ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Отдаление в окне персонажа работает при каждом открытии, и окно всегда открывается на обычном расстоянии",
+  ["Zooming out keeps working after you press the reset button on your character window"] = "Отдаление продолжает работать после нажатия кнопки сброса в окне персонажа",
+  ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Панель характеристик теперь открывается только с вкладкой «Персонаж», а не с «Честью» (H), «Репутацией», «Навыками» и другими вкладками того же окна",
 } end

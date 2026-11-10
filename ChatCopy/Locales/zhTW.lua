@@ -53,4 +53,5 @@ ns.LOCALES.zhTW = function() return {
   ["Clickable Links"] = "可點擊連結",
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "聊天中的網址會變成金色並可點擊：點擊後彈出小框，連結已選好方便複製",
   ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "修正了按 Esc 或登出時的「動作被阻擋」錯誤。點擊的連結現在在 Chat Copy 自己的框裡開啟",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
 } end

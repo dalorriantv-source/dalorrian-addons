@@ -102,4 +102,5 @@ ns.LOCALES.zhTW = function() return {
   ["%s is locked and off the junk list"] = "%s 已鎖定，不在垃圾清單中",
   ["%s is unlocked and back on the junk list"] = "%s 已解鎖，回到垃圾清單",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "只有灰色物品會進入清單。右鍵點擊可鎖定，已鎖定裡能看到你鎖定的物品",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
 } end

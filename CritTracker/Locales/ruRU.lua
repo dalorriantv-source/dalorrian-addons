@@ -83,4 +83,13 @@ ns.LOCALES.ruRU = function() return {
   ["Best Heal"] = "Лучшее исцеление",
   ["Best Heal (Crit)"] = "Лучшее исцеление (Крит)",
   ["New Best Heal column in green: your biggest heal with each healing spell. Best Crit and Best Hit are for damage"] = "Новый столбец Лучшее исцеление зелёным: твоё самое сильное исцеление каждым лечащим заклинанием. Лучший крит и Лучший удар относятся к урону",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "Ещё исправления для подземелий и рейдов: ещё несколько скрытых там игрой данных (например, отошёл ли игрок) теперь тихо пропускаются без ошибок",
+  ["New: whisper your records to a friend. Type /crittracker whisper Name, and every time you beat one of your best crits they get a whisper with the new number. /crittracker whisper off stops it"] = "Новое: шепчите свои рекорды другу. Введите /crittracker whisper Имя, и каждый раз, когда вы побьёте один из своих лучших критов, он получит шёпот с новым числом. /crittracker whisper off отключает это",
+  ["whispering new records to %s. /crittracker whisper off to stop"] = "новые рекорды отправляются шёпотом %s. /crittracker whisper off, чтобы остановить",
+  ["type /crittracker whisper Name to whisper your new records to a friend"] = "введите /crittracker whisper Имя, чтобы шептать новые рекорды другу",
+  ["stopped whispering new records"] = "новые рекорды больше не отправляются шёпотом",
+  ["new records will be whispered to %s"] = "новые рекорды будут отправляться шёпотом %s",
+  ["Records keep coming in: since 1.2.1 a hit with any detail hidden by the game was skipped whole, even when its damage could be read"] = "Рекорды снова записываются: с версии 1.2.1 удар пропускался целиком, если игра скрывала любую его деталь, даже когда урон можно было прочитать",
+  ["Records come in again: the game hides the damage amount from addons, so Crit Tracker now reads your hits and crits from the combat log lines in chat, like Crit Numbers does"] = "Рекорды снова записываются: игра скрывает урон от аддонов, поэтому Crit Tracker теперь читает твои удары и криты из строк журнала боя в чате, как Crit Numbers",
 } end

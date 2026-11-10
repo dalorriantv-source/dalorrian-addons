@@ -151,4 +151,8 @@ ns.LOCALES.itIT = function() return {
   ["Most Important Stats"] = "Statistiche più importanti",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "Usa meno memoria: le statistiche dell'equipaggiamento nella finestra del personaggio ora si aggiornano quando cambia il tuo equipaggiamento, non ogni secondo",
   ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "Allontana di più la visuale nella finestra del personaggio: continua a scorrere verso il basso sul personaggio per arretrare la telecamera",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funziona in spedizioni e incursioni senza errori. WoW: Forever lì nasconde alcuni dettagli agli addon, e ora questo addon li salta in silenzio",
+  ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Allontanare la visuale nella finestra del personaggio funziona ogni volta che la apri, e si apre sempre alla distanza normale",
+  ["Zooming out keeps working after you press the reset button on your character window"] = "Allontanare la visuale continua a funzionare dopo aver premuto il pulsante di ripristino nella finestra del personaggio",
+  ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Il pannello delle statistiche ora si apre solo con la scheda Personaggio, non con Onore (H), Reputazione, Abilità o le altre schede della stessa finestra",
 } end

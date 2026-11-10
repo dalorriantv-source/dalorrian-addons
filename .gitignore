@@ -1,10 +1,11 @@
 # personal sound packs: clips from games and shows, never pushed
 *_MyPacks/
 
-# private sound packs (not ours to publish): live only on Dalorrian's PC
+# (Nov 10, 2026) Halo, Wow, Meme and Halo Elite packs are Dalorrian's own voice: they ship and are tracked.
+# LocalPacks.lua is an old leftover (the packs are registered in the main file now) and stays out.
 CritSounds/LocalPacks.lua
-CritSounds/Sounds/DALOHCRIT/
-CritSounds/Sounds/DALOWOW/
 AggroAlert/LocalPacks.lua
-AggroAlert/Sounds/DALORRIAN MEME WARNING/
-AggroAlert/Sounds/DALORRIAN_ELITE/
+
+# junk waiting to be deleted by hand
+_to_delete/
+**/Sounds/**/logos/

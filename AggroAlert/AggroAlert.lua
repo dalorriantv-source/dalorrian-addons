@@ -7,6 +7,24 @@
 -- Only mobs with a nameplate showing can be seen, so keep enemy nameplates on.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitAffectingCombat, UnitCanAttack, UnitClassification, UnitCreatureType, UnitExists, UnitGUID, UnitIsDead, UnitIsDeadOrGhost, UnitIsPlayer, UnitLevel, UnitName, UnitOnTaxi, UnitPlayerControlled, UnitReaction = SafeApi(UnitAffectingCombat), SafeApi(UnitCanAttack), SafeApi(UnitClassification), SafeApi(UnitCreatureType), SafeApi(UnitExists), SafeApi(UnitGUID), SafeApi(UnitIsDead), SafeApi(UnitIsDeadOrGhost), SafeApi(UnitIsPlayer), SafeApi(UnitLevel), SafeApi(UnitName), SafeApi(UnitOnTaxi), SafeApi(UnitPlayerControlled), SafeApi(UnitReaction)
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
@@ -396,7 +414,8 @@ driver:SetScript("OnUpdate", function(_, el)
   if wait > 0 then return end
   wait = 0.1   -- ten times a second: the arrows and the distance follow you as you move
   local ok, err = pcall(Scan)
-  if not ok and err ~= lastError then lastError = err; Say("something went wrong, send Dalorrian this:" .. " " .. tostring(err)) end
+  -- (Forever) errors are kept for Settings & Help's bug report, never printed in chat on their own
+  if not ok and err ~= lastError then lastError = err; ns.lastError = err end
 end)
 
 local MinimapButton   -- made further down, after the settings
@@ -405,6 +424,7 @@ ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("PLAYER_REGEN_DISABLED")
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= "AggroAlert" then return end
     AggroAlertDB = AggroAlertDB or {}
@@ -489,6 +509,9 @@ ns.HelpConfig = {
       set = function(v) SlashCmdList.AGGROALERT(v == "move" and "unlock" or "lock") end },
   },
   notes = {
+    { v = "1.3.5", "The Meme Pack and Halo Elite Pack sounds are back: their sound files were missing from the download, so picking either one played nothing" },
+    { v = "1.3.4", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
+    { v = "1.3.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.3.2", "New sound packs from Dalorrian under Sound: Meme Pack and Halo Elite Pack" },
     { v = "1.3.1", "More sound packs under Sound: Bell, Horn and Alarm, made of the game's own sounds. Each plays one at random every warning, like the Dalorrian Pack" },
     { v = "1.3.0", "Elite mobs warn you a few meters sooner and say Elite on the warning, even at your own level" },

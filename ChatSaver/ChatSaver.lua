@@ -3,6 +3,24 @@
 -- /chatsaver for options.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitName, UnitLevel = SafeApi(UnitName), SafeApi(UnitLevel)
 local DB, CHAR
 local P = ns.print or print
 local Tr = ns.Tr or function(s) return s end
@@ -272,6 +290,7 @@ local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_ENTERING_WORLD")
 ev:SetScript("OnEvent", function(_, e, a1, a2)
+  if AnySecret(a1, a2) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     ChatSaverDB = ChatSaverDB or {}
@@ -319,6 +338,7 @@ ns.HelpConfig = {
       get = function() return DB.newChar or false end, set = function(v) DB.newChar = v end },
   },
   notes = {
+    { v = "1.1.6", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.1.5", "The Delete button is red, so it's hard to hit by mistake" },
     { v = "1.1.4", "Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out" },
     { v = "1.1.3", "Load works on the first click. No more clicking it twice" },

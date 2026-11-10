@@ -71,4 +71,6 @@ ns.LOCALES.zhTW = function() return {
   ["Hover the gold bag to see every character's gold and your total. Each character shows up the next time you log in on it. Pick This Character under Hover Shows to keep it to one"] = "滑鼠移到金幣袋上可看到每個角色的金幣和總數。每個角色會在你下次登入它時加入。在滑鼠懸停顯示中選擇此角色只看一個",
   ["Characters who share a first name (WoW: Forever surnames) each get their own line in the hover now. Each one shows up again the next time you log in on it"] = "同名角色（WoW: Forever 的姓氏）現在在滑鼠提示裡各佔一行。每個角色在你下次登入時會重新出現",
   ["Your gold box stays put when you log back in. It now hangs on your bag bar and checks its spot again a few seconds after login, once every bar has loaded"] = "重新登入後金幣框會留在原位。它現在掛在背包列上，並在登入幾秒後、所有動作條載入完畢時再次檢查位置",
+  ["Fixed for real: a gold box you moved no longer slides down after a reload or a new login. It now remembers its exact spot on your screen. Move it once more after updating"] = "徹底修好：移動過的金幣框在重載或重新登入後不再往下滑。現在它會記住在螢幕上的準確位置。更新後請再移動一次",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
 } end

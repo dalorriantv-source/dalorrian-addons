@@ -2,6 +2,23 @@
 -- /sloot for options. /sloot test shows sample loot without having to loot anything.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
@@ -324,6 +341,7 @@ ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("CHAT_MSG_LOOT")
 ev:RegisterEvent("CHAT_MSG_MONEY")
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" and a1 == "ScrollingLoot" then
     ScrollingLootDB = ScrollingLootDB or {}
     DB = ScrollingLootDB
@@ -401,6 +419,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.SCROLLINGLOOT("test") end },
   },
   notes = {
+    { v = "1.2.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.2.2", "The loot window no longer flashes open for a moment while looting" },
     { v = "1.2.1", "Move It locks again by itself when you close the settings window" },
     { v = "1.2.0", "The loot window stays hidden: everything goes straight to your bags. It shows if something can't be picked up. Hold Shift to pick by hand, or pick Shown under Loot Window" },

@@ -52,4 +52,5 @@ ns.LOCALES.zhCN = function() return {
   ["Gear that's new in Forever says so. Gear that didn't change shows nothing extra"] = "Forever 新增的装备会注明。未改动的装备不会显示任何额外内容",
   ["Gear whose old Equip effect Forever now shows as a stat (like Spell Power) no longer shows as changed when nothing changed"] = "Forever 现在把旧的装备效果显示为属性（如法术强度）的装备，如果实际没有改动，不再显示为已改动",
   ["Uses less memory: only the Classic effect text for your language is kept loaded"] = "占用更少内存：只保留你所用语言的经典旧世效果文本",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
 } end

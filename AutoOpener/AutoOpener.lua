@@ -4,6 +4,24 @@
 -- right-click skips that kind of item. /opener for options.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitCastingInfo, UnitChannelInfo, UnitIsDeadOrGhost, UnitOnTaxi = SafeApi(UnitCastingInfo), SafeApi(UnitChannelInfo), SafeApi(UnitIsDeadOrGhost), SafeApi(UnitOnTaxi)
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
@@ -33,6 +51,12 @@ local NumSlots = (C_Container and C_Container.GetContainerNumSlots) or GetContai
 local LOCKED_TEXT = LOCKED or "Locked"
 local OPEN_TEXT = ITEM_OPENABLE or "<Right Click to Open>"
 
+-- (1.2.2) Forever hands tooltip lines over with color codes on them, so "<Right Click to Open>" never matched
+-- and clams were filed as plain items. Lines are compared without colors now.
+local function Plain(t)
+  if type(t) ~= "string" then return nil end
+  return (t:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):match("^%s*(.-)%s*$"))
+end
 -- does the tooltip say it opens, or that it's a locked box?
 local scan
 local function TooltipLines(bag, slot)
@@ -69,10 +93,15 @@ local function Openable(bag, slot)
     id = link and tonumber(link:match("item:(%d+)"))
   end
   if not id then return end
-  if DB.skip[id] or (later and later[id]) or never[id] then return end
+  if DB.skip[id] or (later and later[id]) then return end
+  -- (1.2.2) every container in the game, by item ID (Openables.lua): those never depend on the tooltip
+  local known = ns.OPENABLE and ns.OPENABLE[id]
+  if never[id] and known == nil then return end
+  if known == true then return id, icon, count or 1 end
   local lines = TooltipLines(bag, slot)
-  local opens, locked = hasLoot and true or false, false
-  for _, t in ipairs(lines) do
+  local opens, locked = (hasLoot or known == false) and true or false, false
+  for _, raw in ipairs(lines) do
+    local t = Plain(raw)
     if t == OPEN_TEXT then opens = true end
     if t == LOCKED_TEXT then locked = true end
   end
@@ -300,6 +329,7 @@ for _, e in ipairs({ "MERCHANT_CLOSED", "BANKFRAME_CLOSED", "MAIL_CLOSED", "TRAD
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     AutoOpenerDB = AutoOpenerDB or {}
@@ -353,6 +383,9 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.2.4", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
+    { v = "1.2.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
+    { v = "1.2.2", "Clams and other containers open by themselves again. Forever colors some tooltip lines, which hid them from the old check; it now also knows every container in the game by name" },
     { v = "1.2.1", "Fixed a memory leak and made bag checks faster. Items no longer stop opening by themselves partway through a session" },
     { v = "1.2.0", "One quiet line in chat after a batch: what you opened and what came out, gold included" },
     { v = "1.1.1", "Something that can't be opened yet is left alone instead of being tried again and again" },

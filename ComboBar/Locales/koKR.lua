@@ -124,4 +124,6 @@ ns.LOCALES.koKR = function() return {
   ["Settings are grouped now: Look, Position and Showing"] = "설정이 이제 모양, 위치, 표시로 묶여 있습니다",
   ["New Target Height slider: how far over your target's health bar the points sit with Over Target, so you can leave room for its buffs and debuffs"] = "새 대상 위 높이 슬라이더: 대상 위를 쓸 때 연계 점수가 대상의 생명력 바 위로 얼마나 떨어질지 정해서 강화·약화 효과 자리를 남길 수 있습니다",
   ["New players start with red circles over their target, shown in combat. If you already use Combo Bar, nothing changes"] = "새로 쓰는 플레이어는 전투 중 대상 위에 빨간 원으로 시작합니다. 이미 Combo Bar를 쓰고 있다면 바뀌는 것이 없습니다",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
 } end

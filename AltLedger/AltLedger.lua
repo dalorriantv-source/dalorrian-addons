@@ -3,6 +3,24 @@
 -- Each character shows up the first time you log in on it after installing. /alts for the window.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitClass, UnitFactionGroup, UnitLevel, UnitName, UnitRace, UnitXP, UnitXPMax = SafeApi(UnitClass), SafeApi(UnitFactionGroup), SafeApi(UnitLevel), SafeApi(UnitName), SafeApi(UnitRace), SafeApi(UnitXP), SafeApi(UnitXPMax)
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
@@ -1010,6 +1028,7 @@ for _, e in ipairs({ "PLAYER_ENTERING_WORLD", "PLAYER_MONEY", "PLAYER_XP_UPDATE"
 end
 local BANKER = Enum and Enum.PlayerInteractionType and Enum.PlayerInteractionType.Banker
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
     AltLedgerDB = AltLedgerDB or {}
@@ -1082,6 +1101,8 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() Toggle("chars") end },
   },
   notes = {
+    { v = "1.4.3", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
+    { v = "1.4.2", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.4.1", "Fixed a memory leak: saved item names are cleared once none of your characters has that item" },
     { v = "1.4.0", "New Played and Professions columns. Played fills in by itself a few seconds after you log in on a character. Professions shows each main profession's icon and skill", "The window is a bit wider to fit them" },
     { v = "1.3.1", "The All Characters total shows gold, silver and copper" },

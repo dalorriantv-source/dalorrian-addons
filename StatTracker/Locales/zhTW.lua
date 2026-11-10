@@ -151,4 +151,8 @@ ns.LOCALES.zhTW = function() return {
   ["Most Important Stats"] = "最重要的屬性",
   ["Uses less memory: the gear stats on your character window now update when your gear changes, not every second"] = "佔用更少記憶體：角色視窗上的裝備屬性現在只在裝備變化時更新，而不是每秒更新",
   ["Zoom out further on your character window: keep scrolling down on your character to pull the camera back"] = "角色視窗可以縮得更遠：在角色上繼續向下捲動滑鼠滾輪即可拉遠鏡頭",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
+  ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "每次打開角色視窗都能拉遠鏡頭，並且總是以正常距離打開",
+  ["Zooming out keeps working after you press the reset button on your character window"] = "在角色視窗按下重設按鈕後，仍然可以拉遠鏡頭",
+  ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "屬性面板現在只隨「角色」分頁開啟，不再隨同一視窗的榮譽（H）、聲望、技能等其他分頁開啟",
 } end

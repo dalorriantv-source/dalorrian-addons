@@ -82,4 +82,5 @@ ns.LOCALES.ruRU = function() return {
   ["Load works on the first click. No more clicking it twice"] = "Загрузка срабатывает с первого нажатия. Больше не нужно нажимать дважды",
   ["Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out"] = "Название новой настройки вводится в собственном окне Chat Saver, поэтому при выходе не будет ошибок «действие заблокировано»",
   ["The Delete button is red, so it's hard to hit by mistake"] = "Кнопка «Удалить» красная, чтобы не нажать её случайно",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
 } end

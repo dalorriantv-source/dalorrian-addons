@@ -2,6 +2,24 @@
 -- Rogues always, druids in cat form. Shift-drag to move. /combo for options.
 
 local ADDON, ns = ...
+-- (Forever) in dungeons and raids the game hides some values from addons ("secret values"), and touching one
+-- is an error. These stand-ins hand back nil instead, so the addon quietly skips what it isn't allowed to see.
+local issecretvalue = issecretvalue or function() return false end
+local function AnySecret(...)
+  for i = 1, select("#", ...) do if issecretvalue((select(i, ...))) then return true end end
+  return false
+end
+local function Unsecret(a, b, c, d, e, ...)
+  if issecretvalue(a) then a = nil end
+  if issecretvalue(b) then b = nil end
+  if issecretvalue(c) then c = nil end
+  if issecretvalue(d) then d = nil end
+  if issecretvalue(e) then e = nil end
+  if select("#", ...) > 0 then return a, b, c, d, e, ... end
+  return a, b, c, d, e
+end
+local function SafeApi(f) return f and function(...) return Unsecret(f(...)) end end
+local UnitAffectingCombat, UnitClass, UnitIsUnit, UnitPower, UnitPowerMax, UnitPowerType = SafeApi(UnitAffectingCombat), SafeApi(UnitClass), SafeApi(UnitIsUnit), SafeApi(UnitPower), SafeApi(UnitPowerMax), SafeApi(UnitPowerType)
 local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local GOLD = { 1, 0.82, 0 }
@@ -322,6 +340,7 @@ for _, e in ipairs({ "UNIT_POWER_FREQUENT", "UNIT_POWER_UPDATE", "UNIT_MAXPOWER"
   pcall(ev.RegisterEvent, ev, e)
 end
 ev:SetScript("OnEvent", function(_, e, a1)
+  if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= "ComboBar" then return end
     -- (1.6.1) new players start with red circles over their target, shown in combat;
@@ -415,6 +434,8 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.COMBOBAR("test") end },
   },
   notes = {
+    { v = "1.6.3", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
+    { v = "1.6.2", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.6.1", "New players start with red circles over their target, shown in combat. If you already use Combo Bar, nothing changes" },
     { v = "1.6.0", "Settings are grouped now: Look, Position and Showing",
       "New Target Height slider: how far over your target's health bar the points sit with Over Target, so you can leave room for its buffs and debuffs" },

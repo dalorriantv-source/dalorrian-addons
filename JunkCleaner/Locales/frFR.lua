@@ -99,4 +99,5 @@ ns.LOCALES.frFR = function() return {
   ["%s is locked and off the junk list"] = "%s est verrouillé et hors de la liste de camelote",
   ["%s is unlocked and back on the junk list"] = "%s est déverrouillé et de retour dans la liste de camelote",
   ["Only gray items ever make the list. Right-click one to lock it, and Locked shows what you've locked"] = "Seuls les objets gris arrivent dans la liste. Clic droit sur l'un d'eux pour le verrouiller, et Verrouillés montre ce que tu as verrouillé",
+  ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Fonctionne dans les donjons et raids sans erreurs. WoW: Forever y cache certains détails aux addons, et cet addon les ignore désormais discrètement",
 } end
