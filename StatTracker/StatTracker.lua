@@ -419,6 +419,7 @@ local function Gear(spec)
     local g = { slot = s, link = link }
     if link then
       g.stats = ns.ItemStats(link)
+      g.ench = ns.EnchantInfo and ns.EnchantInfo(s[2])
       g.verdict = ns.Verdict(g.stats, w)
       g.ilvl = ILvl(link)
     elseif s[2] == 17 and twoHand then
@@ -479,9 +480,13 @@ PaintGear = function()
     local slot = _G["Character" .. s[1] .. "Slot"]
     if slot then
       local box = Label(s, slot)
-      if DB.gear and g.stats and next(g.stats) and spec then
+      local hasStats = g.stats and next(g.stats)
+      if DB.gear and spec and (hasStats or (g.ench and DB.ench ~= false)) then
         local c = COLOR[g.verdict] or COLOR.meh
-        box.text:SetText(ns.StatText(g.stats, spec.weights)); box.text:SetTextColor(c[1], c[2], c[3])
+        local txt = hasStats and ns.StatText(g.stats, spec.weights) or ""
+        -- (1.3.0) the enchant, in light blue, on its own line under the item's stats
+        if g.ench and DB.ench ~= false then txt = (txt ~= "" and (txt .. "\n") or "") .. "|cff66ccff" .. g.ench.text .. "|r" end
+        box.text:SetText(txt); box.text:SetTextColor(c[1], c[2], c[3])
         box:SetSize((box.text:GetStringWidth() or 40) + 8, (box.text:GetStringHeight() or 12) + 4)
         box:Show()
       else
@@ -767,8 +772,12 @@ ns.HelpConfig = {
     -- (1.1.0) colored stats beside each slot on your character window
     { label = "Gear Stats On Character Window", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.gear and true or false end, set = function(v) DB.gear = v; Paint() end },
+    -- (1.3.0) enchants under each slot's stats, in light blue
+    { label = "Enchants On Character Window", choices = { { "On", true }, { "Off", false } },
+      get = function() return DB.ench ~= false end, set = function(v) DB.ench = v; Paint() end },
   },
   notes = {
+    { v = "1.3.0", "Enchants now show on your character window: each enchanted slot gets one extra line in light blue under its stats, like +7 Agi or Crusader. Turn it off in Settings with Enchants On Character Window" },
     { v = "1.2.4", "The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window" },
     { v = "1.2.3", "Zooming out keeps working after you press the reset button on your character window" },
     { v = "1.2.2", "Zooming out on your character window works every time you open it, and it always opens at the normal distance" },

@@ -77,4 +77,6 @@ ns.LOCALES.deDE = function() return {
   ["Move It locks again by itself when you close the settings window"] = "Verschieben sperrt sich von selbst wieder, wenn du das Einstellungsfenster schließt",
   ["The loot window no longer flashes open for a moment while looting"] = "Das Beutefenster blitzt beim Plündern nicht mehr kurz auf",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funktioniert in Dungeons und Schlachtzügen ohne Fehler. WoW: Forever verbirgt dort einige Details vor Addons, und dieses Addon überspringt sie jetzt still",
+  ["The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes"] = "Das Beutefenster öffnet sich in Dungeons nicht mehr neben Beutewürfen: Während gewürfelt wird, ist der Gegenstand auf der Leiche der ausgewürfelte und das Fenster schließt sich",
+  ["The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left"] = "Das Beutefenster bleibt bei Beutewürfen jetzt wirklich weg: Ein Gegenstand ab der Beutequalität deiner Gruppe gilt als ausgewürfelt, und das Fenster schließt sich, sobald nur noch solche übrig sind",
 } end

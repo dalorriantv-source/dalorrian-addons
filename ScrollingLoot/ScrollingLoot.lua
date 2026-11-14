@@ -306,16 +306,55 @@ local function Ghost(on)
   pcall(f.EnableMouse, f, not on)
   keeper:SetScript("OnUpdate", on and function() if f:GetAlpha() > 0 then pcall(f.SetAlpha, f, 0) end end or nil)
 end
+-- (1.2.4) in dungeons the game can hide a slot's details from addons. Each answer is "yes", "no" or nil (hidden)
+local function SlotHas(i)
+  local ok, v = pcall(function() return LootSlotHasItem(i) and true or false end)
+  if ok then return v end
+end
+local function SlotLocked(i)
+  local ok, v = pcall(function() return select(6, GetLootSlotInfo(i)) and true or false end)
+  if ok then return v end
+end
+local rollSeen = 0   -- (1.2.5) when the game last started a loot roll (its details can be hidden, the moment isn't)
+local function Rolling()
+  if GetTime() - rollSeen < 65 then return true end
+  if not GetActiveLootRollIDs then return false end
+  local ok, n = pcall(function() return #GetActiveLootRollIDs() end)
+  return ok and n > 0
+end
+-- (1.2.5) is this slot up for a roll? Locked by the game, or (in a group) at or above the group's loot quality
+local function RollItem(i)
+  if SlotLocked(i) == true then return true end
+  local grouped = false
+  pcall(function() grouped = IsInGroup() == true end)
+  if not grouped then return false end
+  local okQ, q = pcall(function() local v = select(5, GetLootSlotInfo(i)); if issecretvalue(v) then return nil end return v end)
+  local okT, t = pcall(function()
+    local v = (C_PartyInfo and C_PartyInfo.GetLootThreshold and C_PartyInfo.GetLootThreshold()) or (GetLootThreshold and GetLootThreshold())
+    if issecretvalue(v) then return nil end return v end)
+  q = okQ and type(q) == "number" and q or nil
+  t = okT and type(t) == "number" and t or 2
+  return q ~= nil and q >= t
+end
 local function LeftOver()
+  -- (1.2.4) while a roll is going, what's left on the corpse is the item being rolled: Forever doesn't always mark
+  -- it locked, and that brought the loot window back next to every roll
+  if Rolling() then return false end
   for i = 1, (GetNumLootItems and GetNumLootItems() or 0) do
-    if LootSlotHasItem(i) then
-      local locked = select(6, GetLootSlotInfo(i))
-      if not locked then return true end   -- locked: up for a roll, the roll frames handle it
+    if SlotHas(i) ~= false and not RollItem(i) then
+      local locked = SlotLocked(i)
+      if locked == false then return true end   -- locked: up for a roll, the roll frames handle it
+      -- hidden: while a roll is going it's the rolled item; with no roll it's something you couldn't pick up
+      if locked == nil and not Rolling() then return true end
     end
   end
   return false
 end
-local function Reveal() if looting and ghosted and LeftOver() then Ghost(false) end end
+local function Reveal()
+  if not (looting and ghosted) then return end
+  if LeftOver() then Ghost(false)
+  elseif CloseLoot then pcall(CloseLoot) end   -- (1.2.4) only rolled items left: the window closes, the roll goes on
+end
 local function FastLoot()
   if not DB or DB.window ~= "fast" or not (GetNumLootItems and LootSlot) then return end
   if IsModifiedClick and IsModifiedClick("AUTOLOOTTOGGLE") then return end
@@ -324,16 +363,30 @@ local function FastLoot()
   looting, failed = true, false
   Ghost(true)
   for i = n, 1, -1 do
-    if LootSlotHasItem(i) and not select(6, GetLootSlotInfo(i)) then LootSlot(i) end
+    -- (1.2.4) a slot whose details are hidden is tried too: the game turns it down if it's up for a roll
+    if SlotHas(i) ~= false and not RollItem(i) then pcall(LootSlot, i) end
   end
   -- (1.2.2) the window only comes back when something really can't be picked up: bags full right away,
   -- anything else (a bind on pickup check, the server being slow) after 1.5 seconds
+  C_Timer.After(0.3, function() if Rolling() then Reveal() end end)   -- (1.2.4) a roll: close it right away
   C_Timer.After(1.5, Reveal)
+end
+
+-- (1.2.4) the window showing is the last word: whichever way it opened, fast loot runs on it
+local function HookWindow()
+  local f = _G.LootFrame
+  if not f or f.slootHooked or not f.HookScript then return end
+  f.slootHooked = true
+  f:HookScript("OnShow", function()
+    if not DB or DB.window ~= "fast" or looting then return end
+    pcall(FastLoot)
+  end)
 end
 
 local MinimapButton   -- (1.1.0) further down
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("LOOT_READY")
+ev:RegisterEvent("START_LOOT_ROLL")
 ev:RegisterEvent("LOOT_CLOSED")
 ev:RegisterEvent("UI_ERROR_MESSAGE")
 ev:RegisterEvent("ADDON_LOADED")
@@ -341,6 +394,12 @@ ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("CHAT_MSG_LOOT")
 ev:RegisterEvent("CHAT_MSG_MONEY")
 ev:SetScript("OnEvent", function(_, e, a1)
+  -- (1.2.4) the loot window events go first: in dungeons the game hides their first value from addons, and
+  -- skipping them for it left the loot window up there (it showed next to every roll)
+  if e == "START_LOOT_ROLL" then rollSeen = GetTime(); if looting and ghosted then C_Timer.After(0.1, Reveal) end return
+  elseif e == "LOOT_READY" then if DB then pcall(FastLoot) end return
+  elseif e == "LOOT_CLOSED" then looting = false; Ghost(false) return
+  elseif e == "UI_ERROR_MESSAGE" then if DB and looting and ghosted then C_Timer.After(0.2, Reveal) end return end
   if AnySecret(a1) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" and a1 == "ScrollingLoot" then
     ScrollingLootDB = ScrollingLootDB or {}
@@ -351,6 +410,7 @@ ev:SetScript("OnEvent", function(_, e, a1)
     Lock(true)   -- (1.2.0) always starts locked
     anchor.label:SetText(Tr("Scrolling Loot") .. ": " .. Tr("Drag Me"))
     pcall(MinimapButton)
+    pcall(HookWindow)
   elseif not DB then return
   elseif e == "CHAT_MSG_LOOT" then
     OnLoot(a1 or "")
@@ -419,6 +479,8 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.SCROLLINGLOOT("test") end },
   },
   notes = {
+    { v = "1.2.5", "The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left" },
+    { v = "1.2.4", "The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes" },
     { v = "1.2.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.2.2", "The loot window no longer flashes open for a moment while looting" },
     { v = "1.2.1", "Move It locks again by itself when you close the settings window" },

@@ -155,4 +155,8 @@ ns.LOCALES.itIT = function() return {
   ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Allontanare la visuale nella finestra del personaggio funziona ogni volta che la apri, e si apre sempre alla distanza normale",
   ["Zooming out keeps working after you press the reset button on your character window"] = "Allontanare la visuale continua a funzionare dopo aver premuto il pulsante di ripristino nella finestra del personaggio",
   ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Il pannello delle statistiche ora si apre solo con la scheda Personaggio, non con Onore (H), Reputazione, Abilità o le altre schede della stessa finestra",
+  ["Enchants On Character Window"] = "Incantamenti nella finestra del personaggio",
+  ["All Stats"] = "Tutte le statistiche",
+  ["Health"] = "Salute",
+  ["Mana"] = "Mana",
 } end

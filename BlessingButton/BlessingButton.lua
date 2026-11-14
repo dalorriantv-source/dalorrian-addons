@@ -74,6 +74,8 @@ local BLESS = {
 local FROM_PP = { [1] = "wisdom", [2] = "might", [3] = "kings" }
 local FURY = 25780
 local AURAS = { 465, 7294, 19746 }   -- Devotion, Retribution, Concentration: handed out in this order
+-- (1.2.0) every paladin aura: one of these already on counts as "an aura is on"; any of them can be picked in Settings
+local ALL_AURAS = { 465, 7294, 19746, 19876, 19888, 19891, 20218 }   -- + Shadow, Frost, Fire Resistance, Sanctity
 
 local function SpellName(id)
   if C_Spell and C_Spell.GetSpellName then return C_Spell.GetSpellName(id) end
@@ -84,15 +86,38 @@ local function SpellIcon(id)
   return GetSpellTexture and GetSpellTexture(id) or nil
 end
 -- known by name too: every rank has its own ID, and casting by name picks your highest rank
+-- (1.0.5) every spell name in your spellbook. Forever gave some blessings new spell IDs, so asking by the old ID
+-- said "not known" and priests and mages never got Wisdom; by name in the spellbook it's always right
+local book, bookAt = nil, -1
+local function Book()
+  local now = GetTime()
+  if book and now - bookAt < 2 then return book end
+  book, bookAt = {}, now
+  pcall(function()
+    if C_SpellBook and C_SpellBook.GetNumSpellBookSkillLines and C_SpellBook.GetSpellBookItemName then
+      local bank = Enum and Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Player or 0
+      for t = 1, C_SpellBook.GetNumSpellBookSkillLines() do
+        local info = C_SpellBook.GetSpellBookSkillLineInfo(t)
+        local off, n = info and info.itemIndexOffset or 0, info and info.numSpellBookItems or 0
+        for i = off + 1, off + n do local nm = C_SpellBook.GetSpellBookItemName(i, bank); if nm then book[nm] = true end end
+      end
+    end
+  end)
+  pcall(function()
+    if GetNumSpellTabs and GetSpellBookItemName then
+      for t = 1, GetNumSpellTabs() do
+        local _, _, off, n = GetSpellTabInfo(t)
+        for i = off + 1, off + n do local nm = GetSpellBookItemName(i, BOOKTYPE_SPELL or "spell"); if nm then book[nm] = true end end
+      end
+    end
+  end)
+  return book
+end
 local function Knows(id)
   if IsPlayerSpell and IsPlayerSpell(id) then return true end
   local name = SpellName(id)
   if not name then return false end
-  if C_Spell and C_Spell.GetSpellInfo then
-    local ok, info = pcall(C_Spell.GetSpellInfo, name)
-    if ok and info then return true end
-  end
-  return false
+  return Book()[name] == true
 end
 
 -- when my blessing (or any aura by name) on a unit runs out: a time, 0 for no end, nil when missing
@@ -127,7 +152,7 @@ local WANT = {
   ptank  = { "kings", "wisdom", "might" },   -- paladin tank: mana too
   melee  = { "might", "kings" },
   ret    = { "might", "kings", "wisdom" },
-  hunter = { "kings", "wisdom", "might" },
+  hunter = { "kings", "wisdom" },            -- (1.0.5) no Might: it doesn't help ranged attacks
   caster = { "wisdom", "kings" },
   lock   = { "kings", "wisdom" },            -- Life Tap covers most of their mana
   hybrid = { "wisdom", "kings", "might" },   -- a shaman or paladin we can't see the talents of
@@ -346,10 +371,55 @@ local function Ready(unit)
   return UnitExists(unit) and UnitIsConnected(unit) and not UnitIsDeadOrGhost(unit) and UnitIsVisible(unit)
 end
 
+-- (1.1.0) priests and mages use the button too: their own group buffs, only to the classes they help.
+-- Fortitude helps everyone; Arcane Intellect and Divine Spirit only help classes that use mana.
+-- A buff counts as on when any copy of it (or its group version) is there, from anyone.
+local BUFFERS = {
+  PRIEST = {
+    { id = 1243, also = { 21562 }, mana = false },   -- Power Word: Fortitude (Prayer of Fortitude counts)
+    { id = 14752, also = { 27681 }, mana = true },   -- Divine Spirit, a talent (Prayer of Spirit counts)
+  },
+  MAGE = {
+    { id = 1459, also = { 23028 }, mana = true },    -- Arcane Intellect (Arcane Brilliance counts)
+  },
+}
+local MANA_CLASS = { PALADIN = true, PRIEST = true, MAGE = true, WARLOCK = true, SHAMAN = true, DRUID = true, HUNTER = true }
+local function BuffEnd(unit, b)
+  local e = AuraEnd(unit, b.id)
+  if e == nil then for _, id in ipairs(b.also) do e = AuraEnd(unit, id); if e ~= nil then break end end end
+  return e
+end
+local function BuffPick(class)
+  if UnitIsDeadOrGhost("player") or UnitOnTaxi("player") then return end
+  local now, best, bestLeft = GetTime(), nil, nil
+  for _, b in ipairs(BUFFERS[class]) do
+    if Knows(b.id) then
+      local spell = SpellName(b.id)
+      for _, m in ipairs(roster) do
+        if (not b.mana or MANA_CLASS[m.class]) and Ready(m.unit) then
+          local e = BuffEnd(m.unit, b)
+          local left = (e == nil and -1) or (e == 0 and math.huge) or (e - now)
+          if left < (DB.refresh or 300) then
+            if InRange(spell, m.unit) then
+              waiting.total = waiting.total + 1
+              if not bestLeft or left < bestLeft then best, bestLeft = { spell = spell, unit = m.unit, icon = SpellIcon(b.id), who = m.key }, left end
+            else
+              waiting.far = waiting.far + 1
+            end
+          end
+        end
+      end
+    end
+  end
+  nextCast = best
+end
+ns.BUFFERS = BUFFERS
+
 local function Pick()
   nextCast = nil
   waiting.total, waiting.far = 0, 0
   local _, class = UnitClass("player")
+  if BUFFERS[class] and ME then BuffPick(class) return end
   if class ~= "PALADIN" or not ME then return end
   if UnitIsDeadOrGhost("player") or UnitOnTaxi("player") then return end
   local me = byKey[ME]
@@ -362,11 +432,15 @@ local function Pick()
   -- an aura, only if you have none on
   if DB.aura then
     local on, known = false, {}
-    for _, id in ipairs(AURAS) do
-      if Knows(id) then known[#known + 1] = id end
-      if AuraEnd("player", id) then on = true end
-    end
-    if not on and #known > 0 then
+    for _, id in ipairs(AURAS) do if Knows(id) then known[#known + 1] = id end end
+    for _, id in ipairs(ALL_AURAS) do if AuraEnd("player", id) then on = true end end
+    -- (1.2.0) your own pick from Settings: kept up even when another aura is on
+    local want = DB.myAura and Knows(DB.myAura) and DB.myAura
+    if want then
+      if not AuraEnd("player", want) then
+        nextCast = { spell = SpellName(want), unit = "player", icon = SpellIcon(want), who = UnitName("player") }
+      end
+    elseif not on and #known > 0 then
       local pals, at = {}, 1
       for _, m in ipairs(roster) do if m.class == "PALADIN" and (m.key == ME or friends[m.key]) then pals[#pals + 1] = m.key end end
       for i, k in ipairs(pals) do if k == ME then at = i end end
@@ -440,9 +514,10 @@ local moving = false   -- (1.0.2) the button is being dragged
 local function Paint()
   if InCombatLockdown() or not DB then return end
   local _, class = UnitClass("player")
-  local want = class == "PALADIN" and DB.show ~= "off" and (DB.show == "always" or nextCast ~= nil)
+  local ok = class == "PALADIN" or BUFFERS[class] ~= nil
+  local want = ok and DB.show ~= "off" and (DB.show == "always" or nextCast ~= nil)
   -- (1.0.2) never vanish from under the mouse while you're moving it (Shift held, or mid-drag)
-  if class == "PALADIN" and DB.show ~= "off" and btn:IsShown() and (moving or (IsShiftKeyDown() and btn:IsMouseOver())) then want = true end
+  if ok and DB.show ~= "off" and btn:IsShown() and (moving or (IsShiftKeyDown() and btn:IsMouseOver())) then want = true end
   btn:SetShown(want and true or false)
   if not want then return end
   btn:SetScale(DB.scale or 1)
@@ -456,7 +531,7 @@ local function Paint()
     if cc then btn.who:SetTextColor(cc.r, cc.g, cc.b) else btn.who:SetTextColor(1, 1, 1) end
     btn:SetBackdropBorderColor(GOLD[1], GOLD[2], GOLD[3], 1)
   else
-    btn.icon:SetTexture(SpellIcon(BLESS.kings.id) or 134400)
+    btn.icon:SetTexture(SpellIcon(BUFFERS[class] and BUFFERS[class][1].id or BLESS.kings.id) or 134400)
     btn.icon:SetDesaturated(true)
     btn.count:SetText("")
     btn.who:SetText(waiting.far > 0 and (waiting.far .. " " .. Tr("out of range")) or "")
@@ -470,11 +545,11 @@ local GridPaint, InspectNext   -- further down
 local function Refresh()
   if InCombatLockdown() or not DB then return end
   local _, class = UnitClass("player")
-  if class ~= "PALADIN" then btn:Hide(); planDirty, scanDirty = false, false; return end
+  if class ~= "PALADIN" and not BUFFERS[class] then btn:Hide(); planDirty, scanDirty = false, false; return end
   if planDirty then ReadRoster(); Plan(); planDirty = false end
   Pick(); SetCast(); Paint()
   scanDirty = false
-  if InspectNext then InspectNext() end
+  if InspectNext and class == "PALADIN" then InspectNext() end
   if GridPaint then GridPaint() end
 end
 
@@ -506,6 +581,13 @@ btn:SetScript("OnEnter", function(self)
   if waiting.far > 0 then Tip:AddDoubleLine("Out of range", tostring(waiting.far), 0.8, 0.8, 0.8, 1, 0.5, 0.5) end
   local n = { kings = 0, might = 0, wisdom = 0 }
   for _, b in pairs(mine) do n[b] = n[b] + 1 end
+  if select(2, UnitClass("player")) ~= "PALADIN" then   -- (1.1.0) priests and mages: no plan to show
+    Tip:AddLine(" ")
+    Tip:AddLine("Click or use your key to cast. Bind it in Key Bindings, AddOns.", 0.6, 0.6, 0.6, true)
+    Tip:AddLine("Right-click: settings. Shift-drag to move.", 0.6, 0.6, 0.6)
+    Tip:Show()
+    return
+  end
   Tip:AddLine(" ")
   Tip:AddLine("Your part of the plan", GOLD[1], GOLD[2], GOLD[3])
   for _, b in ipairs({ "kings", "might", "wisdom" }) do
@@ -906,7 +988,7 @@ ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4)
     _G["BINDING_NAME_CLICK BlessingButtonCast:LeftButton"] = Tr("Cast the next blessing")
     -- not a paladin: switch everything off. No button, no minimap icon, no messages, nothing running.
     local _, class = UnitClass("player")
-    if class ~= "PALADIN" then
+    if class ~= "PALADIN" and not BUFFERS[class] then
       ev:UnregisterAllEvents()
       ev:SetScript("OnUpdate", nil)
       return
@@ -971,6 +1053,10 @@ ns.HelpConfig = {
       get = function() return DB.fury and true or false end, set = function(v) DB.fury = v; Refresh() end },
     { label = "Aura Reminder", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.aura and true or false end, set = function(v) DB.aura = v; Refresh() end },
+    -- (1.2.0) pick your own aura, like picking blessings in the plan; Auto shares them out between the group's paladins
+    { label = "My Aura", choices = { { "Auto", 0 }, { "Devotion", 465 }, { "Retribution", 7294 }, { "Concentration", 19746 },
+        { "Shadow Resistance", 19876 }, { "Frost Resistance", 19888 }, { "Fire Resistance", 19891 }, { "Sanctity", 20218 } },
+      get = function() return DB.myAura or 0 end, set = function(v) DB.myAura = (v ~= 0) and v or nil; Refresh() end },
     { label = "Size", choices = { { "Small", 0.8 }, { "Normal", 1 }, { "Big", 1.3 } },
       get = function() return DB.scale or 1 end, set = function(v) DB.scale = v; Refresh() end },
     { label = "Spot", choices = { { "Reset", "reset" } },
@@ -978,6 +1064,10 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.2.1", "Priests and mages get the minimap button too (it only showed for paladins). Right-click it to keep the buff button on screen even when everyone is buffed" },
+    { v = "1.2.0", "New setting, My Aura: pick the aura you want kept up (Devotion, Retribution, Concentration, a resistance aura or Sanctity), the same way you can pick blessings in the plan. Auto still shares auras out between the group's paladins. Aura Reminder must be On" },
+    { v = "1.1.0", "Priests and mages can use it too: the button casts Power Word: Fortitude on everyone, and Arcane Intellect or Divine Spirit only on classes that use mana. A buff someone else already gave (or its group version) counts" },
+    { v = "1.0.5", "Priests and mages get Wisdom whenever you know it: Blessing Button now finds your blessings by name in your spellbook, so a blessing with a different spell ID on Forever no longer counts as unknown. Hunters no longer get Might, which doesn't help ranged attacks" },
     { v = "1.0.4", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
     { v = "1.0.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.0.2", "Shift-dragging the button moves it without casting, and it stays put until you let go" },
@@ -1017,7 +1107,9 @@ local function PrintPlan()
 end
 
 MinimapButton = function()
-  if not Minimap or _G.BlessingButtonMinimapButton or select(2, UnitClass("player")) ~= "PALADIN" then return end
+  -- (1.2.1) priests and mages get it too (it used to be paladins only)
+  local _, myClass = UnitClass("player")
+  if not Minimap or _G.BlessingButtonMinimapButton or not (myClass == "PALADIN" or BUFFERS[myClass]) then return end
   local b = CreateFrame("Button", "BlessingButtonMinimapButton", Minimap)
   b:SetSize(31, 31)
   b:SetFrameStrata("MEDIUM")
@@ -1026,7 +1118,7 @@ MinimapButton = function()
   b:RegisterForDrag("LeftButton")
   b:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
   b.icon = b:CreateTexture(nil, "ARTWORK")
-  b.icon:SetTexture(SpellIcon(BLESS.kings.id) or "Interface\\Icons\\Spell_Magic_MageArmor")
+  b.icon:SetTexture((BUFFERS[myClass] and SpellIcon(BUFFERS[myClass][1].id)) or SpellIcon(BLESS.kings.id) or "Interface\\Icons\\Spell_Magic_MageArmor")
   b.icon:SetSize(20, 20); b.icon:SetPoint("CENTER", 0, 1); b.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
   local border = b:CreateTexture(nil, "OVERLAY")
   border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
@@ -1038,13 +1130,20 @@ MinimapButton = function()
     b:SetPoint("CENTER", Minimap, "CENTER", math.cos(a) * r, math.sin(a) * r)
   end
   b:SetScript("OnClick", function(_, button)
-    if button == "RightButton" then ns.ToggleGrid() elseif ns.OpenHelp then ns.OpenHelp() end
+    if button == "RightButton" then
+      if myClass == "PALADIN" then ns.ToggleGrid()
+      else
+        -- priests and mages have no plan: right-click keeps the button up, or back to only when someone needs a buff
+        DB.show = (DB.show == "always") and "auto" or "always"; Refresh()
+        Say(DB.show == "always" and Tr("the button stays up. /bless auto shows it only when needed.") or Tr("the button shows only when someone needs a buff."))
+      end
+    elseif ns.OpenHelp then ns.OpenHelp() end
   end)
   b:SetScript("OnEnter", function(self)
     Tip:SetOwner(self, "ANCHOR_LEFT")
     Tip:AddLine("Blessing Button")
     Tip:AddLine("Left-click: Settings & Help", 1, 1, 1)
-    Tip:AddLine("Right-click: the whole plan", 1, 1, 1)
+    Tip:AddLine(myClass == "PALADIN" and "Right-click: the whole plan" or "Right-click: always show the button", 1, 1, 1)
     Tip:AddLine("Drag to move", 0.6, 0.6, 0.6)
     Tip:Show()
   end)
@@ -1066,8 +1165,9 @@ SLASH_BLESSINGBUTTON1 = "/bless"
 SLASH_BLESSINGBUTTON2 = "/blessingbutton"
 SlashCmdList.BLESSINGBUTTON = function(msg)
   local _, class = UnitClass("player")
-  if class ~= "PALADIN" then Say("this addon is for paladins. It stays off on your other characters.") return end
+  if class ~= "PALADIN" and not BUFFERS[class] then Say("this addon is for paladins, priests and mages. It stays off on your other characters.") return end
   local cmd = (msg or ""):lower():match("^(%S*)")
+  if class ~= "PALADIN" and (cmd == "plan" or cmd == "grid" or cmd == "who") then Say("the plan is for paladins.") return end
   if cmd == "plan" or cmd == "grid" then
     ns.ToggleGrid()
   elseif cmd == "who" then

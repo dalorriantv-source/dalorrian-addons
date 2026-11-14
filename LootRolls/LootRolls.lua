@@ -24,8 +24,8 @@ local DB
 local W = "Interface\\Buttons\\WHITE8X8"
 local FONT = STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
 local GOLD = { 1, 0.82, 0 }
-local WIDTH, HEIGHT, GAP = 320, 44, 6
-local DEFAULTS = { scale = 1, up = false, winner = true, stay = 5 }
+local WIDTH, HEIGHT, GAP = 340, 52, 6   -- (1.4.1) a little taller for the bigger roll boxes
+local DEFAULTS = { scale = 1, up = false, winner = true, stay = 5, top = true, hold = false }
 
 local P = ns.print or print   -- (1.1.0) Lang.lua: chat text in the player's language
 local Tr = ns.Tr or function(x) return x end
@@ -110,6 +110,8 @@ end
 local function Close(b)
   b:Hide()
   b.rollID, b.test, b.result, b.picked, b.won, b.rid, b.sid = nil, nil, nil, nil, nil, nil, nil
+  b.top, b.holdUntil, b.mine, b.choseAt, b.seen = nil, nil, nil, nil, nil
+  if b.myBox then b.myBox:Hide(); b.topBox:Hide() end
   for i, s in ipairs(shown) do if s == b then table.remove(shown, i) break end end
   -- (1.1.2) no bars left: nothing can use the rolls read from chat any more. Before, they were only let go
   -- when a matching "won" line came in, so items nobody won (or that you never saw) piled up all session
@@ -120,17 +122,109 @@ end
 ---------------------------------------------------------------------------
 -- (1.1.0) after the roll: the bar stays up a few seconds with who won and what they rolled
 ---------------------------------------------------------------------------
+-- (1.3.0) the top roll so far, live on the bar: Need beats Greed and Disenchant, then the higher number
+ns.dbg = { starts = 0, hidden = 0, chat = 0, rolled = 0, won = 0, hist = 0, histItems = 0, histRolls = 0, histHidden = 0, tops = 0, winners = 0 }
+local function Rank(kind) return kind == (NEED or "Need") and 2 or 1 end
+local function FitBind(b)
+  local n = 0
+  for _, btn in pairs(b.buttons) do if btn:IsShown() then n = n + 1 end end
+  local boxes = (b.myBox and b.myBox:IsShown() and 58 or 0) + (b.topBox and b.topBox:IsShown() and 58 or 0)
+  b.bind:SetWidth(WIDTH - 54 - math.max(n * 28, boxes))
+  b.bind:SetWordWrap(false)
+  b.bind:SetJustifyH("LEFT")
+end
+-- (1.3.2) your roll and the top roll, colored like the game's buttons: Need green, Greed gold, Disenchant purple
+local function Me(who)
+  if type(who) ~= "string" then return false end
+  local me = UnitName("player")
+  local full = GetUnitName and GetUnitName("player", true)
+  local first = who:match("^([^%s%-]+)")
+  return who == me or who == full or (YOU and who == YOU) or (me and first == me) or false
+end
+local function Roll(kind, roll)
+  local c = (kind == (NEED or "Need") and "|cff4dff4d") or (kind == (ROLL_DISENCHANT or "Disenchant") and "|cffc080ff") or "|cffffd100"
+  if not roll then return kind and (c .. kind .. "|r") or "" end
+  return (kind and (c .. kind .. "|r ") or "") .. "|cffffffff" .. roll .. "|r"
+end
+local KIND_RGB = { [NEED or "Need"] = { 1, 0.6, 0.2 }, [GREED or "Greed"] = { 1, 0.82, 0 }, [ROLL_DISENCHANT or "Disenchant"] = { 0.75, 0.5, 1 } }
+local function FillBox(x, label, kind, roll, winning, small)
+  x.label:SetFont(FONT, small and 8 or 10, "")   -- (1.4.3) a player's name in smaller letters so more of it fits
+  x.label:SetText(label)
+  x.num:SetText(roll and tostring(roll) or "...")
+  x.kind:SetText(kind or "")
+  local c = KIND_RGB[kind or ""] or { 0.7, 0.7, 0.72 }
+  x.kind:SetTextColor(c[1], c[2], c[3])
+  if winning then
+    x:SetBackdropBorderColor(0.3, 1, 0.35, 1); x:SetBackdropColor(0.05, 0.16, 0.06, 0.95)
+    x.num:SetTextColor(0.4, 1, 0.45); x.label:SetTextColor(0.6, 1, 0.65)
+  else
+    x:SetBackdropBorderColor(0.28, 0.28, 0.32, 1); x:SetBackdropColor(0.08, 0.08, 0.1, 0.95)
+    x.num:SetTextColor(1, 1, 1); x.label:SetTextColor(0.7, 0.7, 0.72)
+  end
+  x:Show()
+end
+local function First(who) return type(who) == "string" and who or "?" end
+-- (1.4.0) your roll in its own box, the top roll in the next one; green marks whoever is winning (or won)
+local function ShowTop(b)
+  if not DB.top or not b.myBox then return end
+  local t, m, w = b.top, b.mine, b.won
+  if b.result and type(w) == "table" then
+    -- the winner: green. Their roll comes from the top roll (or the rolls read from chat) when the game didn't say it
+    if b.top and w.who and (w.who == b.top.who or (w.me and Me(b.top.who))) then w.kind, w.roll = w.kind or b.top.kind, w.roll or b.top.roll end
+    local seen = b.seen and w.who and b.seen[w.who]
+    if not seen and b.seen and w.who then   -- names can come shorter from one source than another
+      for k, e in pairs(b.seen) do if k:match("^([^%s%-]+)") == w.who:match("^([^%s%-]+)") then seen = e end end
+    end
+    if seen then w.kind, w.roll = w.kind or seen.kind, w.roll or seen.roll end
+    local myKind, myRoll = (m and m.kind) or (b.picked and b.picked.tip), m and m.roll
+    if w.me then
+      FillBox(b.myBox, Tr("WON"), w.kind or myKind, w.roll or myRoll, true); b.topBox:Hide()
+    else
+      FillBox(b.topBox, First(w.who), w.kind, w.roll, true, true)
+      -- (1.4.1) your own roll stays up beside the winner's
+      if myKind or myRoll then FillBox(b.myBox, Tr("YOU"), myKind, myRoll, false) else b.myBox:Hide() end
+    end
+    return
+  end
+  if not (b.picked or m) then return end   -- the buttons are still up until you roll
+  local meTop = t and Me(t.who)
+  FillBox(b.myBox, Tr("YOU"), (m and m.kind) or (b.picked and b.picked.tip), m and m.roll, meTop and true or false)
+  if t and not meTop then FillBox(b.topBox, First(t.who), t.kind, t.roll, true, true) else b.topBox:Hide() end
+  FitBind(b)
+end
+local function Offer(b, who, kind, roll)
+  if not (b and type(who) == "string" and type(roll) == "number") or b.result then return end
+  if Me(who) then b.mine = { kind = kind, roll = roll } end
+  b.seen = b.seen or {}
+  b.seen[who] = { kind = kind or (b.seen[who] and b.seen[who].kind), roll = roll }
+  local t = b.top
+  if not t or Rank(kind) > Rank(t.kind) or (Rank(kind) == Rank(t.kind) and roll > t.roll) then
+    b.top = { who = who, kind = kind, roll = roll }
+    ns.dbg.tops = ns.dbg.tops + 1
+  end
+  ShowTop(b)
+end
+ns.Offer = Offer
 local function Picked(b, choice)
   b.picked = choice
   b:SetAlpha(0.65)
+  -- (1.3.0) once your roll is in, the buttons step aside for the top roll (not while Bind on Pickup still asks)
+  if DB.top and not (b.bop and choice.id ~= 0) then for _, btn in pairs(b.buttons) do btn:Hide() end end
+  b.choseAt = GetTime()
+  FitBind(b)
   b.bind:SetText(string.format(Tr("You picked %s"), choice.tip))
   b.bind:SetTextColor(0.75, 0.75, 0.78)
+  if DB.top then b:SetAlpha(1) end
+  ShowTop(b)
 end
 local function ShowResult(b)
-  local t
-  if b.won == "allpass" then t = Tr("Everyone passed")
-  elseif b.won and b.won.me then t = "|cffffd100" .. Tr("You won!") .. "|r" .. (b.won.roll and ("  " .. b.won.kind .. " " .. b.won.roll) or "")
-  elseif b.won then t = string.format(Tr("Won by %s"), b.won.who) .. (b.won.roll and (", " .. b.won.kind .. " " .. b.won.roll) or "")
+  for _, btn in pairs(b.buttons) do btn:Hide() end
+  ShowTop(b)
+  FitBind(b)
+  local w, t = b.won
+  if w == "allpass" then t = Tr("Everyone passed")
+  elseif type(w) == "table" and w.me then t = "|cff4dff4d" .. Tr("You won!") .. "|r"
+  elseif type(w) == "table" then t = string.format(Tr("Won by %s"), "|cff4dff4d" .. w.who .. "|r")
   else t = Tr("Waiting for the result") .. "..." end
   b.bind:SetText(t)
   b.bind:SetTextColor(1, 1, 1)
@@ -140,6 +234,7 @@ local function Result(b)
   if not DB.winner then Close(b) return end
   b.result, b.rollID = true, nil
   b.left = DB.stay or 5
+  if DB.hold and not b.won then b.holdUntil = GetTime() + 60 end   -- (1.3.0) Stay Until Won: up to a minute for the winner
   for _, btn in pairs(b.buttons) do btn:Hide() end
   b.timer:Hide()
   b:SetAlpha(1)
@@ -166,10 +261,8 @@ local function Choose(b, choice)
       if ns.KeepBox then ns.KeepBox() end   -- it didn't: the game's own window comes back so you can still roll
       return
     end
-    Picked(b, choice)
-    b.result, b.left, b.sid = true, 3, nil
-    for _, btn in pairs(b.buttons) do btn:Hide() end
-    b.timer:Hide()
+    b.answered = true
+    if DB.winner then Picked(b, choice) else b.result, b.left, b.sid = true, 3, nil; for _, btn in pairs(b.buttons) do btn:Hide() end end
     return
   end
   Close(b)
@@ -275,9 +368,29 @@ local function NewBar()
   end
   b.name:SetPoint("RIGHT", last, "LEFT", -6, 0)
 
+  -- (1.4.0) two roll boxes on the right once you've rolled: yours, and the top roll so far (green while it's winning)
+  local function Box()
+    local x = CreateFrame("Frame", nil, b, "BackdropTemplate")
+    x:SetSize(54, HEIGHT - 8)
+    x:SetBackdrop({ bgFile = W, edgeFile = W, edgeSize = 1 })
+    x:SetBackdropColor(0.08, 0.08, 0.1, 0.95)
+    x:SetBackdropBorderColor(0.28, 0.28, 0.32, 1)
+    x.label = x:CreateFontString(nil, "OVERLAY")
+    x.label:SetFont(FONT, 10, ""); x.label:SetPoint("TOP", 0, -3); x.label:SetWidth(52); x.label:SetWordWrap(false)
+    x.num = x:CreateFontString(nil, "OVERLAY")
+    x.num:SetFont(FONT, 18, "OUTLINE"); x.num:SetPoint("CENTER", 0, 0)
+    x.kind = x:CreateFontString(nil, "OVERLAY")
+    x.kind:SetFont(FONT, 10, "OUTLINE"); x.kind:SetPoint("BOTTOM", 0, 3); x.kind:SetWidth(52); x.kind:SetWordWrap(false)
+    x:Hide()
+    return x
+  end
+  b.topBox = Box(); b.topBox:SetPoint("RIGHT", b, "RIGHT", -6, 0)
+  b.myBox = Box(); b.myBox:SetPoint("RIGHT", b.topBox, "LEFT", -4, 0)
+
   b:SetScript("OnUpdate", function(self, el)
     local left
     if self.result then
+      if self.holdUntil and not self.won and GetTime() < self.holdUntil then return end   -- (1.3.0) waiting for the winner
       self.left = (self.left or 0) - el
       if self.left <= 0 then Close(self) elseif self.left < 0.6 then self:SetAlpha(self.left / 0.6) end
       return
@@ -376,6 +489,7 @@ local function Open(b, d)
   end
   b.name:SetPoint("RIGHT", last, "LEFT", -6, 0)
   b.bop = d.bop
+  FitBind(b)
   b.timer:Show()
   b:SetAlpha(1)
   b:Show()
@@ -516,17 +630,79 @@ local function ItemName(s) return s and (s:match("%[(.-)%]") or s) end
 local function BarFor(name)
   for _, b in ipairs(shown) do if not b.test and b.itemName == name and (b.result or b.picked or b.rollID) then return b end end
 end
-local function OnRollChat(msg)
-  if not DB.winner or type(msg) ~= "string" then return end
+-- (1.4.0) a roll the game hid from addons has a bar with no item name: the chat lines name it.
+-- "You have selected Greed for: [item]" goes to the bar you just answered; a roll line goes to the only unnamed bar
+local function Unnamed()
+  local list = {}
+  for _, b in ipairs(shown) do if not b.test and not b.itemName and (b.sid or b.answered) then list[#list + 1] = b end end
+  return list
+end
+local function NameLast(item)
+  if not item or BarFor(item) then return end
+  local pick
+  for _, b in ipairs(Unnamed()) do if not pick or (b.choseAt or 0) > (pick.choseAt or 0) then pick = b end end
+  if pick then pick.itemName = item end
+end
+local function NameOnly(item)
+  if not item or BarFor(item) then return end
+  local list = Unnamed()
+  if #list == 1 then list[1].itemName = item end
+end
+-- (1.4.2) WoW: Forever's roll lines didn't match the game's own format strings, so none were read: the plain
+-- English shape is tried too ("Need Roll - 87 for [item] by Stabby", with or without a bonus in brackets)
+local KIND_WORD = { need = NEED or "Need", greed = GREED or "Greed", disenchant = ROLL_DISENCHANT or "Disenchant", transmog = TRANSMOGRIFY or "Transmog" }
+local function Rolled(msg)
   for _, r in ipairs(ROLLED) do
-    local c = Match(r[1], msg)   -- "Need Roll - 87 for [item] by Stabby"
-    if c then
-      local item = ItemName(c[2])
-      if not BarFor(item) then return end   -- (1.1.2) only kept for a roll that has a bar to show it on
-      rolls[item] = rolls[item] or {}
-      rolls[item][c[3]] = { kind = r[2], roll = tonumber(c[1]) }
+    local c = Match(r[1], msg)
+    if c then return c[1], c[2], c[3], r[2] end
+  end
+  local word, n, item, who = msg:match("^(%a+) Roll %- (%d+).- for (.+) by (.+)$")
+  local kind = word and KIND_WORD[word:lower()]
+  if kind then return n, item, (who:gsub("%.$", "")), kind end
+end
+-- (1.4.3) "Bicep has selected Need for: [item]": each player's Need or Greed, known before any number comes in
+local PICKED = { { Pattern(LOOT_ROLL_NEED), NEED or "Need" }, { Pattern(LOOT_ROLL_GREED), GREED or "Greed" }, { Pattern(LOOT_ROLL_DISENCHANT), ROLL_DISENCHANT or "Disenchant" } }
+local function Selected(msg)
+  for _, r in ipairs(PICKED) do
+    local c = Match(r[1], msg)
+    if c and c[1] and c[2] then return c[1], c[2], r[2] end
+  end
+  local who, word, item = msg:match("^(.+) has selected (%a+) for: (.+)$")
+  local kind = word and KIND_WORD[word:lower()]
+  if kind then return who, item, kind end
+end
+local function OnRollChat(msg)
+  if type(msg) == "string" then ns.dbg.chat = ns.dbg.chat + 1 end
+  if not DB.winner or type(msg) ~= "string" then return end
+  do
+    local who, it, kind = Selected(msg)
+    if who and not who:find("^You") then
+      local b = BarFor(ItemName(it))
+      if b then
+        b.seen = b.seen or {}
+        local e = b.seen[who] or {}
+        e.kind = e.kind or kind
+        b.seen[who] = e
+        if b.result then ShowResult(b) end
+      end
       return
     end
+  end
+  do
+    local n, it, who, kind = Rolled(msg)   -- "Need Roll - 87 for [item] by Stabby"
+    local c = n and { n, it, who }
+    local r = { nil, kind }
+    if c then
+      local item = ItemName(c[2])
+      NameOnly(item)
+      if not BarFor(item) then return end   -- (1.1.2) only kept for a roll that has a bar to show it on
+      ns.dbg.rolled = ns.dbg.rolled + 1
+      rolls[item] = rolls[item] or {}
+      rolls[item][c[3]] = { kind = r[2], roll = tonumber(c[1]) }
+      pcall(Offer, BarFor(item), c[3], r[2], tonumber(c[1]))   -- (1.3.0) top roll so far
+      return
+    end
+    if msg:find(" Roll ") then ns.dbg.miss = msg:sub(1, 90) end
   end
   local c = Match(YOUWON, msg)
   local who, me
@@ -538,10 +714,12 @@ local function OnRollChat(msg)
   if c then
     local item = ItemName(me and c[1] or c[2])
     local mine = rolls[item] and rolls[item][me and (YOU or "You") or who] or (rolls[item] and rolls[item][who])
+    NameOnly(item)
     local b = BarFor(item)
-    if b then
-      b.won = { who = who, me = me, kind = mine and mine.kind, roll = mine and mine.roll }
-      if b.result then ShowResult(b) end
+    if b and not b.won then
+      b.won = { who = who, me = me or Me(who), kind = mine and mine.kind, roll = mine and mine.roll }
+      ns.dbg.winners = ns.dbg.winners + 1
+      if b.result then ShowResult(b) elseif not b.test then Result(b) end
     end
     rolls[item] = nil
     return
@@ -550,6 +728,36 @@ local function OnRollChat(msg)
   if c then
     local b = BarFor(ItemName(c[1]))
     if b then b.won = "allpass"; if b.result then ShowResult(b) end end
+  end
+end
+
+-- (1.4.0) the loot lines as the chat window shows them: in dungeons the loot chat event itself is hidden from
+-- addons, but the lines still land in your chat window, and they can be read there
+local SELF = { Pattern(LOOT_ROLL_NEED_SELF), Pattern(LOOT_ROLL_GREED_SELF), Pattern(LOOT_ROLL_DISENCHANT_SELF), Pattern(LOOT_ROLL_PASSED_SELF) }
+local lastLine
+local function OnChatLine(text)
+  if type(text) ~= "string" or issecretvalue(text) or text == lastLine or not DB or DB.off then return end
+  lastLine = text
+  if #shown == 0 then return end
+  local t = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1")
+  t = t:gsub("^%[?%d+:%d+[:%d]*%s*[AaPp]?[Mm]?%]?%s*", "")   -- a timestamp
+  t = t:gsub("^%[[^%]]+%]:%s*", "")                           -- "[Loot]: "
+  ns.dbg.chatHook = (ns.dbg.chatHook or 0) + 1
+  for _, pt in ipairs(SELF) do
+    local c = Match(pt, t)
+    if c then NameLast(ItemName(c[1])) return end
+  end
+  OnRollChat(t)
+end
+ns.OnChatLine = OnChatLine
+local hookedChat = {}
+function ns.HookChat()
+  for i = 1, (NUM_CHAT_WINDOWS or 10) do
+    local f = _G["ChatFrame" .. i]
+    if f and f.AddMessage and not hookedChat[f] then
+      hookedChat[f] = true
+      hooksecurefunc(f, "AddMessage", function(_, text) pcall(OnChatLine, text) end)
+    end
   end
 end
 
@@ -565,8 +773,31 @@ local function IsMe(name)
 end
 local function Won(b, who, kind, roll)
   if not b or b.won then return end
-  b.won = who and { who = who, me = IsMe(who), kind = kind, roll = roll } or "allpass"
-  if b.result then ShowResult(b) end
+  ns.dbg.winners = ns.dbg.winners + 1
+  b.won = who and { who = who, me = IsMe(who) or Me(who), kind = kind, roll = roll } or "allpass"
+  if b.result then ShowResult(b) elseif not b.test then Result(b) end
+end
+-- (1.3.0) the top roll so far, from the game's loot history (works where chat is hidden)
+function ns.HistoryTop()
+  local LH = C_LootHistory
+  if not (LH and LH.GetNumItems and LH.GetItem and LH.GetPlayerInfo) or #shown == 0 then return end
+  ns.dbg.histItems = Vis(LH.GetNumItems()) or -1
+  for i = 1, (Vis(LH.GetNumItems()) or 0) do
+    local rollID, _, numPlayers = LH.GetItem(i)
+    if issecretvalue(rollID) or issecretvalue(numPlayers) then ns.dbg.histHidden = ns.dbg.histHidden + 1 end
+    rollID, numPlayers = Vis(rollID), Vis(numPlayers)
+    if rollID and type(numPlayers) == "number" then
+      for _, b in ipairs(shown) do
+        if not b.test and b.rid == rollID and not b.result then
+          for j = 1, numPlayers do
+            local name, _, rollType, roll = LH.GetPlayerInfo(i, j)
+            name, rollType, roll = Vis(name), Vis(rollType), Vis(roll)
+            if name and KINDS[rollType or 0] and type(roll) == "number" then ns.dbg.histRolls = ns.dbg.histRolls + 1; Offer(b, name, KINDS[rollType], roll) end
+          end
+        end
+      end
+    end
+  end
 end
 function ns.HistoryWinner(e, a1, a2)
   local LH = C_LootHistory
@@ -620,15 +851,19 @@ ev:RegisterEvent("PLAYER_LOGIN")
 ev:RegisterEvent("START_LOOT_ROLL")
 ev:RegisterEvent("CANCEL_LOOT_ROLL")
 -- (1.2.4) who won, from the game's loot history: works in dungeons, where the chat lines are hidden from addons
-for _, e in ipairs({ "LOOT_HISTORY_ROLL_COMPLETE", "LOOT_HISTORY_FULL_UPDATE", "LOOT_HISTORY_UPDATE_DROP" }) do pcall(ev.RegisterEvent, ev, e) end
+for _, e in ipairs({ "LOOT_HISTORY_ROLL_COMPLETE", "LOOT_HISTORY_FULL_UPDATE", "LOOT_HISTORY_UPDATE_DROP", "LOOT_HISTORY_ROLL_CHANGED" }) do pcall(ev.RegisterEvent, ev, e) end
 ev:SetScript("OnEvent", function(_, e, a1, a2)
+  if e == "START_LOOT_ROLL" then ns.dbg.starts = ns.dbg.starts + 1; if AnySecret(a1, a2) then ns.dbg.hidden = ns.dbg.hidden + 1 end end
+  if e == "CHAT_MSG_LOOT" and AnySecret(a1) then ns.dbg.chatHidden = (ns.dbg.chatHidden or 0) + 1 end
+  if e:find("^LOOT_HISTORY") then ns.dbg.hist = ns.dbg.hist + 1 end
   if e == "START_LOOT_ROLL" and DB and not DB.off and AnySecret(a1, a2) then
     -- (1.2.4) the roll is hidden from addons here: ask the game which rolls are open instead
     C_Timer.After(0, function() pcall(ns.SecretStart); Sync() end); C_Timer.After(0.3, Sync)
     return
   end
-  if e == "LOOT_HISTORY_ROLL_COMPLETE" or e == "LOOT_HISTORY_UPDATE_DROP" or e == "LOOT_HISTORY_FULL_UPDATE" then
-    if DB and not DB.off and DB.winner and ns.HistoryWinner then C_Timer.After(0.1, function() pcall(ns.HistoryWinner, e, a1, a2) end) end
+  if e == "LOOT_HISTORY_ROLL_COMPLETE" or e == "LOOT_HISTORY_UPDATE_DROP" or e == "LOOT_HISTORY_FULL_UPDATE" or e == "LOOT_HISTORY_ROLL_CHANGED" then
+    if DB and not DB.off and DB.top and ns.HistoryTop then C_Timer.After(0.05, function() pcall(ns.HistoryTop) end) end
+    if e ~= "LOOT_HISTORY_ROLL_CHANGED" and DB and not DB.off and DB.winner and ns.HistoryWinner then C_Timer.After(0.1, function() pcall(ns.HistoryWinner, e, a1, a2) end) end
     return
   end
   if AnySecret(a1, a2) then return end   -- (Forever) a hidden value: nothing to do with it
@@ -643,6 +878,7 @@ ev:SetScript("OnEvent", function(_, e, a1, a2)
     Lock(not DB.unlocked)
     anchor.label:SetText(Tr("Loot Rolls") .. ": " .. Tr("Drag Me"))
     pcall(MinimapButton)
+    pcall(ns.HookChat)   -- (1.4.0)
     -- after a /reload mid-roll, the game reopens its windows: ours take over from them
     if ConfirmLootRoll then hooksecurefunc("ConfirmLootRoll", function(id) MarkDone(id) end) end
     if GroupLootFrame_OpenNewFrame then
@@ -689,6 +925,10 @@ local function Test(n)
       b.rollID, b.test, b.left = nil, true, s.time
       Open(b, { texture = tex, name = name or ("Test Item " .. i), link = link, quality = quality or s.quality, count = s.count,
         bop = s.bop, canNeed = s.canNeed, canGreed = s.canGreed, canDE = s.canDE, reasonNeed = s.reasonNeed, time = s.time })
+      if DB.top then   -- (1.3.0) sample rolls coming in
+        C_Timer.After(2, function() if b.test then Offer(b, "Stabby", GREED or "Greed", math.random(1, 100)) end end)
+        C_Timer.After(4, function() if b.test then Offer(b, "Healbot", NEED or "Need", math.random(1, 100)) end end)
+      end
     end
     if Item and Item.CreateFromItemID then Item:CreateFromItemID(s.id):ContinueOnItemLoad(go) else go() end
   end
@@ -706,6 +946,10 @@ ns.HelpConfig = {
       set = function(v) DB.off = (v == "off") or nil end },
     { label = "Show Who Won", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.winner and true or false end, set = function(v) DB.winner = v end },
+    { label = "Top Roll", choices = { { "On", true }, { "Off", false } },
+      get = function() return DB.top and true or false end, set = function(v) DB.top = v end },
+    { label = "Stay Until Won", choices = { { "On", true }, { "Off", false } },
+      get = function() return DB.hold and true or false end, set = function(v) DB.hold = v end },
     { label = "Result Stays", choices = { { "3 Sec", 3 }, { "5 Sec", 5 }, { "8 Sec", 8 }, { "12 Sec", 12 } },
       get = function() return DB.stay or 5 end, set = function(v) DB.stay = v end },
     { label = "New Rolls Stack", choices = { { "Down", false }, { "Up", true } },
@@ -723,6 +967,13 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.LOOTROLLS("test") end },
   },
   notes = {
+    { v = "1.4.3", "Every box shows Need or Greed for each player, read from the game's has selected lines. Names in the boxes are smaller so more of them fits, and your winning box just says WON" },
+    { v = "1.4.2", "Roll numbers show up now: WoW: Forever writes its roll lines a little differently from the game's usual wording, so Loot Rolls couldn't read anyone's roll. It reads both now" },
+    { v = "1.4.1", "Roll boxes are bigger and easier to read, and your own roll stays up next to the winner's, each with Need or Greed" },
+    { v = "1.4.0", "Rolls look like the game's newer roll window: once you roll, your roll shows in its own box (your number, Need or Greed), with the top roll beside it in green and who rolled it. With Stay Until Won on, the bar ends on the winner's box in green", "Works in dungeons: the game hides the loot roll messages from addons there, so Loot Rolls now reads them from your chat window instead, and hidden rolls stay up after you roll like any other" },
+    { v = "1.3.2", "Each bar shows your own roll once it's in (like Greed 40), and the top roll so far with who rolled it, or that you're winning. With Stay Until Won on, the bar ends on who won, Need or Greed, and their number" },
+    { v = "1.3.1", "New: /rolls debug shows what the game let Loot Rolls see (rolls, roll numbers, winners), to find why a roll number or winner didn't show" },
+    { v = "1.3.0", "New: Top Roll shows the highest roll so far on each bar, and who rolled it (Need beats Greed). Once you roll, the buttons step aside so it fits. On to start; turn it off under Top Roll in Settings", "New: Stay Until Won keeps the bar up after the roll ends until the winner is known (up to a minute), then shows who won and their roll, like the game's newer roll window. Off to start" },
     { v = "1.2.5", "Loot rolls the game hides from addons in dungeons now get a Loot Rolls bar too, so the game's own roll window stays away. If the game won't take an answer from the bar, its own window comes back so you can still roll" },
     { v = "1.2.4", "The game's own roll window no longer sneaks back in dungeons: every roll the game has open gets a Loot Rolls bar, even when the game hides the roll's details from addons", "The bar shows who won (and their roll) in dungeons too, read from the game's loot history instead of chat" },
     { v = "1.2.3", "The game's own roll window no longer pops up next to the Loot Rolls bars" },
@@ -793,7 +1044,14 @@ SLASH_LOOTROLLS1 = "/rolls"
 SLASH_LOOTROLLS2 = "/lootrolls"
 SlashCmdList.LOOTROLLS = function(msg)
   local cmd, arg = (msg or ""):lower():match("^(%S*)%s*(%S*)")
-  if cmd == "test" then
+  if cmd == "debug" then   -- (1.3.1) what the game let through, for a bug report
+    local d = ns.dbg
+    Say("rolls started " .. d.starts .. " (hidden " .. d.hidden .. "), loot chat lines " .. d.chat .. " (hidden " .. (d.chatHidden or 0) .. "), rolls read from chat " .. d.rolled)
+    Say("loot history events " .. d.hist .. ", items " .. d.histItems .. " (hidden " .. d.histHidden .. "), rolls read " .. d.histRolls .. ", top rolls shown " .. d.tops .. ", winners shown " .. d.winners)
+    Say("loot lines read from the chat window " .. (d.chatHook or 0) .. (d.miss and (", last roll line not understood: " .. d.miss) or ""))
+    Say("top roll " .. tostring(DB.top) .. ", stay until won " .. tostring(DB.hold) .. ", show who won " .. tostring(DB.winner))
+    return
+  elseif cmd == "test" then
     Test(tonumber(arg) or 3)
     Say("sample rolls up. Shift-drag one to move them, /rolls clear to close.")
   elseif cmd == "clear" then

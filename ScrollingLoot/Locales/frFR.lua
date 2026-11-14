@@ -77,4 +77,6 @@ ns.LOCALES.frFR = function() return {
   ["Move It locks again by itself when you close the settings window"] = "Déplacer se verrouille tout seul quand vous fermez la fenêtre des options",
   ["The loot window no longer flashes open for a moment while looting"] = "La fenêtre de butin ne s'ouvre plus un instant pendant le ramassage",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Fonctionne dans les donjons et raids sans erreurs. WoW: Forever y cache certains détails aux addons, et cet addon les ignore désormais discrètement",
+  ["The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes"] = "La fenêtre de butin ne s'ouvre plus à côté des jets en donjon : pendant un jet, l'objet resté sur le corps est celui qui est joué et la fenêtre se ferme",
+  ["The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left"] = "La fenêtre de butin reste vraiment cachée pendant les jets : un objet au niveau de qualité de butin de ton groupe ou plus est considéré comme en jet, et la fenêtre se ferme quand il ne reste que ceux-là",
 } end

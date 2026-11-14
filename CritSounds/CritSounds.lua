@@ -212,7 +212,7 @@ end
 -- (1.3.10) crit colors to pick from in Settings & Help (red is damage you take, pink is experience, green is heals)
 local CRIT_COLORS = { purple = { 0.72, 0.4, 1 }, orange = { 1, 0.6, 0.1 }, gold = { 1, 0.82, 0 },
   cyan = { 0.3, 0.9, 1 }, red = { 1, 0.2, 0.2 }, pink = { 1, 0.35, 0.8 }, white = { 1, 1, 1 }, lime = { 0.6, 1, 0.2 } }
-local function ShowNumber(amount, heal, guid)
+local function ShowNumber(amount, heal, guid, isPet)
   -- (1.4.6) everything that can fail happens before a number frame leaves the pool: a frame taken and then
   -- dropped on an error never came back, one lost frame per hit
   if not holder:IsVisible() then return end   -- UI hidden (Alt+Z): numbers can't play out, so none are made
@@ -228,7 +228,9 @@ local function ShowNumber(amount, heal, guid)
   f.x = (math.random() * 2 - 1) * 18
   f.y = (plate and 0 or 120) + math.min(same, 4) * ((DB.size or 64) * 0.6)
   f.text:SetFont(NUMFONT, DB.size or 64, "THICKOUTLINE")
-  if heal then f.text:SetTextColor(0.3, 1, 0.35) else f.text:SetTextColor(unpack(CRIT_COLORS[DB.critColor or "purple"] or CRIT_COLORS.purple)) end   -- (1.3.10) Crit Color
+  if heal then f.text:SetTextColor(0.3, 1, 0.35)
+  elseif isPet then f.text:SetTextColor(unpack(CRIT_COLORS[DB.petColor or "orange"] or CRIT_COLORS.orange))   -- (1.4.16) Pet Crit Color
+  else f.text:SetTextColor(unpack(CRIT_COLORS[DB.critColor or "purple"] or CRIT_COLORS.purple)) end   -- (1.3.10) Crit Color
   if not pcall(f.text.SetText, f.text, txt) then f:Hide(); pool[#pool + 1] = f; return end
   f.small = nil
   f.t = 0
@@ -274,8 +276,10 @@ local function Grouped() local ok, g = pcall(IsInGroup); return ok and g and tru
 local function Replacing() return DB and DB.replace and DB.numbers and not DB.off end
 -- (1.3.4) newer clients keep these under "_v2" names, and DoT ticks and pet hits have their own: all of them
 -- go off, or your numbers show twice
-local FCT = { "floatingCombatTextCombatDamage", "floatingCombatTextCombatLogPeriodicSpells",
-  "floatingCombatTextPetMeleeDamage", "floatingCombatTextPetSpellDamage" }
+local FCT = { "floatingCombatTextCombatDamage", "floatingCombatTextCombatLogPeriodicSpells" }
+-- (1.4.15) your pet's numbers stay with the game: Crit Numbers can't tell its hits from your group's in dungeons,
+-- and switching them off left you with no pet numbers at all. Turned back on for anyone 1.3.4 to 1.4.14 switched off.
+local PET_FCT = { "floatingCombatTextPetMeleeDamage", "floatingCombatTextPetSpellDamage" }
 local function GameNumbers()
   local get = (C_CVar and C_CVar.GetCVar) or GetCVar
   local set = (C_CVar and C_CVar.SetCVar) or SetCVar
@@ -285,6 +289,17 @@ local function GameNumbers()
     DB.savedFCT = nil
     if old ~= nil then DB.savedFCT = { floatingCombatTextCombatDamage = old, floatingCombatTextCombatDamage_v2 = old } end
   end
+  for _, base in ipairs(PET_FCT) do
+    for _, name in ipairs({ base, base .. "_v2" }) do
+      local was = DB.savedFCT and DB.savedFCT[name]
+      if was ~= nil then pcall(set, name, was ~= "0" and was or "1"); DB.savedFCT[name] = nil
+      else
+        local ok, v = pcall(get, name)
+        if ok and tostring(v) == "0" and not DB.petFixed then pcall(set, name, "1") end
+      end
+    end
+  end
+  DB.petFixed = true
   if Replacing() then
     local saved = DB.savedFCT or {}
     for _, base in ipairs(FCT) do
@@ -311,7 +326,7 @@ end
 -- watching for crits
 ---------------------------------------------------------------------------
 local me, pet
-local function Crit(amount, heal, dest)
+local function Crit(amount, heal, dest, isPet)
   if not DB or DB.off then return end
   local secret = issecret(amount)
   local readable = not secret and type(amount) == "number" and pcall(function() return amount > 0 end)   -- (1.2.2) the game can hide the number
@@ -319,7 +334,7 @@ local function Crit(amount, heal, dest)
   if heal and not DB.heals then return end
   -- (1.4.12) the sound goes first, so a number that can't be shown never takes the sound with it
   if DB.sound then pcall(Sound) end
-  if DB.numbers and (readable or secret) then pcall(ShowNumber, amount, heal, dest) end   -- (1.4.7) hidden amounts show too
+  if DB.numbers and (readable or secret) then pcall(ShowNumber, amount, heal, dest, isPet) end   -- (1.4.7) hidden amounts show too
 end
 local seen = { hits = 0, crits = 0 }   -- (1.1.1) for /crits debug
 local function OnCombat()
@@ -333,12 +348,13 @@ local function OnCombat()
     if c then seen.crits = seen.crits + 1 end
     seen.last = sub .. " " .. tostring(select(sub == "SWING_DAMAGE" and 12 or 15, CombatLogGetCurrentEventInfo())) .. " crit=" .. tostring(c)
   end
+  local isPet = src ~= me
   if sub == "SWING_DAMAGE" then
     local amount, _, _, _, _, _, crit = select(12, CombatLogGetCurrentEventInfo())
-    if crit then Crit(amount, false, dest) end
+    if crit then Crit(amount, false, dest, isPet) end
   elseif sub == "RANGE_DAMAGE" or sub == "SPELL_DAMAGE" or sub == "SPELL_PERIODIC_DAMAGE" then
     local amount, _, _, _, _, _, crit = select(15, CombatLogGetCurrentEventInfo())
-    if crit then Crit(amount, false, dest) end
+    if crit then Crit(amount, false, dest, isPet) end
   elseif sub == "SPELL_HEAL" or sub == "SPELL_PERIODIC_HEAL" then
     local amount, _, _, crit = select(15, CombatLogGetCurrentEventInfo())
     if crit then Crit(amount, true, dest) end
@@ -362,9 +378,13 @@ local lastLine, lastAt = nil, 0
 local function ReadLine(text)
   if type(text) ~= "string" then return end
   seen.lines = (seen.lines or 0) + 1
-  local at = text:find(CRIT_MARK, 1, true) or (CRIT_SPELL and text:find(CRIT_SPELL, 1, true))
-  if not at then return end
   local t = Clean(text)
+  t = t:gsub("^%[?%d%d?:%d%d[:%d]*%s*[AaPp]?%.?[Mm]?%.?%]?%s*", "")   -- (1.4.14) a chat timestamp in front
+  -- (1.4.14) the last line that looks like a hit, for /crits debug
+  if t:find("%d") and (t:find(" hit", 1, true) or t:lower():find("crit", 1, true)) then seen.sample = t:sub(1, 120) end
+  local at = t:find(CRIT_MARK, 1, true) or (CRIT_SPELL and t:find(CRIT_SPELL, 1, true))
+    or t:find("^You crit ") or t:find("^Your .- crits? ")
+  if not at then return end
   local mine = false
   for _, y in ipairs(YOU) do if t:sub(1, #y) == y and t:sub(#y + 1, #y + 1):match("[%s']") then mine = true end end
   if not mine then return end
@@ -549,17 +569,19 @@ local function OnRangedSwing()
   Prune(casts, now, 3)
   local at
   pcall(function() at = UnitGUID("target") end)
-  casts[#casts + 1] = { t = now, guid = at, schools = { }, ranged = true, hit = {} }   -- Auto Shot or Shoot: it still has to fly
+  casts[#casts + 1] = { t = now, guid = at, schools = { }, ranged = true, hit = {}, auto = true }   -- Auto Shot or Shoot: it still has to fly
 end
 local function OnSwing(...)
   local ranged = (Enum and Enum.PlayerSwingType and Enum.PlayerSwingType.Ranged) or 2
   local hidden = false
+  seen.swings = (seen.swings or 0) + 1
   for i = 1, select("#", ...) do
     local v = select(i, ...)
     if issecretvalue(v) then hidden = true elseif v == ranged then return OnRangedSwing() end
   end
   -- (1.4.13) in dungeons the game can hide which kind of swing it was: Auto Shot or Shoot running means ranged
   if hidden then
+    seen.swingHidden = (seen.swingHidden or 0) + 1
     local auto = false
     pcall(function() auto = (IsAutoRepeatSpell and (IsAutoRepeatSpell(GetSpellInfo and GetSpellInfo(75) or "Auto Shot")
       or IsAutoRepeatSpell(GetSpellInfo and GetSpellInfo(5019) or "Shoot"))) and true or false end)
@@ -587,24 +609,54 @@ local function CastOwns(c, guid, physical, school, t, sameOnly)
   if guid ~= nil and guid == c.guid then c.used = true end
   return true
 end
+local lastAuto = 0
+-- (1.4.15) is your auto attack or Auto Shot going, and how often does it fire? (seconds, or nil when neither is on)
+local function AutoOn()
+  local cur = (C_Spell and C_Spell.IsCurrentSpell) or IsCurrentSpell
+  local rep = (C_Spell and C_Spell.IsAutoRepeatSpell) or IsAutoRepeatSpell
+  local function on(f, id)
+    if not f then return false end
+    local ok, v = pcall(f, id)
+    if ok and v == true then return true end
+    local n = GetSpellInfo and GetSpellInfo(id)
+    if n then ok, v = pcall(f, n); return ok and v == true end
+    return false
+  end
+  if on(cur, 6603) then   -- Auto Attack
+    local speed = 2
+    pcall(function() local s1 = UnitAttackSpeed("player"); if type(s1) == "number" and s1 > 0.5 then speed = s1 end end)
+    return speed
+  end
+  if on(rep, 75) then     -- Auto Shot (a wand's Shoot isn't physical, so it never comes here)
+    local speed = 2.8
+    pcall(function() local s1 = UnitRangedDamage("player"); if type(s1) == "number" and s1 > 0.5 then speed = s1 end end)
+    return speed
+  end
+end
 local function Claim(guid, onTarget, school, t)
   local physical = school == 1 or school == nil
   if channel and t <= channel.stop + 1 and not physical and guid == channel.guid and SchoolFits(channel, school) then
     return true
   end
   -- 1) a spell from this very instant (Sinister Strike, Arcane Explosion)
-  for i = #casts, 1, -1 do if CastOwns(casts[i], guid, physical, school, t, true) then return true end end
+  for i = #casts, 1, -1 do if CastOwns(casts[i], guid, physical, school, t, true) then if physical and casts[i].auto then lastAuto = t end return true end end
   -- 2) a melee swing
   if onTarget then
     for _, w in ipairs(swings) do
-      if t - w.t >= -0.15 and t - w.t <= 1 then
-        if physical and not w.used then w.used = t return true end
+      if t - w.t >= -0.4 and t - w.t <= 1 then
+        if physical and not w.used then w.used = t; lastAuto = t return true end
         if not physical and w.used and math.abs(w.used - t) <= 0.05 and not w.proc then w.proc = true return true end   -- a Seal riding the swing
       end
     end
   end
   -- 3) a spell still on its way, newest first
-  for i = #casts, 1, -1 do if CastOwns(casts[i], guid, physical, school, t, false) then return true end end
+  for i = #casts, 1, -1 do if CastOwns(casts[i], guid, physical, school, t, false) then if physical and casts[i].auto then lastAuto = t end return true end end
+  -- 4) (1.4.14) in dungeons the game doesn't report every swing: while your auto attack is on, one physical hit
+  -- on your target per swing of your weapon is taken as yours (never more than one a swing, counting the ones above)
+  local speed = onTarget and physical and AutoOn()
+  if speed then
+    if t - lastAuto >= speed * 0.8 then lastAuto = t; seen.autoClaims = (seen.autoClaims or 0) + 1; return true end
+  end
   return false
 end
 local Mine
@@ -628,7 +680,8 @@ local function OnUnitCombat(unit, action, flag, amount, school)
   local t = GetTime()
   local function Shared()
     -- checked a moment later, once every swing and cast from this instant has come in
-    C_Timer.After(0, function()
+    -- (1.4.14) a quarter second: in dungeons your swing can be reported a moment after the hit it made
+    C_Timer.After(0.25, function()
       local okC, mine = pcall(Claim, guid, u == "target", school, t)
       if okC and mine then seen.claimed = (seen.claimed or 0) + 1; pcall(Mine, u, guid, crit, amount, school)
       else seen.notMine = (seen.notMine or 0) + 1 end
@@ -703,6 +756,154 @@ local function WatchTarget()
   end
   pcall(feed.RegisterEvent, feed, "PLAYER_SWING")   -- (1.4.5) your own melee swings
 end
+
+-- (1.4.15) your pet's numbers, read from the game's own damage meter: each time your pet's total for an ability goes
+-- up, that step is one of its hits, exactly (the meter is read for your pet alone, so a party member's hits never
+-- show). They float up from your target, small and white, while Crit Numbers draws your numbers.
+local petMeter = { last = {}, started = false, shown = 0, hl = {}, crits = 0 }
+-- (1.4.16) a pet hit well above that ability's usual hit is a crit (the game hides the crit flag): 1.7x to 2.6x the
+-- middle of its last plain hits. More than 2.6x is two hits added together, so it stays a plain number
+local function PetCrit(id, step)
+  local list = petMeter.hl[id]
+  if not list then list = {}; petMeter.hl[id] = list end
+  local crit = false
+  if #list >= 3 then
+    local t = {}
+    for i, v in ipairs(list) do t[i] = v end
+    table.sort(t)
+    local mid = t[math.floor((#t + 1) / 2)]
+    local r = mid > 0 and step / mid or 0
+    crit = r >= 1.7 and r <= 2.6
+  end
+  if not crit then
+    table.insert(list, step)
+    if #list > 15 then table.remove(list, 1) end
+  end
+  return crit
+end
+-- (1.4.19) how much of one meter line is your pet's. Its details can be one table or a list of them (one per who hit):
+-- true = all pet, false = all yours, "part" = shared, with the pet's amount
+-- (1.4.20) your pet's abilities by name, from its spellbook (Claw, Bite, Growl...): on Forever its hits sit in your
+-- meter line without being marked as the pet's, so a line whose ability is one of these is the pet's
+local petBook, petBookAt = {}, -100
+local function PetBook()
+  if GetTime() - petBookAt < 10 then return petBook end
+  petBookAt = GetTime()
+  local book = {}
+  pcall(function()
+    local SB = C_SpellBook
+    local bank = Enum and Enum.SpellBookSpellBank and Enum.SpellBookSpellBank.Pet
+    local n = (SB and SB.HasPetSpells and SB.HasPetSpells()) or (HasPetSpells and HasPetSpells()) or 0
+    for i = 1, (type(n) == "number" and n or 0) do
+      local name
+      if SB and SB.GetSpellBookItemName and bank then name = SB.GetSpellBookItemName(i, bank)
+      elseif GetSpellBookItemName then name = GetSpellBookItemName(i, BOOKTYPE_PET or "pet") end
+      if type(name) == "string" and not issecretvalue(name) then book[name] = true end
+    end
+  end)
+  petBook = book
+  return book
+end
+local function MeterName(id)
+  if C_Spell and C_Spell.GetSpellName then local ok, n = pcall(C_Spell.GetSpellName, id); if ok and type(n) == "string" and not issecretvalue(n) then return n end end
+  if GetSpellInfo then local ok, n = pcall(GetSpellInfo, id); if ok and type(n) == "string" and not issecretvalue(n) then return n end end
+end
+local function PetPart(sp)
+  local d = sp.combatSpellDetails
+  local petName = UnitName and UnitName("pet")
+  if issecretvalue(petName) then petName = nil end
+  if type(d) == "table" then
+    if d.isPet ~= nil then if d.isPet == true then return true end
+    else
+      local pet, n, all = 0, 0, 0
+      for _, x in ipairs(d) do
+        if type(x) == "table" then
+          all = all + 1
+          if x.isPet == true or (petName and x.unitName == petName) then n = n + 1; if type(x.amount) == "number" then pet = pet + x.amount end end
+        end
+      end
+      if n > 0 then if n == all then return true end return "part", pet end
+    end
+    if petName and d.unitName == petName then return true end
+  end
+  -- the pet's own abilities (Claw, Bite...), named in its spellbook
+  local name = MeterName(sp.spellID)
+  if name and PetBook()[name] then return true end
+  return false
+end
+local function PetTick()
+  if not (DB and DB.pet and Replacing()) then petMeter.why = "Pet Crits or Damage Numbers is off" return end
+  local DM, E = C_DamageMeter, Enum
+  if not (DM and DM.GetCombatSessionSourceFromType and E and E.DamageMeterSessionType and E.DamageMeterType) then petMeter.why = "no damage meter" return end
+  local pg = UnitGUID("pet")
+  if not pg then petMeter.why = "no pet out"; wipe(petMeter.last) return end
+  if issecretvalue(pg) then petMeter.why = "the game hides your pet's ID"; petMeter.hiddenID = (petMeter.hiddenID or 0) + 1 return end
+  -- a new fight starts the meter over
+  local okS, sess = pcall(DM.GetCombatSessionFromType, E.DamageMeterSessionType.Current, E.DamageMeterType.DamageDone)
+  if okS and type(sess) == "table" and not issecretvalue(sess) then
+    local sid = sess.sessionID or sess.combatSessionID or sess.id
+    if not issecretvalue(sid) and sid ~= nil then
+      if petMeter.sess ~= nil and sid ~= petMeter.sess then wipe(petMeter.last) end
+      petMeter.sess = sid
+    end
+  end
+  local ok, src = pcall(DM.GetCombatSessionSourceFromType, E.DamageMeterSessionType.Current, E.DamageMeterType.DamageDone, pg)
+  if not ok then petMeter.why = "meter error: " .. tostring(src) return end
+  if type(src) ~= "table" then petMeter.why = "meter has no line for your pet" return end
+  if issecretvalue(src) or issecretvalue(src.combatSpells) then petMeter.why = "the game hides your pet's meter line"; petMeter.hidden = (petMeter.hidden or 0) + 1 return end
+  -- (1.4.19) each pet ability's total, added up across every line the meter lists it on (one per mob it hit).
+  -- Your pet's own line first; on Forever its hits sit in YOUR line instead, marked as the pet's
+  local totals, from, n = {}, "pet's line", 0
+  local function Add(id, amt) if not totals[id] then n = n + 1 end; totals[id] = (totals[id] or 0) + amt end
+  for _, sp in ipairs(src.combatSpells or {}) do
+    local id, total = sp.spellID, sp.totalAmount
+    if issecretvalue(id) or issecretvalue(total) then petMeter.hiddenNum = (petMeter.hiddenNum or 0) + 1
+    elseif type(id) == "number" and type(total) == "number" then Add(id, total) end
+  end
+  if n == 0 then
+    local okP, mine = pcall(DM.GetCombatSessionSourceFromType, E.DamageMeterSessionType.Current, E.DamageMeterType.DamageDone, UnitGUID("player"))
+    if okP and type(mine) == "table" and not issecretvalue(mine) and not issecretvalue(mine.combatSpells) then
+      from = "your line"
+      for _, sp in ipairs(mine.combatSpells or {}) do
+        local id, total = sp.spellID, sp.totalAmount
+        if not issecretvalue(id) and not issecretvalue(total) and type(id) == "number" and type(total) == "number" then
+          local ok, isPet, petAmt = pcall(PetPart, sp)
+          if ok and isPet == true then Add(id, total)
+          elseif ok and isPet == "part" and type(petAmt) == "number" and petAmt > 0 then Add(id, petAmt) end
+        end
+      end
+    elseif okP and type(mine) == "table" then
+      petMeter.why = "the game hides your meter line"; petMeter.hidden = (petMeter.hidden or 0) + 1 return
+    end
+  end
+  petMeter.why = "reading fine (" .. n .. " pet abilities, " .. from .. ")"
+  local tg
+  pcall(function() tg = UnitGUID("target") end)
+  for id, total in pairs(totals) do
+    do
+      local was = petMeter.last[id]
+      if was == nil and petMeter.started then was = 0 end   -- an ability the pet hasn't used yet this fight
+      petMeter.last[id] = total
+      -- (1.4.20) a smaller total is a mob leaving the meter: noted, never shown as one giant hit
+      if was and total > was and petMeter.started then
+        petMeter.shown = petMeter.shown + 1
+        local step = math.floor(total - was + 0.5)
+        local okC, isCrit = pcall(PetCrit, id, step)
+        if okC and isCrit then petMeter.crits = petMeter.crits + 1; pcall(Crit, step, false, tg, true)
+        else pcall(ShowSmall, step, tg, 1) end
+      end
+    end
+  end
+  petMeter.started = true   -- the first look only learns where the totals stand
+end
+local petFrame = CreateFrame("Frame")
+local petAcc = 0
+petFrame:SetScript("OnUpdate", function(_, el)
+  petAcc = petAcc + el
+  if petAcc < 0.1 then return end
+  petAcc = 0
+  pcall(PetTick)
+end)
 
 local MinimapButton   -- made further down, after the settings
 local ev = CreateFrame("Frame")
@@ -795,6 +996,10 @@ ns.HelpConfig = {
     { label = "Crit Color", cycle = true, choices = { { "Purple", "purple" }, { "Orange", "orange" }, { "Gold", "gold" },
       { "Cyan", "cyan" }, { "Red", "red" }, { "Pink", "pink" }, { "White", "white" }, { "Lime", "lime" } },
       get = function() return DB.critColor or "purple" end, set = function(v) DB.critColor = v; ShowNumber(math.random(400, 2400), false) end },
+    -- (1.4.16) your pet's crits get their own color
+    { label = "Pet Crit Color", cycle = true, choices = { { "Orange", "orange" }, { "Purple", "purple" }, { "Gold", "gold" },
+      { "Cyan", "cyan" }, { "Red", "red" }, { "Pink", "pink" }, { "White", "white" }, { "Lime", "lime" } },
+      get = function() return DB.petColor or "orange" end, set = function(v) DB.petColor = v; ShowNumber(math.random(200, 1200), false, nil, true) end },
     { label = "Hit Number Size", choices = { { "Small", 22 }, { "Medium", 28 }, { "Large", 36 } },
       get = function() return DB.hitSize or 28 end, set = function(v) DB.hitSize = v; ShowSmall(math.random(40, 240), nil, 1) end },
     { label = "Heal Crits", choices = OnOff,
@@ -803,6 +1008,13 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.20", "Your pet's numbers, take three: WoW: Forever puts your pet's hits in your own line of the damage meter without saying they're the pet's, so Crit Numbers now knows them by name from your pet's spellbook (Claw, Bite and the rest)" },
+    { v = "1.4.19", "Your pet's numbers, take two: the damage meter lists each pet ability once per mob it hit, and when the pet shares a line with you only its part counts. Those are added up now, so each pet hit shows once at its real size" },
+    { v = "1.4.18", "Your pet's numbers show up again: on WoW: Forever the game keeps your pet's hits in your own line of the damage meter, and Crit Numbers now reads them from there" },
+    { v = "1.4.17", "/crits debug now says why your pet's numbers aren't showing (no pet out, or what the game is hiding), to find the cause in dungeons" },
+    { v = "1.4.16", "Your pet's crits now show big, with their own color: pick it under Pet Crit Color in Settings (orange to start). The game hides whether a pet hit crit, so a pet hit well above that ability's usual hit counts as a crit" },
+    { v = "1.4.15", "Hunters get their Auto Shot numbers in dungeons too: while Auto Shot is on, one physical hit on your target per shot is taken as yours", "Your pet's damage numbers are back, small and white, read from the game's own damage meter so a party member's hits never show as your pet's" },
+    { v = "1.4.14", "Your white hits show in dungeons again: the addon now waits a moment for your swing to be reported, and while your auto attack is on it takes one hit on your target per swing as yours" },
     { v = "1.4.13", "Your plain white hits show in dungeons again: the game hides which kind of swing it was there, and those swings were skipped" },
     { v = "1.4.12", "The Halo Pack and Wow Pack sounds are back: their sound files were missing from the download, so picking either one played nothing. Crit sounds also play even if the big number can't be shown" },
     { v = "1.4.11", "Fixed Dalorrian's crit numbers not showing at all (since 1.4.9). The game's own numbers were unaffected" },
@@ -903,12 +1115,32 @@ SlashCmdList.CRITSOUNDS = function(msg)
   local cmd = (msg or ""):lower():match("^(%S*)")
   if cmd == "debug" then
     local p = Pack(DB.pack)
+    local sample = seen.sample   -- before this readout's own lines replace it
     print("|cffffd100Dalorrian's Crit Numbers debug|r")
     print("  this session: " .. seen.hits .. " hits from you, " .. seen.crits .. " of them crits")
     print("  last crit: " .. tostring(seen.last))
     print("  chat lines read " .. (seen.lines or 0) .. ", unreadable " .. (seen.secret or 0) .. ", combat log tab " ..
       ((ChatFrame2 and ChatFrame2.IsShown and "found") or "missing") .. ", crits from chat " .. (seen.chat or 0))
     print("  target feed: events " .. (seen.uc or 0) .. ", from nameplates " .. (seen.plates or 0) .. ", crits " .. (seen.ucCrits or 0) .. ", hidden " .. (seen.ucHidden or 0) .. ", yours on shared mobs " .. (seen.claimed or 0) .. ", not yours " .. (seen.notMine or 0))
+    print("  last combat line: " .. tostring(sample))
+    print("  pet numbers from the damage meter: " .. petMeter.shown .. ", pet crits " .. petMeter.crits)
+    local names = {}
+    pcall(function()
+      local E = Enum
+      local ok, mine = pcall(C_DamageMeter.GetCombatSessionSourceFromType, E.DamageMeterSessionType.Current, E.DamageMeterType.DamageDone, UnitGUID("player"))
+      for _, sp in ipairs(ok and mine and mine.combatSpells or {}) do
+        local nm = MeterName(sp.spellID) or tostring(sp.spellID)
+        local okP, p = pcall(PetPart, sp)
+        names[#names + 1] = nm .. ((okP and p) and "(pet)" or "")
+        if #names >= 12 then break end
+      end
+    end)
+    local bk = {}
+    for n in pairs(PetBook()) do bk[#bk + 1] = n end
+    print("  your meter line: " .. (#names > 0 and table.concat(names, ", ") or "nothing"))
+    print("  pet spellbook: " .. (#bk > 0 and table.concat(bk, ", ") or "nothing"))
+    print("  pet meter: " .. tostring(petMeter.why or "not checked yet") .. "  (hidden ID " .. (petMeter.hiddenID or 0) .. ", hidden line " .. (petMeter.hidden or 0) .. ", hidden numbers " .. (petMeter.hiddenNum or 0) .. ")")
+    print("  your swings seen " .. (seen.swings or 0) .. " (kind hidden " .. (seen.swingHidden or 0) .. "), auto attack hits taken " .. (seen.autoClaims or 0))
     print("  on " .. tostring(not DB.off) .. ", sound " .. tostring(DB.sound) .. " (" .. (p and p.key or "no pack") .. "), numbers " ..
       tostring(DB.numbers) .. ", packs " .. #PACKS .. ", you " .. tostring(me))
     local get = (C_CVar and C_CVar.GetCVar) or GetCVar

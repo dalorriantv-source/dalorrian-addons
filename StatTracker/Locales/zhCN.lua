@@ -155,4 +155,8 @@ ns.LOCALES.zhCN = function() return {
   ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "每次打开角色窗口都能拉远镜头，并且总是以正常距离打开",
   ["Zooming out keeps working after you press the reset button on your character window"] = "在角色窗口按下重置按钮后，仍然可以拉远镜头",
   ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "属性面板现在只随“角色”标签打开，不再随同一窗口的荣誉（H）、声望、技能等其他标签打开",
+  ["Enchants On Character Window"] = "在角色窗口显示附魔",
+  ["All Stats"] = "全属性",
+  ["Health"] = "生命值",
+  ["Mana"] = "法力值",
 } end

@@ -156,4 +156,8 @@ ns.LOCALES.koKR = function() return {
   ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "캐릭터 창을 열 때마다 축소가 제대로 되며, 항상 기본 거리로 열립니다",
   ["Zooming out keeps working after you press the reset button on your character window"] = "캐릭터 창의 초기화 버튼을 누른 뒤에도 축소가 계속 됩니다",
   ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "이제 능력치 창은 캐릭터 탭에서만 열리고, 같은 창의 명예(H), 평판, 기술 등 다른 탭에서는 열리지 않습니다",
+  ["Enchants On Character Window"] = "캐릭터 창에 마법부여 표시",
+  ["All Stats"] = "모든 능력치",
+  ["Health"] = "생명력",
+  ["Mana"] = "마나",
 } end

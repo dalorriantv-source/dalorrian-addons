@@ -81,4 +81,6 @@ ns.LOCALES.ptBR = function() return {
   ["Move It locks again by itself when you close the settings window"] = "Mover trava sozinho quando você fecha a janela de opções",
   ["The loot window no longer flashes open for a moment while looting"] = "A janela de saque não pisca mais aberta por um momento ao saquear",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona em masmorras e raides sem erros. O WoW: Forever esconde ali alguns detalhes dos addons, e este addon agora os ignora sem alarde",
+  ["The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes"] = "A janela de saque não abre mais junto às rolagens nas masmorras: enquanto há uma rolagem, o item que sobra no corpo é o que está sendo rolado e a janela fecha",
+  ["The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left"] = "A janela de saque realmente some durante as rolagens: um item da qualidade de saque do grupo ou acima é tratado como em rolagem, e a janela fecha quando só sobram esses",
 } end

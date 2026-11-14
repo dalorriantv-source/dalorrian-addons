@@ -54,4 +54,5 @@ ns.LOCALES.zhCN = function() return {
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "聊天中的网址会变成金色并可点击：点击后弹出小框，链接已选好方便复制",
   ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "修复了按 Esc 或登出时的“操作被阻止”错误。点击的链接现在在 Chat Copy 自己的框里打开",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
+  ["Copying chat works in dungeons: lines the game hides from addons show as (line hidden by the game) and the rest copy as usual"] = "地下城中可以复制聊天：游戏对插件隐藏的行显示为 (line hidden by the game)，其余照常复制",
 } end

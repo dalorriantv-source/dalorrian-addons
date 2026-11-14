@@ -54,4 +54,5 @@ ns.LOCALES.itIT = function() return {
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "I link web in chat diventano dorati e cliccabili: un clic apre un riquadro con il link pronto da copiare",
   ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Corretti gli errori \"azione bloccata\" premendo Esc o uscendo dal gioco. I link cliccati ora si aprono nella finestra di Chat Copy",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funziona in spedizioni e incursioni senza errori. WoW: Forever lì nasconde alcuni dettagli agli addon, e ora questo addon li salta in silenzio",
+  ["Copying chat works in dungeons: lines the game hides from addons show as (line hidden by the game) and the rest copy as usual"] = "Copiare la chat funziona nelle spedizioni: le righe che il gioco nasconde agli addon appaiono come (line hidden by the game) e il resto si copia come sempre",
 } end

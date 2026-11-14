@@ -156,4 +156,8 @@ ns.LOCALES.ruRU = function() return {
   ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Отдаление в окне персонажа работает при каждом открытии, и окно всегда открывается на обычном расстоянии",
   ["Zooming out keeps working after you press the reset button on your character window"] = "Отдаление продолжает работать после нажатия кнопки сброса в окне персонажа",
   ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Панель характеристик теперь открывается только с вкладкой «Персонаж», а не с «Честью» (H), «Репутацией», «Навыками» и другими вкладками того же окна",
+  ["Enchants On Character Window"] = "Чары в окне персонажа",
+  ["All Stats"] = "Все характеристики",
+  ["Health"] = "Здоровье",
+  ["Mana"] = "Мана",
 } end

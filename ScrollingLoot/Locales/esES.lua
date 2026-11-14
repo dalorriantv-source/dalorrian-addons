@@ -80,4 +80,6 @@ ns.LOCALES.esES = function() return {
   ["Move It locks again by itself when you close the settings window"] = "Mover se bloquea solo cuando cierras la ventana de opciones",
   ["The loot window no longer flashes open for a moment while looting"] = "La ventana de botín ya no se abre un momento al saquear",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funciona en mazmorras y bandas sin errores. WoW: Forever oculta ahí algunos datos a los addons, y este addon ahora los omite sin avisar",
+  ["The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes"] = "La ventana de botín ya no se abre junto a las tiradas en mazmorras: mientras hay una tirada, el objeto que queda en el cadáver es el que se tira y la ventana se cierra",
+  ["The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left"] = "La ventana de botín de verdad no aparece durante las tiradas: un objeto de la calidad de botín de tu grupo o superior se trata como objeto en tirada y la ventana se cierra cuando solo quedan esos",
 } end

@@ -155,4 +155,8 @@ ns.LOCALES.esES = function() return {
   ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Alejar la cámara en la ventana de personaje funciona cada vez que la abres, y siempre se abre a la distancia normal",
   ["Zooming out keeps working after you press the reset button on your character window"] = "Alejar la cámara sigue funcionando después de pulsar el botón de restablecer en la ventana de personaje",
   ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "El panel de estadísticas ahora solo se abre con la pestaña Personaje, no con Honor (H), Reputación, Habilidades ni las demás pestañas de esa ventana",
+  ["Enchants On Character Window"] = "Encantamientos en la ventana de personaje",
+  ["All Stats"] = "Todas las estadísticas",
+  ["Health"] = "Salud",
+  ["Mana"] = "Maná",
 } end

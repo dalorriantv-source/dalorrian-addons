@@ -79,4 +79,7 @@ ns.LOCALES.frFR = function() return {
   ["Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out"] = "Nommer une nouvelle config utilise la fenêtre de Chat Saver, donc plus d'erreurs « action bloquée » à la déconnexion",
   ["The Delete button is red, so it's hard to hit by mistake"] = "Le bouton Supprimer est rouge, pour éviter de cliquer dessus par erreur",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Fonctionne dans les donjons et raids sans erreurs. WoW: Forever y cache certains détails aux addons, et cet addon les ignore désormais discrètement",
+  ["Keep Channel Colors"] = "Garder les couleurs des canaux",
+  ["On"] = "Oui",
+  ["Off"] = "Non",
 } end

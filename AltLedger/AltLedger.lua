@@ -117,13 +117,36 @@ local function Who()
   return name, Ruleset() or (GetRealmName and GetRealmName()) or "?"
 end
 
+-- (1.5.0) logging in shows the real rested XP: compare it with what was expected and learn the true rate.
+-- Forever's rested rate (or a character's inn or wild spot) can differ from the usual numbers, and logged-out
+-- characters then showed too little. Inns and the wild learn separately
+local function Calibrate(old)
+  if not (old and old.seen and old.xpMax and old.xpMax > 0 and old.level and GetXPExhaustion) then return end
+  if UnitLevel("player") ~= old.level or UnitXPMax("player") ~= old.xpMax then return end
+  local now = GetXPExhaustion() or 0
+  local hours = (time() - old.seen) / 3600
+  local cap = old.xpMax * 1.5
+  if hours < 2 or now >= cap * 0.97 then return end   -- too short to tell, or already full
+  local gain = now - (old.rested or 0)
+  if gain <= 0 then return end
+  local base = old.xpMax * 0.05 * (old.resting and 1 or 0.25) * hours / 8
+  local m = gain / base
+  if m < 0.25 or m > 8 then return end   -- something else happened (an XP potion, a level): ignore it
+  DB.restMul = DB.restMul or {}
+  local k = old.resting and "inn" or "wild"
+  local was = DB.restMul[k]
+  DB.restMul[k] = was and (was * 0.5 + m * 0.5) or m
+end
+ns.Calibrate = Calibrate
+
 local function Snapshot(leaving)
   C = Char()
   if not C then return end
   C.own = true   -- logged in with Alt Ledger at least once
   C.seen = time()
   C.rested = GetXPExhaustion and GetXPExhaustion() or C.rested or 0
-  C.resting = IsResting and IsResting() or false
+  -- (1.5.0) inn or wild is kept from the last normal look: while logging out the game can say "not resting"
+  if not leaving then C.resting = IsResting and IsResting() or false end
   if leaving then return end   -- (1.2.0) while logging out the game reports 0 gold: keep what we had
   local _, class = UnitClass("player")
   local race = UnitRace("player")
@@ -450,7 +473,8 @@ local function RestedNow(c, live)
   local r = c.rested or 0
   if not live and c.seen then   -- while logged out you keep resting: 5% of a level every 8 hours in an inn or city, a quarter of that outside
     local hours = (time() - c.seen) / 3600
-    r = r + c.xpMax * 0.05 * (c.resting and 1 or 0.25) * hours / 8
+    local mul = DB.restMul and DB.restMul[c.resting and "inn" or "wild"] or 1   -- (1.5.0) learned from your logins
+    r = r + c.xpMax * 0.05 * (c.resting and 1 or 0.25) * mul * hours / 8
   end
   return math.min(r, c.xpMax * 1.5)
 end
@@ -1043,7 +1067,9 @@ ev:SetScript("OnEvent", function(_, e, a1)
     ME, REALM = Who()
     pcall(Migrate)
     pcall(FromSyndicator)
-    C_Timer.After(3, function() Snapshot(); Refresh() end)   -- gold can read 0 for a moment right after login
+    local old   -- (1.5.0) what was saved at logout, before this login overwrites it
+    pcall(function() local c = Char(); old = c and { seen = c.seen, rested = c.rested, resting = c.resting, level = c.level, xpMax = c.xpMax } end)
+    C_Timer.After(3, function() pcall(Calibrate, old); Snapshot(); Refresh() end)   -- gold can read 0 for a moment right after login
     C_Timer.After(6, function() pcall(AskPlayed) end)
     -- item counts on tooltips: on, unless another addon already shows them
     if DB.tips == nil then DB.tips = not (Loaded("Syndicator") or Loaded("Altoholic") or Loaded("BagBrother") or Loaded("DataStore")) end
@@ -1101,6 +1127,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() Toggle("chars") end },
   },
   notes = {
+    { v = "1.5.0", "Rested XP on characters you're not logged into is closer to the real number. Each time you log in, Alt Ledger checks its estimate against the game's real rested XP and learns the true rate (inns and the wild separately), and where you logged out is no longer misread while logging off" },
     { v = "1.4.3", "More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors" },
     { v = "1.4.2", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.4.1", "Fixed a memory leak: saved item names are cleared once none of your characters has that item" },

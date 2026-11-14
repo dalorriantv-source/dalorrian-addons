@@ -114,4 +114,13 @@ ns.LOCALES.zhCN = function() return {
   ["Fixed Dalorrian's crit numbers not showing at all (since 1.4.9). The game's own numbers were unaffected"] = "修复：Dalorrian 的暴击数字完全不显示的问题（自 1.4.9 起）。游戏自带的数字不受影响",
   ["The Halo Pack and Wow Pack sounds are back: their sound files were missing from the download, so picking either one played nothing. Crit sounds also play even if the big number can't be shown"] = "Halo Pack 和 Wow Pack 的音效回来了：下载中缺少它们的声音文件，所以选择任一个都没有声音。即使无法显示大数字，暴击音效也会播放",
   ["Your plain white hits show in dungeons again: the game hides which kind of swing it was there, and those swings were skipped"] = "地下城中你的普通白色伤害数字重新显示：游戏在那里隐藏了攻击类型，这些攻击之前被跳过",
+  ["Your white hits show in dungeons again: the addon now waits a moment for your swing to be reported, and while your auto attack is on it takes one hit on your target per swing as yours"] = "地下城中你的白色伤害重新显示：插件现在会稍等你的攻击被报告，开启自动攻击时，你的武器每挥动一次，就把对目标的一次物理命中算作你的",
+  ["Hunters get their Auto Shot numbers in dungeons too: while Auto Shot is on, one physical hit on your target per shot is taken as yours"] = "猎人在地下城中也能看到自动射击的数字：开启自动射击时，每次射击把对目标的一次物理命中算作你的",
+  ["Your pet's damage numbers are back, small and white, read from the game's own damage meter so a party member's hits never show as your pet's"] = "宠物的伤害数字回来了，小而白，读自游戏自带的伤害统计，队友的命中绝不会显示成你宠物的",
+  ["Pet Crit Color"] = "宠物暴击颜色",
+  ["Your pet's crits now show big, with their own color: pick it under Pet Crit Color in Settings (orange to start). The game hides whether a pet hit crit, so a pet hit well above that ability's usual hit counts as a crit"] = "你的宠物暴击现在会以大字和独立颜色显示：在设置的宠物暴击颜色中选择（默认橙色）。游戏会隐藏宠物命中是否暴击，所以远高于该技能平时命中的一击算作暴击",
+  ["/crits debug now says why your pet's numbers aren't showing (no pet out, or what the game is hiding), to find the cause in dungeons"] = "/crits debug 现在会说明宠物数字为什么没显示（没有宠物，或游戏隐藏了什么），便于在地下城找原因",
+  ["Your pet's numbers show up again: on WoW: Forever the game keeps your pet's hits in your own line of the damage meter, and Crit Numbers now reads them from there"] = "宠物数字又回来了：在 WoW: Forever 里，游戏把宠物的命中记在你自己的伤害统计行里，Crit Numbers 现在从那里读取",
+  ["Your pet's numbers, take two: the damage meter lists each pet ability once per mob it hit, and when the pet shares a line with you only its part counts. Those are added up now, so each pet hit shows once at its real size"] = "宠物数字第二版：伤害统计会把每个宠物技能按每个被击中的敌人分开列出，和你共享一行时只算宠物那部分。现在会先加起来，所以每次宠物命中都只按真实数值显示一次",
+  ["Your pet's numbers, take three: WoW: Forever puts your pet's hits in your own line of the damage meter without saying they're the pet's, so Crit Numbers now knows them by name from your pet's spellbook (Claw, Bite and the rest)"] = "宠物数字第三版：WoW: Forever 把宠物的命中记在你自己的伤害统计行里，却不标明是宠物的，所以 Crit Numbers 现在根据宠物法术书里的名字（爪击、撕咬等）来识别",
 } end

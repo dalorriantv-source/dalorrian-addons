@@ -152,4 +152,8 @@ ns.LOCALES.frFR = function() return {
   ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Le dézoom de la fenêtre du personnage fonctionne à chaque ouverture, et elle s'ouvre toujours à la distance normale",
   ["Zooming out keeps working after you press the reset button on your character window"] = "Le dézoom continue de fonctionner après avoir appuyé sur le bouton de réinitialisation de la fenêtre du personnage",
   ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Le panneau des statistiques ne s'ouvre plus qu'avec l'onglet Personnage, pas avec Honneur (H), Réputation, Compétences ni les autres onglets de la même fenêtre",
+  ["Enchants On Character Window"] = "Enchantements sur la fenêtre du personnage",
+  ["All Stats"] = "Toutes les caractéristiques",
+  ["Health"] = "Vie",
+  ["Mana"] = "Mana",
 } end

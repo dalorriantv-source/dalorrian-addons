@@ -152,4 +152,8 @@ ns.LOCALES.deDE = function() return {
   ["Zooming out on your character window works every time you open it, and it always opens at the normal distance"] = "Herauszoomen im Charakterfenster klappt jedes Mal, wenn du es öffnest, und es öffnet immer im normalen Abstand",
   ["Zooming out keeps working after you press the reset button on your character window"] = "Herauszoomen funktioniert weiter, nachdem du im Charakterfenster den Zurücksetzen-Knopf drückst",
   ["The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window"] = "Das Werte-Fenster öffnet sich jetzt nur noch mit dem Charakter-Reiter, nicht mit Ehre (H), Ruf, Fertigkeiten oder den anderen Reitern desselben Fensters",
+  ["Enchants On Character Window"] = "Verzauberungen im Charakterfenster",
+  ["All Stats"] = "Alle Werte",
+  ["Health"] = "Gesundheit",
+  ["Mana"] = "Mana",
 } end

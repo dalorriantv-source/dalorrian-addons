@@ -121,4 +121,5 @@ ns.LOCALES.koKR = function() return {
   ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "메모리 누수 수정: 어떤 캐릭터도 더 이상 가지고 있지 않은 아이템의 저장된 이름은 삭제됩니다",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
   ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "던전과 공격대 추가 수정: 게임이 그곳에서 숨기는 몇 가지 정보(자리 비움 여부 등)를 이제 오류 없이 조용히 건너뜁니다",
+  ["Rested XP on characters you're not logged into is closer to the real number. Each time you log in, Alt Ledger checks its estimate against the game's real rested XP and learns the true rate (inns and the wild separately), and where you logged out is no longer misread while logging off"] = "접속하지 않은 캐릭터의 휴식 경험치가 실제 값에 더 가까워졌습니다. 접속할 때마다 Alt Ledger가 추정치를 게임의 실제 휴식 경험치와 비교해 진짜 속도를 배웁니다 (여관과 야외 따로). 로그아웃할 때 위치를 잘못 읽는 문제도 고쳤습니다",
 } end

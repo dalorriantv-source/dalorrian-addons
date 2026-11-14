@@ -81,4 +81,6 @@ ns.LOCALES.koKR = function() return {
   ["Move It locks again by itself when you close the settings window"] = "설정 창을 닫으면 이동이 다시 저절로 잠깁니다",
   ["The loot window no longer flashes open for a moment while looting"] = "전리품을 주울 때 전리품 창이 잠깐 열렸다 닫히지 않습니다",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "던전과 공격대에서 오류 없이 작동합니다. WoW: Forever는 그곳에서 일부 정보를 애드온에 숨기며, 이 애드온은 이제 조용히 건너뜁니다",
+  ["The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes"] = "던전에서 전리품 주사위 옆에 전리품 창이 더 이상 열리지 않습니다: 주사위가 진행되는 동안 시체에 남은 아이템은 주사위 대상이며 창은 닫힙니다",
+  ["The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left"] = "이제 전리품 주사위 중에는 전리품 창이 정말 나타나지 않습니다: 파티 전리품 등급 이상의 아이템은 주사위 대상으로 보고, 그런 것만 남으면 창이 닫힙니다",
 } end

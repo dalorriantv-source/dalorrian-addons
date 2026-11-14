@@ -55,4 +55,5 @@ ns.LOCALES.ruRU = function() return {
   ["Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy"] = "Веб-ссылки в чате становятся золотыми и кликабельными: клик открывает окошко со ссылкой, готовой к копированию",
   ["Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box"] = "Исправлены ошибки «действие заблокировано» при нажатии Esc или выходе из игры. Ссылки теперь открываются в собственном окне Chat Copy",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Работает в подземельях и рейдах без ошибок. WoW: Forever скрывает там часть данных от аддонов, и этот аддон теперь тихо их пропускает",
+  ["Copying chat works in dungeons: lines the game hides from addons show as (line hidden by the game) and the rest copy as usual"] = "Копирование чата работает в подземельях: строки, скрытые игрой от аддонов, показаны как (line hidden by the game), остальное копируется как обычно",
 } end

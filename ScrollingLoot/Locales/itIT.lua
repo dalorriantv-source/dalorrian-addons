@@ -80,4 +80,6 @@ ns.LOCALES.itIT = function() return {
   ["Move It locks again by itself when you close the settings window"] = "Sposta si blocca da solo quando chiudi la finestra delle opzioni",
   ["The loot window no longer flashes open for a moment while looting"] = "La finestra del bottino non lampeggia più per un attimo mentre raccogli",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "Funziona in spedizioni e incursioni senza errori. WoW: Forever lì nasconde alcuni dettagli agli addon, e ora questo addon li salta in silenzio",
+  ["The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes"] = "La finestra del bottino non si apre più accanto ai tiri nelle spedizioni: durante un tiro, l'oggetto rimasto sul cadavere è quello in palio e la finestra si chiude",
+  ["The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left"] = "La finestra del bottino resta davvero nascosta durante i tiri: un oggetto della qualità del bottino del gruppo o superiore è considerato in palio, e la finestra si chiude quando restano solo quelli",
 } end

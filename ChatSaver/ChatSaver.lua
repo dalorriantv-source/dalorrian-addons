@@ -36,6 +36,37 @@ local function Pack(...) return { n = select("#", ...), ... } end
 ---------------------------------------------------------------------------
 -- reading what you have now
 ---------------------------------------------------------------------------
+-- (1.2.0) the channels you're in right now: { [lower name] = number }
+local function ChannelNumbers()
+  local t, list = {}, Pack(GetChannelList())
+  for k = 1, list.n, 3 do
+    local num, name = list[k], list[k + 1]
+    if type(num) == "number" and type(name) == "string" then t[name:lower()] = num end
+  end
+  return t
+end
+function ns.ChannelColorsNow()
+  local out = {}
+  for name, num in pairs(ChannelNumbers()) do
+    local info = ChatTypeInfo and ChatTypeInfo["CHANNEL" .. num]
+    if type(info) == "table" and info.r then out[name] = { info.r, info.g, info.b } end
+  end
+  return out
+end
+-- put each channel's color back on whatever number that channel has today
+function ns.ApplyChannelColors(map)
+  if type(map) ~= "table" or not ChangeChatColor then return 0 end
+  local n = 0
+  for name, num in pairs(ChannelNumbers()) do
+    local c = map[name]
+    local info = ChatTypeInfo and ChatTypeInfo["CHANNEL" .. num]
+    if c and info and (math.abs((info.r or 0) - c[1]) > 0.004 or math.abs((info.g or 0) - c[2]) > 0.004 or math.abs((info.b or 0) - c[3]) > 0.004) then
+      if pcall(ChangeChatColor, "CHANNEL" .. num, c[1], c[2], c[3]) then n = n + 1 end
+    end
+  end
+  return n
+end
+
 local function Capture()
   local s = { windows = {}, colors = {}, cvars = {}, channels = {} }
   for i = 1, NUM do
@@ -68,6 +99,9 @@ local function Capture()
     local name = list[k + 1]
     if type(name) == "string" and not ZONE[name:lower()] then s.channels[#s.channels + 1] = name end
   end
+  -- (1.2.0) channel colors by channel NAME: the game keeps them by channel number, and the numbers move
+  -- when channels join in a different order, which is why colors seem to jump around between logins
+  s.chanColors = ns.ChannelColorsNow()
   s.from = UnitName("player") .. " - " .. (GetRealmName() or "")
   s.when = time()
   return s
@@ -149,10 +183,15 @@ local function Apply(s)
     end
   end
   for chatType, c in pairs(s.colors or {}) do
-    if ChatTypeInfo and ChatTypeInfo[chatType] then
+    if ChatTypeInfo and ChatTypeInfo[chatType] and not (s.chanColors and chatType:find("^CHANNEL%d")) then
       Try("color " .. chatType, ChangeChatColor, chatType, c[1], c[2], c[3])
       if SetChatColorNameByClass then Try("class color " .. chatType, SetChatColorNameByClass, chatType, c[4]) end
     end
+  end
+  if s.chanColors then
+    ns.ApplyChannelColors(s.chanColors)
+    -- channels you just rejoined get their number a moment later: once more after that
+    if C_Timer then C_Timer.After(4, function() ns.ApplyChannelColors(s.chanColors) end) end
   end
   for cv, v in pairs(s.cvars or {}) do Try("option " .. cv, SetCVar, cv, v) end
   if FCF_DockUpdate then Try("tabs", FCF_DockUpdate) end
@@ -289,7 +328,21 @@ local MinimapButton
 local ev = CreateFrame("Frame")
 ev:RegisterEvent("ADDON_LOADED")
 ev:RegisterEvent("PLAYER_ENTERING_WORLD")
+pcall(ev.RegisterEvent, ev, "CHANNEL_UI_UPDATE")
+pcall(ev.RegisterEvent, ev, "CHAT_MSG_CHANNEL_NOTICE")
+-- (1.2.0) Keep Channel Colors: the setup you loaded on this character keeps its channel colors, even when the game
+-- hands your channels different numbers on the next login
+local keepPending = false
+local function KeepColors()
+  if keepPending or DB.keepColors == false or not CHAR or not CHAR.loadedName then return end
+  local setup = DB.setups[CHAR.loadedName]
+  if not (setup and setup.chanColors) then return end
+  keepPending = true
+  C_Timer.After(1.5, function() keepPending = false; ns.ApplyChannelColors(setup.chanColors) end)
+end
+ns.KeepColors = KeepColors
 ev:SetScript("OnEvent", function(_, e, a1, a2)
+  if e == "CHANNEL_UI_UPDATE" or e == "CHAT_MSG_CHANNEL_NOTICE" then pcall(KeepColors) return end
   if AnySecret(a1, a2) then return end   -- (Forever) a hidden value: nothing to do with it
   if e == "ADDON_LOADED" then
     if a1 ~= ADDON then return end
@@ -307,6 +360,7 @@ ev:SetScript("OnEvent", function(_, e, a1, a2)
     CHAR = ChatSaverChar
   elseif e == "PLAYER_ENTERING_WORLD" then
     pcall(MinimapButton)
+    if C_Timer then C_Timer.After(5, function() pcall(KeepColors) end) end
     if a1 and not CHAR.seen then   -- the first login with this addon on this character
       CHAR.seen = true
       local new = (UnitLevel("player") or 99) <= 5
@@ -336,8 +390,13 @@ ns.HelpConfig = {
       set = function(v) if v == "save" then Save() elseif v == "load" then Load() else Delete() end end },
     { label = "New Characters Get", cycle = true, choices = autoChoices,
       get = function() return DB.newChar or false end, set = function(v) DB.newChar = v end },
+    -- (1.2.0) on by default
+    { label = "Keep Channel Colors", choices = { { "On", "on" }, { "Off", "off" } },
+      get = function() return DB.keepColors == false and "off" or "on" end,
+      set = function(v) DB.keepColors = (v == "off") and false or nil; if v == "on" then pcall(KeepColors) end end },
   },
   notes = {
+    { v = "1.2.0", "Channel colors stay put. The game remembers colors by channel number, and those numbers change when your channels join in a different order, so colors seemed to jump around. Setups now save each channel's color by its name and put it back on the right channel, even after a relog", "New setting, Keep Channel Colors (on by default): the setup you loaded keeps fixing channel colors whenever the game moves your channels around", "Save your setup once more after updating so it picks up your channel colors by name" },
     { v = "1.1.6", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.1.5", "The Delete button is red, so it's hard to hit by mistake" },
     { v = "1.1.4", "Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out" },

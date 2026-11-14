@@ -79,7 +79,9 @@ end
 
 local Refresh   -- the window, further down
 local function Record(name, spellId, amount, crit, heal, isPet, target)
-  if not (DB and REC) or DB.off or not amount or amount <= 0 or not name then return end
+  if not (DB and REC) or DB.off or not name then return end
+  -- (1.3.4) a hit whose size is hidden makes no row: records are real numbers only
+  if type(amount) ~= "number" or issecretvalue(amount) or amount <= 0 then return end
   if heal and not DB.heals then return end
   local key = (isPet and "pet:" or "") .. (heal and "heal:" or "") .. name
   local r = REC[key]
@@ -92,6 +94,12 @@ local function Record(name, spellId, amount, crit, heal, isPet, target)
   end
   r.uses = r.uses + 1
   if crit then r.crits = r.crits + 1 end
+  if not crit then
+    r.hsum, r.hn = (r.hsum or 0) + amount, (r.hn or 0) + 1   -- (1.3.4) for spotting crits
+    r.hl = r.hl or {}   -- (1.3.5) the last 25 plain hits: their middle value is the ability's usual hit
+    table.insert(r.hl, amount)
+    if #r.hl > 25 then table.remove(r.hl, 1) end
+  end
   local slot = crit and "crit" or "hit"
   local best = r[slot]
   if not best or amount > best.amt then
@@ -232,15 +240,23 @@ local function Debuffed(c)
 end
 local function OnFeed(unit, action, flag, amount, school)
   feedSeen.events = feedSeen.events + 1
+  -- (1.3.4) the damage meter gives the sizes: the feed only says when your target or you took a crit
+  if ns.meter and ns.meter.ok > 0 then
+    local okC, isCrit = pcall(function() return flag == "CRITICAL" end)
+    if okC then ns.meter.flagOK = (ns.meter.flagOK or 0) + 1 else ns.meter.flagHidden = (ns.meter.flagHidden or 0) + 1 end
+    if okC and isCrit then local f = ns.meter.flags; f[#f + 1] = GetTime(); ns.meter.flagCrit = (ns.meter.flagCrit or 0) + 1 end
+    return
+  end
   if (feedSeen.chat or 0) > 0 then return end   -- (1.3.2) the combat log lines work this session: they're exact
   local ok, isHit, isHeal, isCrit = pcall(function()
     return action == "WOUND", action == "HEAL", flag == "CRITICAL"
   end)
   if not ok then feedSeen.hidden = feedSeen.hidden + 1 return end
-  if not (isHit or isHeal) or type(amount) ~= "number" then return end
-  local readable = pcall(function() return amount > 0 end)
-  if not readable then feedSeen.hidden = feedSeen.hidden + 1 return end
-  if amount <= 0 then return end
+  if not (isHit or isHeal) then return end
+  -- (1.3.3) a hidden amount still counts the hit and whether it crit
+  local readable = type(amount) == "number" and not issecretvalue(amount) and pcall(function() return amount > 0 end)
+  if not readable then feedSeen.hidden = feedSeen.hidden + 1; amount = nil
+  elseif amount <= 0 then return end
   local now, target = GetTime(), nil
   pcall(function() target = UnitName("target") end)
   if isHeal then
@@ -265,15 +281,15 @@ local function OnFeed(unit, action, flag, amount, school)
     name, id = cast.name, cast.id   -- a tick from what you cast last
   elseif school == 1 or school == nil then
     -- in a group a plain physical hit could be anyone's (a rogue's stab, a pet's bite): only counted solo
-    if not Acting() or (IsInGroup and IsInGroup()) then feedSeen.skipped = (feedSeen.skipped or 0) + 1; Log(amount .. " physical: skipped (auto attack in a group, or not attacking)") return end
+    if not Acting() or (IsInGroup and IsInGroup()) then feedSeen.skipped = (feedSeen.skipped or 0) + 1; Log(tostring(amount or "hidden") .. " physical: skipped (auto attack in a group, or not attacking)") return end
     name, id = AutoName()
   else
-    Log(amount .. " school " .. tostring(school) .. ": skipped (no spell cast lately)")
+    Log(tostring(amount or "hidden") .. " school " .. tostring(school) .. ": skipped (no spell cast lately)")
     return
   end
-  Log(amount .. (isCrit and " crit" or "") .. " school " .. tostring(school) .. " -> " .. tostring(name))
+  Log(tostring(amount or "hidden") .. (isCrit and " crit" or "") .. " school " .. tostring(school) .. " -> " .. tostring(name))
   feedSeen.hits = feedSeen.hits + 1; if isCrit then feedSeen.crits = feedSeen.crits + 1 end
-  feedSeen.last = name .. " " .. amount .. (isCrit and " crit" or "")
+  feedSeen.last = name .. " " .. tostring(amount or "hidden") .. (isCrit and " crit" or "")
   Record(name, id, amount, isCrit, false, false, target)
 end
 local feed = CreateFrame("Frame")
@@ -299,6 +315,8 @@ local lastLine, lastAt = nil, 0
 local function ReadLine(text)
   if type(text) ~= "string" or not DB or DB.off then return end
   local t = Clean(text)
+  t = t:gsub("^%[?%d%d?:%d%d[:%d]*%s*[AaPp]?%.?[Mm]?%.?%]?%s*", "")   -- (1.3.3) a chat timestamp in front
+  if t:find("%d") and (t:find(" hit", 1, true) or t:lower():find("crit", 1, true)) then feedSeen.sample = t:sub(1, 120) end
   local name, heal, critWord
   local your = t:match("^Your (.+)$")
   if your then
@@ -349,7 +367,220 @@ local function HookChat()
     end
   end
 end
+-- (1.3.4) Forever hides each hit's size from addons, but the game's own damage meter (C_DamageMeter) shows your
+-- damage per ability as it adds up. Every time an ability's total goes up, the step is that hit's size, exactly,
+-- and it's always yours (the meter is read for you alone). The game's hit feed says when your target took a crit:
+-- a step that lands with one, and is clearly bigger than that ability's usual hit, is a crit.
+local meter = { last = {}, lastHeal = {}, lastPet = {}, crit = 0, ok = 0, hidden = 0, flags = {}, pending = {} }
+local function MeterSpells(kind, guid)
+  local DM, E = C_DamageMeter, Enum
+  if not (guid and DM and DM.GetCombatSessionSourceFromType and E and E.DamageMeterSessionType and E.DamageMeterType) then return end
+  local ok, src = pcall(DM.GetCombatSessionSourceFromType, E.DamageMeterSessionType.Current, E.DamageMeterType[kind], guid)
+  if ok and src and (issecretvalue(src) or issecretvalue(src.combatSpells)) then meter.hidden = meter.hidden + 1; meter.blindNow = true return end
+  if not ok or not src then return end
+  return src.combatSpells
+end
+-- every ability whose total went up since the last look: { name, id, step, heal, pet }
+-- (1.3.7) how much of one meter line is your pet's. Its details can be one table or a list of them (one per who hit):
+-- true = all pet, false = all yours, "part" = shared, with the pet's amount
+local function PetPart(sp)
+  local d = sp.combatSpellDetails
+  if type(d) ~= "table" then return false end
+  if d.isPet ~= nil then return d.isPet == true end
+  local pet, n, all = 0, 0, 0
+  for _, x in ipairs(d) do
+    if type(x) == "table" then
+      all = all + 1
+      if x.isPet == true then n = n + 1; if type(x.amount) == "number" then pet = pet + x.amount end end
+    end
+  end
+  if n == 0 then return false end
+  if n == all then return true end
+  return "part", pet
+end
+-- (1.3.7) the meter can list one ability more than once (one line per mob it hit, or yours and your pet's):
+-- they're added up per ability first, or the step between two lines looked like a hit (Melee 145 over and over)
+local function MeterSteps(kind, guid, last, heal, pet, out, skipPet)
+  local sums, order = {}, {}
+  local function Add(id, isPet, amt)
+    local key = id .. (isPet and ":p" or "")
+    if not sums[key] then sums[key] = { id = id, pet = isPet, total = 0 }; order[#order + 1] = key end
+    sums[key].total = sums[key].total + amt
+  end
+  for _, sp in ipairs(MeterSpells(kind, guid) or {}) do
+    local id, total = sp.spellID, sp.totalAmount
+    if issecretvalue(id) or issecretvalue(total) then meter.hidden = meter.hidden + 1; meter.blindNow = true
+    elseif type(id) == "number" and type(total) == "number" then
+      meter.ok = meter.ok + 1
+      local isPet, petAmt = pet, nil
+      if not isPet then local ok, a, b = pcall(PetPart, sp); if ok then isPet, petAmt = a, b else isPet = false end end
+      if isPet == "part" and type(petAmt) == "number" then
+        Add(id, false, total - petAmt); Add(id, true, petAmt)
+      else
+        Add(id, isPet == true, total)
+      end
+    end
+  end
+  -- (1.3.9) per ability: a line the game hid (or left out) on the last look only catches up on its next one.
+  -- This used to be one switch for everything, so a single hidden line (a hunter's pet, every look) stopped
+  -- every record
+  local seenAt = last.__t or {}
+  last.__t = seenAt
+  local tick = meter.tick or 0
+  for _, key in ipairs(order) do
+    local e = sums[key]
+    local gap = seenAt[key] ~= nil and seenAt[key] < tick - 1
+    seenAt[key] = tick
+    local was = last[key] or 0
+    -- (1.3.8) a smaller total is a mob's line leaving the meter, not a new fight (a new fight is caught by its
+    -- session changing): it's only noted, never read as one giant hit
+    local step = (e.total >= was) and math.floor(e.total - was + 0.5) or 0
+    last[key] = e.total
+    if gap and step > 0 then meter.gapSkip = (meter.gapSkip or 0) + 1; step = 0 end
+    if step > 0 then
+      local id = e.id
+      local name = (id == 75 and (SpellName(75) or "Auto Shot")) or (id == 6603 and "Melee") or SpellName(id)
+      -- the pet's own source already has its hits: don't count them twice
+      if name and not (skipPet and e.pet) then out[#out + 1] = { name = name, id = id, step = step, heal = heal, pet = e.pet } end
+    end
+  end
+end
+local function Usual(s)
+  local key = (s.pet and "pet:" or "") .. (s.heal and "heal:" or "") .. s.name
+  local r = REC and REC[key]
+  -- (1.3.5) the middle of the last plain hits: a few crits counted as hits by mistake can't drag it up
+  -- (1.3.6) and the first few plain hits of a fresh ability, kept for this session before any record is written
+  local list = (r and type(r.hl) == "table" and #r.hl >= 4) and r.hl or (meter.samples and meter.samples[key])
+  if type(list) == "table" and #list >= 4 then
+    local t = {}
+    for i, v in ipairs(list) do t[i] = v end
+    table.sort(t)
+    return t[math.max(1, math.floor(#t * 0.3 + 0.5))], true   -- (1.3.8) the lower third: a few hits added together can't pull it up
+  end
+  -- (1.3.4) the average plain hit, not the best one: one missed crit sitting in Best Hit hid every crit after it
+  if r and (r.hn or 0) >= 3 then return r.hsum / r.hn end
+  return r and r.hit and r.hit.amt and r.hit.amt * 0.8
+end
+-- a new fight starts the meter over: every ability counts from zero again
+local function NewFight()
+  local DM, E = C_DamageMeter, Enum
+  if not (DM and DM.GetCombatSessionFromType and E and E.DamageMeterSessionType) then return false end
+  local ok, sess = pcall(DM.GetCombatSessionFromType, E.DamageMeterSessionType.Current, E.DamageMeterType.DamageDone)
+  if not ok or type(sess) ~= "table" or issecretvalue(sess) then return false end
+  local id = sess.sessionID or sess.combatSessionID or sess.id
+  local dur = sess.durationSeconds or sess.duration
+  if issecretvalue(id) then id = nil end
+  if issecretvalue(dur) or type(dur) ~= "number" then dur = nil end
+  local new = (id ~= nil and meter.sess ~= nil and id ~= meter.sess) or (dur and meter.dur and dur < meter.dur - 0.5)
+  meter.sess, meter.dur = id or meter.sess, dur or meter.dur
+  return new and true or false
+end
+local function MeterTick()
+  if not DB or DB.off or not REC then return end
+  if NewFight() then wipe(meter.last); wipe(meter.lastHeal); wipe(meter.lastPet); meter.fresh = true end
+  local steps = {}
+  meter.tick = (meter.tick or 0) + 1
+  meter.blindNow = false
+  local pg = UnitGUID("pet")
+  local petList = pg and MeterSpells("DamageDone", pg)
+  local petSource = petList and #petList > 0
+  if petSource and DB.pet ~= false then MeterSteps("DamageDone", pg, meter.lastPet, false, true, steps) end   -- (1.3.4) your pet's own hits
+  local before = #steps
+  MeterSteps("DamageDone", UnitGUID("player"), meter.last, false, false, steps, petSource)
+  if DB.pet == false then for i = #steps, before + 1, -1 do if steps[i].pet then table.remove(steps, i) end end end
+  MeterSteps("HealingDone", UnitGUID("player"), meter.lastHeal, true, false, steps)
+  -- (1.3.4) the game hid the meter for a while (some fights): the next readable look only catches up, because
+  -- its steps hold many hits added together and would make fake records
+  if meter.fresh then meter.fresh = false; meter.caught = (meter.caught or 0) + 1 return end   -- (1.3.8) a new fight's first look only learns the totals
+  if #steps == 0 then return end
+  -- (1.3.4) each step waits a moment before it's written down: the game's crit flag can come just before or just
+  -- after the meter moves. A flag goes to one step only, the one furthest above its ability's usual hit (a crit lands
+  -- at 1.5x to 2x), and only if it clears that by a good margin.
+  local now = GetTime()
+  for _, st in ipairs(steps) do st.t = now; meter.pending[#meter.pending + 1] = st end
+end
+local function MeterFlush()
+  local now = GetTime()
+  local flags, pending = meter.flags, meter.pending
+  while flags[1] and now - flags[1] > 2 do table.remove(flags, 1) end
+  local ready = {}
+  for i = #pending, 1, -1 do if now - pending[i].t >= 0.3 then table.insert(ready, 1, table.remove(pending, i)) end end
+  if #ready == 0 then return end
+  local order = {}
+  for _, st in ipairs(ready) do
+    local u, solid = Usual(st)
+    st.ratio = u and u > 0 and (st.step / u) or 1.4
+    st.solid = solid
+    order[#order + 1] = st
+  end
+  table.sort(order, function(a, b) return a.ratio > b.ratio end)
+  -- (1.3.5) the crit flag is often hidden on Forever: when none can be read, a crit is spotted by its size alone.
+  -- Crits land at 1.5x (spells) to 2x+ (attacks) of the usual hit; more than 2.6x is two hits added together.
+  -- Auto attack needs 1.8x, because a main hand and off hand hit in the same moment add up to about 1.5x
+  local noFlags = (meter.flagCrit or 0) == 0
+  for _, st in ipairs(order) do
+    if not st.heal and st.ratio >= 1.3 then
+      for k, ft in ipairs(flags) do
+        if math.abs(ft - st.t) <= 0.6 then st.crit = true; table.remove(flags, k); break end
+      end
+      -- (1.3.8) the size alone only decides when the game never shows its crit flag: where it does, two hits added
+      -- together look exactly like one crit, so a big step without a flag is skipped instead
+      local flagsWork = (meter.flagOK or 0) > 0
+      if not st.crit and st.solid and st.ratio <= 2.6 and not flagsWork then
+        local need = (st.id == 6603) and 1.8 or 1.4
+        if st.ratio >= need then st.crit = true; meter.bySize = (meter.bySize or 0) + 1 end
+      end
+      if not st.crit and flagsWork and st.ratio >= 1.5 then st.unsure = true end
+    end
+  end
+  local target
+  pcall(function() target = UnitName("target") end)
+  meter.samples = meter.samples or {}
+  meter.log = meter.log or {}
+  for _, st in ipairs(ready) do
+    local key = (st.pet and "pet:" or "") .. (st.heal and "heal:" or "") .. st.name
+    local note
+    if not st.heal and not st.solid then
+      -- (1.3.6) a fresh ability: its first plain hits only teach its usual size. Records start once it's known,
+      -- so a first look that added several hits together can't sit in Best Hit
+      local l = meter.samples[key] or {}
+      meter.samples[key] = l
+      l[#l + 1] = st.step
+      if #l > 25 then table.remove(l, 1) end
+      note = "learning"
+    elseif not st.heal and (st.ratio > 2.6 or st.unsure) then
+      -- (1.3.6) far above any crit: the meter added several hits together (it updates in bursts in dungeons)
+      meter.batch = (meter.batch or 0) + 1
+      note = "skipped, several hits at once"
+    else
+      Record(st.name, st.id, st.step, st.crit, st.heal, st.pet, (not st.heal) and target or nil)
+      note = st.crit and "CRIT" or "hit"
+    end
+    table.insert(meter.log, string.format("%s %d (x%.1f) %s", st.name, st.step, st.ratio or 0, note))
+    if #meter.log > 10 then table.remove(meter.log, 1) end
+  end
+end
+local function MeterStart()
+  if meter.started or not C_DamageMeter then return end
+  meter.started = true
+  -- the totals so far this fight count as already seen, so a /reload mid-fight doesn't make one giant "hit"
+  pcall(function()   -- (1.3.7) the same adding-up as every look after
+    MeterSteps("DamageDone", UnitGUID("player"), meter.last, false, false, {})
+    MeterSteps("HealingDone", UnitGUID("player"), meter.lastHeal, true, false, {})
+    if UnitGUID("pet") then MeterSteps("DamageDone", UnitGUID("pet"), meter.lastPet, false, true, {}) end
+  end)
+  local f, acc = CreateFrame("Frame"), 0
+  f:SetScript("OnUpdate", function(_, el)
+    acc = acc + el
+    if acc < 0.1 then return end
+    acc = 0
+    pcall(MeterTick)
+    pcall(MeterFlush)
+  end)
+end
+ns.meter = meter
 local function WatchFeed()
+  pcall(MeterStart)
   pcall(HookChat)
   if not feed.RegisterUnitEvent then return end
   pcall(feed.RegisterUnitEvent, feed, "UNIT_COMBAT", "target", "player")
@@ -603,6 +834,25 @@ ev:SetScript("OnEvent", function(_, e, a1)
     CritTrackerChar = CritTrackerChar or {}
     CritTrackerChar.records = CritTrackerChar.records or {}
     REC = CritTrackerChar.records
+    -- (1.3.4) 1.3.3 made rows with only a count and no numbers: those go
+    for k, r in pairs(REC) do if type(r) == "table" and not (r.crit or r.hit) then REC[k] = nil end end
+    -- (1.3.6) the damage meter added several hits together in dungeons: damage rows start over once more
+    if not CritTrackerChar.fix138 then   -- (1.3.8) several hits added together got through: damage records start over
+      CritTrackerChar.fix138, CritTrackerChar.fix137, CritTrackerChar.fix136, CritTrackerChar.fix135 = true, true, true, true
+      for k, r in pairs(REC) do if type(r) == "table" and not r.heal then REC[k] = nil end end
+    end
+    if not CritTrackerChar.fix136 then
+      CritTrackerChar.fix136, CritTrackerChar.fix135 = true, true
+      for k, r in pairs(REC) do if type(r) == "table" and not r.heal then REC[k] = nil end end
+    end
+    -- (1.3.5) damage rows with no crit ever had their crits land in Best Hit: that column starts over for them
+    if not CritTrackerChar.fix135 then
+      CritTrackerChar.fix135 = true
+      for k, r in pairs(REC) do
+        if type(r) == "table" and not r.heal and not r.crit and r.hit then r.hit, r.hsum, r.hn, r.hl = nil, nil, nil, nil; r.uses, r.crits = 0, 0 end
+        if type(r) == "table" and not (r.crit or r.hit) then REC[k] = nil end
+      end
+    end
   elseif e == "PLAYER_LOGIN" then
     me, pet = UnitGUID("player"), UnitGUID("pet")
     pcall(MinimapButton)
@@ -633,6 +883,13 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() Toggle() end },
   },
   notes = {
+    { v = "1.3.9", "Records work again for hunters and anyone whose pet or a single ability is hidden by the game: one hidden line used to stop every record. Now only that line waits, and everything else is counted" },
+    { v = "1.3.8", "Best Hit and Best Crit stop picking up several hits added together (like Melee 1,746 at level 26). A mob leaving the meter no longer counts as one giant hit, a new fight's first look only learns, and a big jump only counts as a crit when the game says it crit. Damage records start over once more" },
+    { v = "1.3.7", "Fixed false crits (like Melee 145 over and over): the damage meter lists an ability once per mob it hit, and those lines were read as hits. They're added up first now. Your pet's share of a shared line is split off too. Damage records start over once more to clear the false ones" },
+    { v = "1.3.6", "Best Hit no longer shows several hits added together. In dungeons the damage meter can add up a few hits at once: Crit Tracker now learns each ability's usual hit before writing records, and skips anything far above a crit. Damage records start over once so the wrong ones are gone" },
+    { v = "1.3.5", "Best Crit fills in again. Forever often hides whether a hit was a crit, so Crit Tracker now also spots crits by size: a hit well above that ability's usual hit is a crit. Damage rows that never got a crit start their Best Hit over, since their crits had landed there" },
+    { v = "1.3.4", "Real numbers are back: Crit Tracker now reads your hits from the game's own damage meter, so Best Crit and Best Hit show the actual size of each hit again. The rows from 1.3.3 that only had a count are cleared" },
+    { v = "1.3.3", "Your hits and crits count again, even though Forever hides how big they are from addons: an ability with no known size shows how often it crits and how many times you used it" },
     { v = "1.3.2", "Records come in again: the game hides the damage amount from addons, so Crit Tracker now reads your hits and crits from the combat log lines in chat, like Crit Numbers does" },
     { v = "1.3.1", "Records keep coming in: since 1.2.1 a hit with any detail hidden by the game was skipped whole, even when its damage could be read" },
     { v = "1.3.0", "New: whisper your records to a friend. Type /crittracker whisper Name, and every time you beat one of your best crits they get a whisper with the new number. /crittracker whisper off stops it" },
@@ -721,9 +978,53 @@ SlashCmdList.CRITTRACKER = function(msg)
     end
   elseif cmd == "off" then
     DB.off = not DB.off or nil; Say(DB.off and "turned off" or "turned on")
+  elseif cmd == "dm" then
+    -- (1.3.3) what the game's own damage meter hands addons: a short look, for fixing records on Forever
+    local DM = C_DamageMeter
+    if not DM then print("Crit Tracker: no damage meter in this game") return end
+    local lines = 0
+    local function out(t) lines = lines + 1; if lines <= 60 then print(t) end end
+    local function show(v)
+      if issecretvalue(v) then return "SECRET" end
+      if type(v) == "string" then return '"' .. v:sub(1, 30) .. '"' end
+      return tostring(v)
+    end
+    local function dump(v, pad, depth)
+      if issecretvalue(v) then out(pad .. "SECRET table") return end
+      if type(v) ~= "table" then out(pad .. show(v)) return end
+      local n = 0
+      for k, x in pairs(v) do
+        n = n + 1
+        if n > 8 then out(pad .. "...") break end
+        if type(x) == "table" and not issecretvalue(x) and depth < 4 then out(pad .. tostring(k) .. " = {"); dump(x, pad .. "  ", depth + 1)
+        else out(pad .. tostring(k) .. " = " .. show(x)) end
+      end
+    end
+    out("|cffffd100Crit Tracker: damage meter|r available " .. show(DM.IsDamageMeterAvailable and select(2, pcall(DM.IsDamageMeterAvailable))))
+    for _, e in ipairs({ "DamageMeterSessionType", "DamageMeterType" }) do
+      local t = Enum and Enum[e]
+      local parts = {}
+      for k, v in pairs(t or {}) do parts[#parts + 1] = k .. "=" .. tostring(v) end
+      out(e .. ": " .. table.concat(parts, " "))
+    end
+    local guid = UnitGUID("player")
+    local st = Enum and Enum.DamageMeterSessionType
+    local mt = Enum and Enum.DamageMeterType
+    local sess = st and (st.Current or st.Overall) or 1
+    local dmg = mt and (mt.DamageDone or 0) or 0
+    local ok, src = pcall(DM.GetCombatSessionSourceFromType, sess, dmg, guid)
+    out("your damage (session " .. tostring(sess) .. ", type " .. tostring(dmg) .. "): " .. (ok and "" or ("error " .. tostring(src))))
+    if ok then dump(src, "  ", 1) end
+    if lines > 60 then print("(" .. (lines - 60) .. " more lines cut)") end
   elseif cmd == "debug" then
+    local sample = feedSeen.sample   -- before this readout's own lines replace it
     print("|cffffd100Crit Tracker debug|r")
+    print("  damage meter: readings " .. meter.ok .. ", hidden " .. meter.hidden .. ", catch-ups " .. (meter.caught or 0) .. ", running " .. tostring(meter.started or false))
+    print("  meter steps skipped as several hits at once: " .. (meter.batch or 0) .. ", after a hidden look: " .. (meter.gapSkip or 0))
+    for _, l in ipairs(meter.log or {}) do print("    step: " .. l) end
+    print("  crit flags: readable " .. (meter.flagOK or 0) .. ", hidden " .. (meter.flagHidden or 0) .. ", crits flagged " .. (meter.flagCrit or 0) .. ", crits by size " .. (meter.bySize or 0))
     print("  combat log lines read " .. (feedSeen.chat or 0) .. (feedSeen.last and (", last " .. feedSeen.last) or ""))
+    print("  last combat line seen: " .. tostring(sample))
     print("  target feed: events " .. feedSeen.events .. ", hits counted " .. feedSeen.hits .. ", crits " .. feedSeen.crits .. ", hidden " .. feedSeen.hidden .. ", skipped " .. (feedSeen.skipped or 0))
     print("  auto shot on " .. tostring(AutoRepeat(75)) .. ", melee on " .. tostring(Meleeing()) .. ", in group " .. tostring(IsInGroup and IsInGroup() or false))
     print("  last cast: " .. tostring(cast.name) .. " (counts as damage " .. tostring(cast.harm) .. ")")

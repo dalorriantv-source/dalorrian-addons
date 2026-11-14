@@ -80,4 +80,6 @@ ns.LOCALES.zhTW = function() return {
   ["Move It locks again by itself when you close the settings window"] = "關閉設定視窗時，移動會自動重新鎖定",
   ["The loot window no longer flashes open for a moment while looting"] = "拾取時拾取視窗不再閃現一下",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
+  ["The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes"] = "地城中拾取視窗不再在擲骰旁打開：擲骰進行時，屍體上剩下的物品就是正在擲骰的物品，視窗會關閉",
+  ["The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left"] = "擲骰時拾取視窗真的不會再出現：達到隊伍拾取品質的物品視為正在擲骰，只剩這些物品時視窗會關閉",
 } end

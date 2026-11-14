@@ -116,8 +116,13 @@ local function Open(chat)
   local lines = {}
   local n = chat:GetNumMessages()
   for i = math.max(1, n - ((DB and DB.lines) or 500) + 1), n do
-    local text = chat:GetMessageInfo(i)
-    lines[#lines + 1] = Plain(text)
+    -- (1.2.3) in dungeons the game hides some chat lines from addons: those read as hidden, the rest still copy
+    local ok, line = pcall(function()
+      local text = chat:GetMessageInfo(i)
+      if issecretvalue(text) then return nil end
+      return Plain(text)
+    end)
+    lines[#lines + 1] = (ok and line) or "(line hidden by the game)"
   end
   local full = table.concat(lines, "\n")
   local name = chat.name or (chat.GetName and _G[chat:GetName() .. "Tab"] and _G[chat:GetName() .. "Tab"]:GetText()) or "Chat"
@@ -252,6 +257,7 @@ local function ShowURL(url)
   box.eb:HighlightText()
 end
 local function Filter(_, _, msg, ...)
+  if issecretvalue(msg) then return end   -- (1.2.3) a line the game hides: never touched, so chat isn't tainted
   local ok, new = pcall(Linkify, msg)   -- some chat text can't be read by addons: leave it as it is
   if ok and new ~= msg then return false, new, ... end
 end
@@ -327,6 +333,7 @@ ns.HelpConfig = {
       get = function() return DB.lines or 500 end, set = function(v) DB.lines = v end },
   },
   notes = {
+    { v = "1.2.3", "Copying chat works in dungeons: lines the game hides from addons show as (line hidden by the game) and the rest copy as usual" },
     { v = "1.2.2", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.2.1", "Fixed \"blocked action\" errors when pressing Esc or logging out. Clicked links now open in Chat Copy's own box" },
     { v = "1.2.0", "Web links in chat turn gold and clickable: a click opens a small box with the link ready to copy" },

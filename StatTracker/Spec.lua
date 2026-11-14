@@ -185,3 +185,130 @@ function ns.StatText(stats, w)
   end
   return table.concat(out, "\n")   -- (1.1.0) one stat per line, so they stack neatly beside the slot
 end
+
+---------------------------------------------------------------------------
+-- (1.3.0) enchants: the game leaves them out of an item's own stats, so they're read from the item's tooltip
+---------------------------------------------------------------------------
+-- the stat names, in English and in your game's language, to their short keys
+local ENCH_WORDS = {
+  ["agility"] = "AGI", ["strength"] = "STR", ["stamina"] = "STA", ["intellect"] = "INT", ["spirit"] = "SPI",
+  ["attack power"] = "AP", ["ranged attack power"] = "RAP", ["spell power"] = "SP", ["spell damage"] = "SP",
+  ["damage and healing spells"] = "SP", ["healing"] = "HEAL", ["healing spells"] = "HEAL", ["defense"] = "DEF",
+  ["dodge"] = "DODGE", ["parry"] = "PARRY", ["block"] = "BLOCK", ["haste"] = "HASTE", ["hit"] = "HIT", ["critical strike"] = "CRIT",
+  ["mana every 5 seconds"] = "MP5", ["mana per 5 sec."] = "MP5", ["mana regen"] = "MP5", ["all stats"] = "ALL",
+  ["armor"] = "ARMOR", ["health"] = "HP", ["mana"] = "MANA",
+}
+for k, v in pairs({ STRENGTH = "STR", AGILITY = "AGI", STAMINA = "STA", INTELLECT = "INT", SPIRIT = "SPI" }) do
+  local g = _G["ITEM_MOD_" .. k .. "_SHORT"] or _G["SPELL_STAT" .. ({ STR = 1, AGI = 2, STA = 3, INT = 4, SPI = 5 })[v] .. "_NAME"]
+  if type(g) == "string" and g ~= "" then ENCH_WORDS[g:lower()] = v end
+end
+SHORT.ALL = "All Stats"; SHORT.ARMOR = "Armor"; SHORT.HP = "Health"; SHORT.MANA = "Mana"
+
+local function EnchantLine(slot)
+  if not (C_TooltipInfo and C_TooltipInfo.GetInventoryItem) then return nil end
+  local ok, data = pcall(C_TooltipInfo.GetInventoryItem, "player", slot)
+  if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
+  local ET = Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.ItemEnchantmentPermanent
+  local prefix = type(ENCHANTED_TOOLTIP_LINE) == "string" and ENCHANTED_TOOLTIP_LINE:match("^(.-)%%s") or "Enchanted: "
+  for i, l in ipairs(data.lines) do
+    local t = l.leftText
+    if i > 1 and type(t) == "string" and not issecretvalue(t) and t ~= "" then
+      if (ET and l.type == ET) then return (t:gsub("^" .. prefix:gsub("%p", "%%%0"), "")) end
+      if prefix ~= "" and t:sub(1, #prefix) == prefix then return t:sub(#prefix + 1) end
+      -- older tooltips: the enchant is the green "+7 Agility" line (green lines that start with Equip/Use are the item's own)
+      local c = l.leftColor
+      if c and type(c.r) == "number" and c.g > 0.9 and c.r < 0.3 and c.b < 0.3 and t:find("^%+%d") then return t end
+    end
+  end
+end
+
+-- (1.3.0) every WoW: Forever enchant by the name the game may show, per slot, with what it does (short).
+-- Slots: 2 neck, 15 back, 5 chest, 9 wrist, 10 hands, 8 feet, 16 main hand (one-hand and two-hand), 17 off hand / shield.
+local FOREVER = {
+  [2] = { ["agility"] = { "+5 Agi", { AGI = 5 } }, ["deflection"] = { "+5 Def", { DEF = 5 } }, ["strength"] = { "+5 Str", { STR = 5 } },
+    ["spell power"] = { "+6 SP", { SP = 6 } }, ["healing power"] = { "+11 Heal +4 SP", { HEAL = 11, SP = 4 } } },
+  [15] = { ["greater resistance"] = { "+5 All Res" }, ["superior defense"] = { "+70 Armor", { ARMOR = 70 } }, ["superior defence"] = { "+70 Armor", { ARMOR = 70 } },
+    ["agility"] = { "+5 Agi", { AGI = 5 } }, ["dodge"] = { "+1% Dodge", { DODGE = 1 } }, ["greater fire resistance"] = { "+15 Fire Res" },
+    ["greater nature resistance"] = { "+15 Nature Res" }, ["stealth"] = { "+1 Stealth" }, ["subtlety"] = { "-2% Threat" } },
+  [5] = { ["absorption"] = { "Absorb 50" }, ["major stamina"] = { "+10 Sta", { STA = 10 } }, ["major intellect"] = { "+10 Int", { INT = 10 } },
+    ["greater stats"] = { "+4 All Stats", { STR = 4, AGI = 4, STA = 4, INT = 4, SPI = 4 } } },
+  [9] = { ["mana regeneration"] = { "+4 MP5", { MP5 = 4 } }, ["superior agility"] = { "+9 Agi", { AGI = 9 } }, ["superior strength"] = { "+9 Str", { STR = 9 } },
+    ["greater spellpower"] = { "+16 SP", { SP = 16 } }, ["greater spell power"] = { "+16 SP", { SP = 16 } }, ["healing power"] = { "+24 Heal +8 SP", { HEAL = 24, SP = 8 } },
+    ["superior deflection"] = { "+4 Def", { DEF = 4 } }, ["superior intellect"] = { "+9 Int", { INT = 9 } }, ["superior stamina"] = { "+9 Sta", { STA = 9 } } },
+  [10] = { ["advanced mining"] = { "+5 Mining" }, ["advanced herbalism"] = { "+5 Herbalism" }, ["advanced skinning"] = { "+10 Skinning" },
+    ["minor haste"] = { "+1% Haste", { HASTE = 1 } }, ["riding skill"] = { "Mount Speed" }, ["lotus claw"] = { "Death Lotus" },
+    ["arcane power"] = { "+20 Arcane" }, ["fire power"] = { "+20 Fire" }, ["frost power"] = { "+20 Frost" }, ["holy power"] = { "+20 Holy" },
+    ["natural power"] = { "+20 Nature" }, ["nature power"] = { "+20 Nature" }, ["shadow power"] = { "+20 Shadow" },
+    ["healing power"] = { "+35 Heal +12 SP", { HEAL = 35, SP = 12 } }, ["superior strength"] = { "+15 Str", { STR = 15 } },
+    ["superior agility"] = { "+15 Agi", { AGI = 15 } }, ["threat"] = { "+2% Threat" } },
+  [8] = { ["minor speed"] = { "Run Speed" }, ["greater stamina"] = { "+7 Sta", { STA = 7 } }, ["spirit"] = { "+5 Spi", { SPI = 5 } },
+    ["greater agility"] = { "+7 Agi", { AGI = 7 } } },
+  [16] = { ["insight"] = { "Insight" }, ["recovery"] = { "Recovery" }, ["revelation"] = { "Revelation" }, ["lesser beastslayer"] = { "Beastslayer" },
+    ["lesser elemental slayer"] = { "Elemental Slayer" }, ["winter's might"] = { "+15 Frost" }, ["demonslaying"] = { "Demonslaying" },
+    ["fiery weapon"] = { "Fiery" }, ["icy chill"] = { "Icy Chill" }, ["unholy weapon"] = { "Unholy" }, ["crusader"] = { "Crusader" },
+    ["lifestealing"] = { "Lifestealing" }, ["mighty intellect"] = { "+22 Int", { INT = 22 } }, ["mighty spirit"] = { "+22 Spi", { SPI = 22 } },
+    ["spell power"] = { "+30 SP", { SP = 30 } }, ["superior striking"] = { "+5 Dmg" }, ["healing power"] = { "+55 Heal +19 SP", { HEAL = 55, SP = 19 } },
+    ["agility"] = { "+15 Agi", { AGI = 15 } }, ["strength"] = { "+15 Str", { STR = 15 } },
+    -- two-handers (the same names on a two-hander are bigger: handled in EnchantInfo)
+    ["superior impact"] = { "+9 Dmg" }, ["major intellect"] = { "+9 Int", { INT = 9 } }, ["major spirit"] = { "+9 Spi", { SPI = 9 } },
+    ["mighty healing power"] = { "+100 Heal +34 SP", { HEAL = 100, SP = 34 } }, ["mighty spell power"] = { "+55 SP", { SP = 55 } },
+    ["spellblasting"] = { "+65 SP", { SP = 65 } } },
+  [17] = { ["superior spirit"] = { "+9 Spi", { SPI = 9 } }, ["critical strike"] = { "+1% Crit", { CRIT = 1 } }, ["excellent stamina"] = { "+12 Sta", { STA = 12 } },
+    ["excellent spirit"] = { "+12 Spi", { SPI = 12 } }, ["superior intellect"] = { "+9 Int", { INT = 9 } }, ["wisdom"] = { "+6 Int +5 Spi", { INT = 6, SPI = 5 } } },
+}
+local TWO_HAND = { ["strength"] = { "+25 Str", { STR = 25 } }, ["agility"] = { "+25 Agi", { AGI = 25 } } }
+ns.FOREVER_ENCHANTS = FOREVER
+
+local function IsTwoHand(slot)
+  if slot ~= 16 then return false end
+  local link = GetInventoryItemLink and GetInventoryItemLink("player", 16)
+  if not link or issecretvalue(link) then return false end
+  local f = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+  local ok, _, _, _, _, _, _, _, _, equip = pcall(f, link)
+  return ok and equip == "INVTYPE_2HWEAPON"
+end
+
+-- { stats = { AGI = 7 }, text = "+7 Agi" } or { text = "Crusader" } or nil
+function ns.EnchantInfo(slot)
+  local line = EnchantLine(slot)
+  if not line then return nil end
+  -- a Forever enchant the game shows by name ("Healing Power", "Greater Stats"): use what it really does on this slot
+  local key = line:lower():gsub("^enchant [%a%- ]+ %- ", ""):gsub("%s+$", ""):gsub("\226\128\153", "'")
+  local known = (IsTwoHand(slot) and TWO_HAND[key]) or (FOREVER[slot] and FOREVER[slot][key])
+  if not known and slot == 16 then known = FOREVER[17][key] end
+  if known then
+    local st = {}
+    for k, v in pairs(known[2] or {}) do st[k] = v end
+    local txt = known[1]:gsub("(%a[%a ]*)", function(w) return ns.Tr and ns.Tr(w) or w end)
+    return { stats = st, text = txt }
+  end
+  local stats, parts = {}, {}
+  -- "+1% Dodge", "+15 Fire Resistance", "Healing +24"
+  for pct, name in line:gmatch("%+(%d+)%%%s+([^,%+]+)") do
+    name = name:gsub("%s+$", ""):gsub("%.$", ""):gsub(" and$", "")
+    parts[#parts + 1] = "+" .. pct .. "% " .. name
+  end
+  local nameFirst = false
+  for name, n in line:gmatch("(%a[%a ]-)%s+%+(%d+)") do
+    name = name:gsub("^and ", ""):gsub("^[Ss]pell [Dd]amage$", "spell damage")
+    local k = ENCH_WORDS[name:lower()]
+    if k then nameFirst = true; stats[k] = (stats[k] or 0) + tonumber(n); parts[#parts + 1] = "+" .. n .. " " .. (ns.Tr and ns.Tr(SHORT[k] or k) or SHORT[k] or k) end
+  end
+  for n, name in (nameFirst and "" or line):gmatch("%+(%d+)%s+([^,%+%%]+)") do
+    local raw = name:gsub("%s+$", ""):gsub("%.$", ""):gsub(" and$", "")
+    name = name:gsub("%s+$", ""):gsub("%.$", ""):lower()
+    local key = ENCH_WORDS[name]
+    if not key then for w, k in pairs(ENCH_WORDS) do if name:find(w, 1, true) then key = k; break end end end
+    if key then
+      stats[key] = (stats[key] or 0) + tonumber(n)
+      parts[#parts + 1] = "+" .. n .. " " .. (ns.Tr and ns.Tr(SHORT[key] or key) or SHORT[key] or key)
+    else
+      -- resistances, weapon damage, skills: keep the game's words, shortened
+      local short = raw:gsub("[Rr]esistances?", "Res"):gsub("[Ww]eapon [Dd]amage", "Dmg"):gsub("^[Dd]amage$", "Dmg"):gsub("[Ss]pell [Dd]amage", "SP")
+      parts[#parts + 1] = "+" .. n .. " " .. short
+    end
+  end
+  local text = #parts > 0 and table.concat(parts, " ") or line
+  if #text > 18 then text = text:sub(1, 17) .. "." end
+  return { stats = stats, text = text }
+end

@@ -120,4 +120,5 @@ ns.LOCALES.zhTW = function() return {
   ["Fixed a memory leak: saved item names are cleared once none of your characters has that item"] = "修正了記憶體洩漏：當你的角色都不再擁有某件物品時，會清除其儲存的物品名稱",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地城和團隊副本中不再報錯。WoW: Forever 會在那裡對插件隱藏部分資訊，本插件現在會默默略過它們",
   ["More dungeon and raid fixes: a few more details the game hides there (like whether someone is away) are now skipped quietly instead of causing errors"] = "更多地城和團隊副本修復：遊戲在那裡隱藏的更多資訊（例如某人是否暫離）現在會被默默略過，不再報錯",
+  ["Rested XP on characters you're not logged into is closer to the real number. Each time you log in, Alt Ledger checks its estimate against the game's real rested XP and learns the true rate (inns and the wild separately), and where you logged out is no longer misread while logging off"] = "未登入角色的休息經驗更接近真實數值。每次登入時，Alt Ledger 會把估算與遊戲裡真實的休息經驗對比，學習真實的增長速度（旅店和野外分開計算），並且下線時不會再讀錯你下線的位置",
 } end

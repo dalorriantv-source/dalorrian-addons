@@ -82,4 +82,7 @@ ns.LOCALES.zhCN = function() return {
   ["Naming a new setup uses Chat Saver's own box, so it can't cause \"blocked action\" errors when you log out"] = "为新设置命名改用 Chat Saver 自己的框，登出时不会再出现“操作被阻止”错误",
   ["The Delete button is red, so it's hard to hit by mistake"] = "删除按钮变成红色，不容易误点",
   ["Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them"] = "在地下城和团队副本中不再报错。WoW: Forever 会在那里对插件隐藏部分信息，本插件现在会默默跳过它们",
+  ["Keep Channel Colors"] = "保持频道颜色",
+  ["On"] = "开",
+  ["Off"] = "关",
 } end

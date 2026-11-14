@@ -1,0 +1,34 @@
+## Interface: 16001
+## Title: Dalorrian's Accents
+## Notes: Talk like an Orc, a Dwarf, a Pirate and dozens more. Unlock accents, earn ranks and awards. /accents
+## Author: Dalorrian
+## Version: 1.0.0
+## IconTexture: Interface\Icons\Spell_Shadow_SoothingKiss
+## AddonCompartmentFunc: Accents_OnCompartmentClick
+## SavedVariables: AccentsDB, Accents_Lang
+## SavedVariablesPerCharacter: AccentsCharDB
+
+Lang.lua
+Locales\deDE.lua
+Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\ptBR.lua
+Locales\itIT.lua
+Locales\ruRU.lua
+Locales\koKR.lua
+Locales\zhCN.lua
+Locales\zhTW.lua
+Help.lua
+Engine.lua
+Lexicon.lua
+Data\Races.lua
+Data\Skyborne.lua
+Data\More.lua
+Data\Banks.lua
+Data\Habits.lua
+Data\Swears.lua
+Data\Secret.lua
+Core.lua
+Unlocks.lua
+UI.lua
