@@ -600,8 +600,12 @@ ns.SecretStart = function()
 end
 
 -- reading the roll results from chat: who rolled what, who won
+-- (1.4.4) WoW: Forever starts roll lines with a loot history link ("|HlootHistory:%d|h[Loot]|h: Bob won: ...").
+-- Its number would be read as the player, so it's taken off the format and off each line. Thanks Zeroge
+local function NoHistory(s) return (s:gsub("^|H[^|]*|h%[.-%]|h:%s*", "")) end
 local function Pattern(fmt)
   if type(fmt) ~= "string" then return end
+  fmt = NoHistory(fmt)
   local order, n = {}, 0
   local p = fmt:gsub("%%(%d?)%$?([sd])", function(pos, kind)
     n = n + 1
@@ -673,7 +677,8 @@ local function Selected(msg)
 end
 local function OnRollChat(msg)
   if type(msg) == "string" then ns.dbg.chat = ns.dbg.chat + 1 end
-  if not DB.winner or type(msg) ~= "string" then return end
+  if not DB.winner or type(msg) ~= "string" or issecretvalue(msg) then return end
+  msg = NoHistory(msg)
   do
     local who, it, kind = Selected(msg)
     if who and not who:find("^You") then
@@ -967,6 +972,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.LOOTROLLS("test") end },
   },
   notes = {
+    { v = "1.4.4", "Winners and everyone's rolls read right on WoW: Forever: its roll lines start with a loot history link, which made the addon read a number as the player. Thanks Zeroge for the find" },
     { v = "1.4.3", "Every box shows Need or Greed for each player, read from the game's has selected lines. Names in the boxes are smaller so more of them fits, and your winning box just says WON" },
     { v = "1.4.2", "Roll numbers show up now: WoW: Forever writes its roll lines a little differently from the game's usual wording, so Loot Rolls couldn't read anyone's roll. It reads both now" },
     { v = "1.4.1", "Roll boxes are bigger and easier to read, and your own roll stays up next to the winner's, each with Need or Greed" },

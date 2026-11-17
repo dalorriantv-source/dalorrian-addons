@@ -85,4 +85,5 @@ ns.LOCALES.itIT = function() return {
   ["Keep Channel Colors"] = "Mantieni colori canali",
   ["On"] = "Sì",
   ["Off"] = "No",
+  ["Keep Channel Order"] = "Mantieni ordine canali",
 } end

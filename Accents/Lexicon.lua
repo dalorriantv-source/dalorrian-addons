@@ -38,7 +38,7 @@ E.LEXICON = {
   funny = "funny hilarious",
   stupid = "stupid dumb silly dumbest",
   smart = "smart clever wise genius",
-  crazy = "crazy insane nuts wild bonkers mad",
+  crazy = "crazy insane nuts wild bonkers",   -- (1.4.3) not "mad": "he's mad at me" means angry
   scary = "scary creepy spooky terrifying",
   tired = "tired sleepy exhausted",
   hungry = "hungry starving famished",
@@ -192,7 +192,7 @@ E.LEXICON = {
   finally = "finally", almost = "almost nearly", together = "together", whole = "whole entire",
   nobody = "nobody", anybody = "anybody anyone", ready = "ready", late = "late", early = "early",
   minute = "minute sec", minutes = "minutes mins", hour = "hour", hours = "hours",
-  annoyed = "annoyed irritated", scared = "scared afraid", sick = "sick ill",
+  annoyed = "annoyed irritated", scared = "scared afraid", sick = "sick",
   -- from real guild chat
   swear = "shit crap", swearing = "fucking freaking frickin effing", sucks = "sucks", kinda = "kinda sorta",
   hope = "hope", ding = "ding", disconnected = "dc'd dced dc'ed disconnected", kicked = "kicked booted",
@@ -214,7 +214,7 @@ E.LEXICON = {
   wow = "wow whoa omg",
   lol = "lol lmao haha hahaha hehe rofl lul xd",
   ugh = "ugh meh",
-  but = "but though however",
+  but = "but however",   -- (1.4.2) not "though": "it's funny though" means something else
   because = "because cause cuz",
   so = "therefore",
   ["and"] = "and",

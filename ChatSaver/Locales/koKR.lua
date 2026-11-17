@@ -86,4 +86,5 @@ ns.LOCALES.koKR = function() return {
   ["Keep Channel Colors"] = "채널 색상 유지",
   ["On"] = "켬",
   ["Off"] = "끔",
+  ["Keep Channel Order"] = "채널 순서 유지",
 } end

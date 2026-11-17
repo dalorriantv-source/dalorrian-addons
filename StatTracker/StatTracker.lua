@@ -777,6 +777,8 @@ ns.HelpConfig = {
       get = function() return DB.ench ~= false end, set = function(v) DB.ench = v; Paint() end },
   },
   notes = {
+    { v = "1.3.2", "Enchants read from the item's own tooltip text, so they show on WoW: Forever" },
+    { v = "1.3.1", "Enchants show on more gear: named ones like Crusader or Healing Power, and on game versions where the old way found nothing. Type /stats ench to see what it reads on each slot" },
     { v = "1.3.0", "Enchants now show on your character window: each enchanted slot gets one extra line in light blue under its stats, like +7 Agi or Crusader. Turn it off in Settings with Enchants On Character Window" },
     { v = "1.2.4", "The stats panel only opens with the Character tab now, not with Honor (H), Reputation, Skills or the other tabs of the same window" },
     { v = "1.2.3", "Zooming out keeps working after you press the reset button on your character window" },
@@ -854,6 +856,18 @@ SlashCmdList.STATTRACKER = function(msg)
   local cmd = (msg or ""):lower():match("^(%S*)")
   if cmd == "" or cmd == "show" then
     Toggle()
+  elseif cmd == "ench" or cmd == "enchants" then
+    -- (1.3.1) what the addon reads as the enchant on each slot, and the green lines it saw
+    for _, sl in ipairs({ 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 }) do
+      if GetInventoryItemLink("player", sl) then
+        local e = ns.EnchantLine and ns.EnchantLine(sl)
+        local greens = {}
+        for _, l in ipairs(ns.TipLines and ns.TipLines(sl) or {}) do
+          if type(l[3]) == "number" and l[3] > 0.9 and (l[2] or 1) < 0.3 and type(l[1]) == "string" and not issecretvalue(l[1]) then greens[#greens + 1] = l[1] end
+        end
+        P("  slot " .. sl .. ": " .. (e or "-") .. (#greens > 0 and ("   green: " .. table.concat(greens, " | ")) or ""))
+      end
+    end
   elseif cmd == "help" or cmd == "settings" then
     if ns.OpenHelp then ns.OpenHelp() end
   else

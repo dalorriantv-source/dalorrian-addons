@@ -85,4 +85,5 @@ ns.LOCALES.zhCN = function() return {
   ["Keep Channel Colors"] = "保持频道颜色",
   ["On"] = "开",
   ["Off"] = "关",
+  ["Keep Channel Order"] = "保持频道顺序",
 } end

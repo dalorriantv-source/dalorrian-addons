@@ -273,7 +273,15 @@ local function Coin(c)
 end
 local function ShowMoney(copper)
   if DB.off or not DB.money or not copper or copper <= 0 then return end
-  local function coins(c) return "|cffffffff" .. ((GetCoinTextureString and GetCoinTextureString(c)) or (c .. "c")) .. "|r" end
+  -- (1.2.6) our own coin text: "1 [silver] 44 [copper]". Forever's GetCoinTextureString showed "144c"
+  local function coins(c)
+    local g, s, cp = math.floor(c / 10000), math.floor(c / 100) % 100, c % 100
+    local t = {}
+    if g > 0 then t[#t + 1] = g .. "|TInterface\\MoneyFrame\\UI-GoldIcon:0:0:2:0|t" end
+    if s > 0 then t[#t + 1] = s .. "|TInterface\\MoneyFrame\\UI-SilverIcon:0:0:2:0|t" end
+    if cp > 0 or #t == 0 then t[#t + 1] = cp .. "|TInterface\\MoneyFrame\\UI-CopperIcon:0:0:2:0|t" end
+    return "|cffffffff" .. table.concat(t, " ") .. "|r"
+  end
   local k = Coin(copper)
   local l = Push("money", k[4], coins(copper), 1, k[1], k[2], k[3])
   -- more money while the line is still up adds to it
@@ -479,6 +487,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.SCROLLINGLOOT("test") end },
   },
   notes = {
+    { v = "1.2.6", "Money shows each coin: 1 silver 44 copper, not 144c" },
     { v = "1.2.5", "The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left" },
     { v = "1.2.4", "The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes" },
     { v = "1.2.3", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },

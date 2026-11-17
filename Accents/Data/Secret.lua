@@ -21,6 +21,11 @@ ns.AddAccent("godd", {
     local store = ns.DB or ns
     local i = ((store.goddLine or 0) % #LINES) + 1
     store.goddLine = i
+    -- (1.2.0) links you meant to share (items, quests, web links) still go out after the line
+    local keep = {}
+    for l in text:gmatch("|c%x+|H.-|h.-|h|r") do keep[#keep + 1] = l end
+    for u in text:gmatch("https?://%S+") do keep[#keep + 1] = u end
+    if #keep > 0 then return LINES[i] .. " " .. table.concat(keep, " ") end
     return LINES[i]
   end,
 })

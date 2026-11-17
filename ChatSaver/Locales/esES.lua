@@ -85,4 +85,5 @@ ns.LOCALES.esES = function() return {
   ["Keep Channel Colors"] = "Mantener colores de canales",
   ["On"] = "Sí",
   ["Off"] = "No",
+  ["Keep Channel Order"] = "Mantener orden de canales",
 } end

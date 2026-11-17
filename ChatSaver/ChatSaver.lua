@@ -53,6 +53,49 @@ function ns.ChannelColorsNow()
   end
   return out
 end
+-- (1.3.0) your channels in number order: { "General", "Trade", "WorldDefense", "MyGuildChat" }
+function ns.ChannelOrderNow()
+  local rows, list = {}, Pack(GetChannelList())
+  for k = 1, list.n, 3 do
+    local num, name = list[k], list[k + 1]
+    if type(num) == "number" and type(name) == "string" then rows[#rows + 1] = { num, name } end
+  end
+  table.sort(rows, function(x, y) return x[1] < y[1] end)
+  local out = {}
+  for _, r in ipairs(rows) do out[#out + 1] = r[2] end
+  return out
+end
+-- (1.3.0) put your channels back in the saved order. Other addons join their own hidden channels at login and can
+-- grab /1; those slide down below yours. Channels you're not in are skipped. Returns how many moved
+function ns.ApplyChannelOrder(order)
+  if type(order) ~= "table" or #order == 0 then return 0 end
+  local swap = C_ChatInfo and C_ChatInfo.SwapChatChannelsByChannelIndex
+  if type(swap) ~= "function" then return 0 end
+  local moved = 0
+  for _ = 1, 3 do   -- a few passes: a swap can shift things the next one needs
+    local nums = ChannelNumbers()   -- [lower name] = number
+    local slots, want = {}, {}
+    for _, n in pairs(nums) do slots[#slots + 1] = n end
+    table.sort(slots)
+    for _, name in ipairs(order) do if nums[name:lower()] then want[#want + 1] = name:lower() end end
+    -- the extras (an addon's own channel) go after everything you saved, in the order they're in now
+    local saved = {}
+    for _, n in ipairs(want) do saved[n] = true end
+    local byNum = {}
+    for name, n in pairs(nums) do byNum[n] = name end
+    for _, n in ipairs(slots) do if not saved[byNum[n]] then want[#want + 1] = byNum[n] end end
+    local changed = false
+    for i, name in ipairs(want) do
+      local cur = ChannelNumbers()[name]
+      local target = slots[i]
+      if cur and target and cur ~= target then
+        if pcall(swap, target, cur) then moved = moved + 1; changed = true end
+      end
+    end
+    if not changed then break end
+  end
+  return moved
+end
 -- put each channel's color back on whatever number that channel has today
 function ns.ApplyChannelColors(map)
   if type(map) ~= "table" or not ChangeChatColor then return 0 end
@@ -102,6 +145,7 @@ local function Capture()
   -- (1.2.0) channel colors by channel NAME: the game keeps them by channel number, and the numbers move
   -- when channels join in a different order, which is why colors seem to jump around between logins
   s.chanColors = ns.ChannelColorsNow()
+  s.order = ns.ChannelOrderNow()   -- (1.3.0) every channel, in number order
   s.from = UnitName("player") .. " - " .. (GetRealmName() or "")
   s.when = time()
   return s
@@ -187,6 +231,17 @@ local function Apply(s)
       Try("color " .. chatType, ChangeChatColor, chatType, c[1], c[2], c[3])
       if SetChatColorNameByClass then Try("class color " .. chatType, SetChatColorNameByClass, chatType, c[4]) end
     end
+  end
+  -- (1.3.0) channels back in your saved order (older setups only know your own channels: they go after the zone ones)
+  local order = s.order
+  if not order and s.channels then
+    order = {}
+    for _, n in ipairs(ns.ChannelOrderNow()) do if ZONE[n:lower()] then order[#order + 1] = n end end
+    for _, n in ipairs(s.channels) do order[#order + 1] = n end
+  end
+  if order then
+    ns.ApplyChannelOrder(order)
+    if C_Timer then C_Timer.After(2, function() pcall(ns.ApplyChannelOrder, order) end) end
   end
   if s.chanColors then
     ns.ApplyChannelColors(s.chanColors)
@@ -341,6 +396,20 @@ local function KeepColors()
   C_Timer.After(1.5, function() keepPending = false; ns.ApplyChannelColors(setup.chanColors) end)
 end
 ns.KeepColors = KeepColors
+-- (1.3.0) Keep Channel Order: at login, once the other addons have joined their channels, yours go back in order
+local function KeepOrder()
+  if DB.keepOrder == false or not CHAR or not CHAR.loadedName then return end
+  local setup = DB.setups[CHAR.loadedName]
+  if not setup then return end
+  local order = setup.order
+  if not order and setup.channels then
+    order = {}
+    for _, n in ipairs(ns.ChannelOrderNow()) do if ZONE[n:lower()] then order[#order + 1] = n end end
+    for _, n in ipairs(setup.channels) do order[#order + 1] = n end
+  end
+  if order and ns.ApplyChannelOrder(order) > 0 then pcall(KeepColors) end
+end
+ns.KeepOrder = KeepOrder
 ev:SetScript("OnEvent", function(_, e, a1, a2)
   if e == "CHANNEL_UI_UPDATE" or e == "CHAT_MSG_CHANNEL_NOTICE" then pcall(KeepColors) return end
   if AnySecret(a1, a2) then return end   -- (Forever) a hidden value: nothing to do with it
@@ -360,7 +429,11 @@ ev:SetScript("OnEvent", function(_, e, a1, a2)
     CHAR = ChatSaverChar
   elseif e == "PLAYER_ENTERING_WORLD" then
     pcall(MinimapButton)
-    if C_Timer then C_Timer.After(5, function() pcall(KeepColors) end) end
+    if C_Timer then
+      C_Timer.After(5, function() pcall(KeepColors) end)
+      C_Timer.After(8, function() pcall(KeepOrder) end)    -- (1.3.0) after the other addons have joined their channels
+      C_Timer.After(20, function() pcall(KeepOrder) end)
+    end
     if a1 and not CHAR.seen then   -- the first login with this addon on this character
       CHAR.seen = true
       local new = (UnitLevel("player") or 99) <= 5
@@ -391,11 +464,15 @@ ns.HelpConfig = {
     { label = "New Characters Get", cycle = true, choices = autoChoices,
       get = function() return DB.newChar or false end, set = function(v) DB.newChar = v end },
     -- (1.2.0) on by default
+    { label = "Keep Channel Order", choices = { { "On", "on" }, { "Off", "off" } },
+      get = function() return DB.keepOrder == false and "off" or "on" end,
+      set = function(v) DB.keepOrder = (v == "off") and false or nil; if v == "on" then pcall(KeepOrder) end end },
     { label = "Keep Channel Colors", choices = { { "On", "on" }, { "Off", "off" } },
       get = function() return DB.keepColors == false and "off" or "on" end,
       set = function(v) DB.keepColors = (v == "off") and false or nil; if v == "on" then pcall(KeepColors) end end },
   },
   notes = {
+    { v = "1.3.0", "Channel order stays put. Some addons join their own hidden channel at login and grab /1, pushing yours down. Loading a setup now puts your channels back in the order you saved, and anything extra goes after them", "New setting, Keep Channel Order (on by default): every login, a few seconds after the other addons join their channels, yours go back in order", "Save your setup once more after updating so it remembers your full channel order" },
     { v = "1.2.0", "Channel colors stay put. The game remembers colors by channel number, and those numbers change when your channels join in a different order, so colors seemed to jump around. Setups now save each channel's color by its name and put it back on the right channel, even after a relog", "New setting, Keep Channel Colors (on by default): the setup you loaded keeps fixing channel colors whenever the game moves your channels around", "Save your setup once more after updating so it picks up your channel colors by name" },
     { v = "1.1.6", "Works in dungeons and raids without errors. WoW: Forever hides some details from addons there, and this addon now quietly skips them" },
     { v = "1.1.5", "The Delete button is red, so it's hard to hit by mistake" },

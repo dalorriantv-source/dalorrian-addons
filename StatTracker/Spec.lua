@@ -204,23 +204,77 @@ for k, v in pairs({ STRENGTH = "STR", AGILITY = "AGI", STAMINA = "STA", INTELLEC
 end
 SHORT.ALL = "All Stats"; SHORT.ARMOR = "Armor"; SHORT.HP = "Health"; SHORT.MANA = "Mana"
 
-local function EnchantLine(slot)
-  if not (C_TooltipInfo and C_TooltipInfo.GetInventoryItem) then return nil end
+-- (1.3.2) the tooltip's lines for a slot: { text, r, g, b, type }. A hidden game tooltip first (it always has
+-- the text and colors), then C_TooltipInfo, whose lines can come without text on Forever
+local scan
+local function ScanLines(slot)
+  local out = {}
+  if not CreateFrame then return out end
+  local owner = WorldFrame or UIParent
+  if not scan then scan = CreateFrame("GameTooltip", "StatTrackerScanTip", nil, "GameTooltipTemplate") end
+  scan:SetOwner(owner, "ANCHOR_NONE")
+  scan:ClearLines()
+  local ok, has = pcall(scan.SetInventoryItem, scan, "player", slot)
+  if not ok then return out end
+  for i = 1, scan:NumLines() do
+    local fs = _G["StatTrackerScanTipTextLeft" .. i]
+    if fs then
+      local r, g, b = fs:GetTextColor()
+      out[#out + 1] = { fs:GetText(), r, g, b }
+    end
+  end
+  scan:Hide()
+  return out
+end
+local function InfoLines(slot)
+  local out = {}
+  if not (C_TooltipInfo and C_TooltipInfo.GetInventoryItem) then return out end
   local ok, data = pcall(C_TooltipInfo.GetInventoryItem, "player", slot)
-  if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
+  if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return out end
+  for _, l in ipairs(data.lines) do
+    if TooltipUtil and TooltipUtil.SurfaceArgs and l.leftText == nil then pcall(TooltipUtil.SurfaceArgs, l) end
+    local c = l.leftColor
+    out[#out + 1] = { l.leftText, c and c.r, c and c.g, c and c.b, l.type }
+  end
+  return out
+end
+local function HasText(t) for _, l in ipairs(t) do if type(l[1]) == "string" and l[1] ~= "" then return true end end end
+local function TipLines(slot)
+  local t = ScanLines(slot)
+  if HasText(t) then return t end
+  return InfoLines(slot)
+end
+ns.TipLines = TipLines
+
+-- (1.3.1) item effects in green that are the item's own, not an enchant
+local OWN = { "^Equip:", "^Use:", "^Chance on hit:", "^%(" }
+for _, g in ipairs({ ITEM_SPELL_TRIGGER_ONEQUIP, ITEM_SPELL_TRIGGER_ONUSE, ITEM_SPELL_TRIGGER_ONPROC }) do
+  if type(g) == "string" and g ~= "" then OWN[#OWN + 1] = "^" .. g:gsub("%p", "%%%0") end
+end
+local STOP = { "^Durability", "^Requires", "^Classes:", "^Races:" }
+for _, g in ipairs({ DURABILITY_TEMPLATE, ITEM_MIN_LEVEL, ITEM_CLASSES_ALLOWED, ITEM_RACES_ALLOWED }) do
+  if type(g) == "string" and g ~= "" then local p = g:match("^([^%%]+)"); if p and #p > 2 then STOP[#STOP + 1] = "^" .. p:gsub("%p", "%%%0") end end
+end
+local function Any(t, list) for _, p in ipairs(list) do if t:find(p) then return true end end end
+
+local function EnchantLine(slot)
+  local lines = TipLines(slot)
   local ET = Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.ItemEnchantmentPermanent
   local prefix = type(ENCHANTED_TOOLTIP_LINE) == "string" and ENCHANTED_TOOLTIP_LINE:match("^(.-)%%s") or "Enchanted: "
-  for i, l in ipairs(data.lines) do
-    local t = l.leftText
+  for i, l in ipairs(lines) do
+    local t = l[1]
     if i > 1 and type(t) == "string" and not issecretvalue(t) and t ~= "" then
-      if (ET and l.type == ET) then return (t:gsub("^" .. prefix:gsub("%p", "%%%0"), "")) end
+      if ET and l[5] == ET then return (t:gsub("^" .. prefix:gsub("%p", "%%%0"), "")) end
       if prefix ~= "" and t:sub(1, #prefix) == prefix then return t:sub(#prefix + 1) end
-      -- older tooltips: the enchant is the green "+7 Agility" line (green lines that start with Equip/Use are the item's own)
-      local c = l.leftColor
-      if c and type(c.r) == "number" and c.g > 0.9 and c.r < 0.3 and c.b < 0.3 and t:find("^%+%d") then return t end
+      -- Classic tooltips: the enchant is the green line above durability ("+7 Agility", "Crusader", "Healing Power").
+      -- The item's own green lines (Equip:, Use:) come after it, so stop there
+      if Any(t, STOP) then return nil end
+      local r, g, b = l[2], l[3], l[4]
+      if type(g) == "number" and g > 0.9 and r < 0.3 and b < 0.3 and not Any(t, OWN) then return t end
     end
   end
 end
+ns.EnchantLine = EnchantLine
 
 -- (1.3.0) every WoW: Forever enchant by the name the game may show, per slot, with what it does (short).
 -- Slots: 2 neck, 15 back, 5 chest, 9 wrist, 10 hands, 8 feet, 16 main hand (one-hand and two-hand), 17 off hand / shield.
@@ -270,7 +324,8 @@ end
 
 -- { stats = { AGI = 7 }, text = "+7 Agi" } or { text = "Crusader" } or nil
 function ns.EnchantInfo(slot)
-  local line = EnchantLine(slot)
+  local okLine, line = pcall(EnchantLine, slot)
+  if not okLine then line = nil end
   if not line then return nil end
   -- a Forever enchant the game shows by name ("Healing Power", "Greater Stats"): use what it really does on this slot
   local key = line:lower():gsub("^enchant [%a%- ]+ %- ", ""):gsub("%s+$", ""):gsub("\226\128\153", "'")

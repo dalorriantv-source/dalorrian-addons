@@ -86,4 +86,5 @@ ns.LOCALES.ptBR = function() return {
   ["Keep Channel Colors"] = "Manter cores dos canais",
   ["On"] = "Sim",
   ["Off"] = "Não",
+  ["Keep Channel Order"] = "Manter ordem dos canais",
 } end

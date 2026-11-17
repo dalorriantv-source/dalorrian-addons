@@ -82,4 +82,5 @@ ns.LOCALES.deDE = function() return {
   ["Keep Channel Colors"] = "Kanalfarben behalten",
   ["On"] = "An",
   ["Off"] = "Aus",
+  ["Keep Channel Order"] = "Kanalreihenfolge behalten",
 } end

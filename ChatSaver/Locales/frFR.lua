@@ -82,4 +82,5 @@ ns.LOCALES.frFR = function() return {
   ["Keep Channel Colors"] = "Garder les couleurs des canaux",
   ["On"] = "Oui",
   ["Off"] = "Non",
+  ["Keep Channel Order"] = "Garder l'ordre des canaux",
 } end

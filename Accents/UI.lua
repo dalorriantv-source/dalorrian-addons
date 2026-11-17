@@ -210,7 +210,7 @@ local function BuildWindow()
       if not ns.IsUnlocked(self.key) then
         -- locked: no name, no sample, just a nudge
         Tip:AddLine("???", 0.6, 0.6, 0.65)
-        Tip:AddLine(d.secret and Tr("A secret accent. Some things just work.") or Tr("Keep talking to unlock it, or find its secret way in."), 1, 1, 1, true)
+        Tip:AddLine(d.secret and Tr("A secret accent. No hints.") or Tr("Keep talking to unlock it, or find its secret way in."), 1, 1, 1, true)
         Tip:Show()
         return
       end
@@ -264,7 +264,7 @@ local function BuildWindow()
           end
           row.track:Show(); row.fill:Show()
         else
-          if d.secret then row.blurb:SetText(Tr("A secret. Some things just work."))
+          if d.secret then row.blurb:SetText(Tr("A secret."))
           else row.blurb:SetText(string.format(Tr("Unlocks at %d messages (you have %d), or find its secret way"), at or 0, DB.total)) end
           row.rank:SetText(Tr("Locked")); row.prog:SetText("")
           row.track:Hide(); row.fill:Hide()
@@ -559,10 +559,31 @@ ns.HelpConfig = {
       get = function() return ns.DB.unlockAll and true or false end, set = function(v) ns.DB.unlockAll = v or nil; ns.RefreshUI() end },
   },
   notes = {
+    { v = "1.4.5", "Gnome drops its catchphrases: no more \"Fun fact:\" or \"Ooh!\" in front of your lines, and no \"by my math\" in the middle. Its gnome talk stays in the words. Noir and Human lose an odd opener too" },
+    { v = "1.4.4", "Typed without the apostrophe? \"ill go\", \"hell be back\", \"id like\", \"shes here\" and \"itll work\" are read as I'll, he'll, I'd, she's and it'll. \"I'm ill\" and \"hell yeah\" stay as you meant them" },
+    { v = "1.4.3", "Smarter swaps in every accent: words that mean something else in context stay put. \"pretty easy\", \"that was sick\", \"need to drink\", \"home from work\", \"got home\" and \"died so fast\" read right now",
+      "Common phrases are left alone: take it easy, world boss, world buff, world chat, going to bed, play wow" },
+    { v = "1.4.2", "\"wow\" the game stays \"wow\": \"people play wow\" or \"i love wow\" are left alone. Only \"wow!\" said like an exclamation turns into the accent's",
+      "\"though\" at the end of a sentence stays \"though\" (it used to turn into \"but\")" },
+    { v = "1.4.1", "\"Horde\" and \"Alliance\" stay as you wrote them: \"any horde players\" no longer turns into \"any the Horde players\". The same fix for every swap that brought its own \"the\"",
+      "\"In the city\" no longer becomes \"in the Stormwind\", and \"my gear is\" never gets a plural swap" },
+    { v = "1.4.0", "Everyday chat lines for every accent: brb, back, afk, rez, oom, grats, good job, invite and more now come out in character in Skyborne and all the unlockable accents, with a few different lines each",
+      "Four new lines every accent answers: on my way (omw), welcome back (wb), good luck (gl) and asking for a summon",
+      "Cleanup: no more \"my my dear\" or \"a unwanted guest\", the same word never lands twice in a row, and brb works in every accent again" },
+    { v = "1.3.0", "Announcements are one short line now (\"unlocked Pirate, earned Night Owl\"), and your group hears at most one a minute. The full details still pop up on your own screen",
+      "A secret unlock is announced once, not twice" },
+    { v = "1.2.0", "Names stay names: a guildmate called Boss or Killer is never swapped, even when they're not in your group",
+      "Grammar pass on every accent: \"afraid of\", \"leave the group\", \"at night\", \"one more time\" and \"got killed\" all read right now",
+      "Little asides only land after something you wrote, never inside a built-in line",
+      "Very long lines (Murloc!) split into as many messages as it takes, never inside a link, and Godd Howard keeps any link you shared",
+      "Secret unlocks work in more places: any mine, quarry or dig site, any ogre camp, Ratchet, and boss kills the game reports quietly" },
+    { v = "1.1.0", "Skyborne and all 24 unlockable accents got their full word banks: over 100 words each now come out in the accent, so everyday lines sound like Noir, Pirate, Cowboy and the rest, not just greetings and thanks",
+      "Swaps keep the sentence making sense: \"run Deadmines\" and \"going to bed\" stay as they are, and nothing doubles up like \"so so slow\"",
+      "At most one little aside per message, and never one the line already says" },
+    { v = "1.0.1", "The \"tell them about Accents\" prompt only comes up when someone asks how you're talking, in the chat where you were talking. Before, any talk about addons in guild set it off" },
     { v = "1.0.0", "First release. Type normally and your message goes out in an accent, instantly, with no preview step",
-      "8 race accents to start (Orc, Troll, Tauren, Forsaken, Human Noble, Dwarf, Gnome, Night Elf). Yours is picked from your race, and you can switch to any of them",
+      "9 race accents to start (Orc, Troll, Tauren, Forsaken, Human Noble, Dwarf, Gnome, Night Elf, Skyborne). Yours is picked from your race, and you can switch to any of them",
       "24 more to unlock as you talk, from Pirate and Murloc to Raid Boss, Bard, Noir Detective, Cowboy and Sports Announcer. Locked ones show as ??? until you find them, and every one also has a secret way to unlock it early",
-      "And one secret accent. Some things just work",
       "Ranks for every accent and 62 awards, 40 of them hidden. Awards are announced to your group like Questie does, and you pick where in Settings",
       "You choose where it works: say, party, raid, instance, guild, officer, whispers, emotes and general channels",
       "Swear words get a clean swap in each accent's own style (Settings, Swear Words: Swap or Keep)",

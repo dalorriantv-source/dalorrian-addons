@@ -843,7 +843,8 @@ local function PetTick()
   if okS and type(sess) == "table" and not issecretvalue(sess) then
     local sid = sess.sessionID or sess.combatSessionID or sess.id
     if not issecretvalue(sid) and sid ~= nil then
-      if petMeter.sess ~= nil and sid ~= petMeter.sess then wipe(petMeter.last) end
+      -- (1.4.21) out of combat a new session only learns where the totals stand (it showed whole-fight totals as hits)
+      if petMeter.sess ~= nil and sid ~= petMeter.sess then wipe(petMeter.last); if not InCombatLockdown() then petMeter.started = false end end
       petMeter.sess = sid
     end
   end
@@ -885,7 +886,8 @@ local function PetTick()
       if was == nil and petMeter.started then was = 0 end   -- an ability the pet hasn't used yet this fight
       petMeter.last[id] = total
       -- (1.4.20) a smaller total is a mob leaving the meter: noted, never shown as one giant hit
-      if was and total > was and petMeter.started then
+      -- (1.4.21) your pet only hits in combat: a jump after the fight is the meter catching up, never a new hit or crit
+      if was and total > was and petMeter.started and InCombatLockdown() then
         petMeter.shown = petMeter.shown + 1
         local step = math.floor(total - was + 0.5)
         local okC, isCrit = pcall(PetCrit, id, step)
@@ -1008,6 +1010,7 @@ ns.HelpConfig = {
       get = function() return DB.pet and true or false end, set = function(v) DB.pet = v end },
   },
   notes = {
+    { v = "1.4.21", "No more fake pet crits when a fight ends: the damage meter catches up after the last hit, and that jump used to show as a big pet crit. Pet numbers now only show while you're in combat" },
     { v = "1.4.20", "Your pet's numbers, take three: WoW: Forever puts your pet's hits in your own line of the damage meter without saying they're the pet's, so Crit Numbers now knows them by name from your pet's spellbook (Claw, Bite and the rest)" },
     { v = "1.4.19", "Your pet's numbers, take two: the damage meter lists each pet ability once per mob it hit, and when the pet shares a line with you only its part counts. Those are added up now, so each pet hit shows once at its real size" },
     { v = "1.4.18", "Your pet's numbers show up again: on WoW: Forever the game keeps your pet's hits in your own line of the damage meter, and Crit Numbers now reads them from there" },

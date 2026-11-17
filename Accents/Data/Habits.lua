@@ -140,7 +140,14 @@ end
 local LOCK = { "auction house", "flight path", "guild bank", "guild chat", "trade chat", "bank alt", "group finder", "dungeon finder",
   "world buff", "world buffs", "raid lead", "group leader", "party leader", "hearth stone", "mount up", "dungeon journal",
   "okay good", "ok good", "oh good", "all good", "good to go", "it's not", "not so", "not right now",
-  "go farm", "go grind", "go quest", "go level", "go solo", "go farming", "go questing", "go grinding", "the night", "tonight" }
+  "go farm", "go grind", "go quest", "go level", "go solo", "go farming", "go questing", "go grinding", "the night", "tonight",
+  -- (1.2.0) set phrases about time and turns: "one more age" and "what tide" broke them
+  "one more time", "next time", "last time", "this time", "every time", "first time", "what time", "on time", "in time",
+  "any time", "some time", "same time", "a long time", "for a while", "go to bed", "going to bed",
+  "run it", "run it back", "pull more", "the rest of",
+  -- (1.4.3)
+  "take it easy", "world boss", "world bosses", "world buff", "world buffs", "world chat", "world pvp", "i'm going to bed",
+  "im going to bed", "i am going to bed", "going to sleep", "go to sleep", "go to bed", "easy money", "play wow" }
 for _, key in ipairs(ns.ORDER) do
   local d = ns.ACCENTS[key]
   if not d.whole then
@@ -302,4 +309,23 @@ do
       end
     end
   end
+end
+
+-- (1.4.5) no catchphrases dropped in front of a line that has nothing to do with them ("Fun fact: need a heal").
+-- Gnome keeps its sound in its words, not tacked-on bits
+do
+  local g = ns.ACCENTS.gnome
+  g.openers = nil
+  g.interject = { "technically" }
+  local l = g.say and g.say.lol
+  if l then for i = #l, 1, -1 do if l[i]:find("detected") then table.remove(l, i) end end end
+  local function Drop(key, bad)
+    local d = ns.ACCENTS[key]
+    if not (d and d.openers) then return end
+    for i = #d.openers, 1, -1 do if bad[d.openers[i]] then table.remove(d.openers, i) end end
+    if #d.openers == 0 then d.openers = nil end
+  end
+  Drop("noir", { ["Funny thing."] = 1 })
+  Drop("human", { ["Pray tell,"] = 1 })
+  for _, key in ipairs(ns.ORDER) do ns.ACCENTS[key]._index = nil end
 end

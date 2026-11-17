@@ -86,4 +86,5 @@ ns.LOCALES.ruRU = function() return {
   ["Keep Channel Colors"] = "Сохранять цвета каналов",
   ["On"] = "Вкл",
   ["Off"] = "Выкл",
+  ["Keep Channel Order"] = "Сохранять порядок каналов",
 } end

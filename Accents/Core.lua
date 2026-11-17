@@ -139,7 +139,7 @@ function ns.CheckSecret(original)
   DB.secret.godd = true
   local d = ns.ACCENTS.godd
   if ns.GoddBadge then pcall(ns.GoddBadge) elseif ns.Toast then ns.Toast("Secret accent found!", d.name, d.blurb, d.icon) end
-  if ns.Announce then ns.Announce(Tr("found a secret accent. It just works.")) end
+  if ns.Announce then ns.Announce(Tr("found a secret accent!")) end
 end
 
 ns.RANK_AT = { 10, 50, 100, 250, 500, 1000, 2500, 5000 }
@@ -226,7 +226,7 @@ ns.AWARDS = {
   { id = "early_valley", hidden = true, name = "Like, Totally", clue = "Like, use a certain word. Like, a lot.", desc = "Unlock Valley Girl early: say \"like\" 20 times.", icon = "INV_Misc_Gem_Pearl_04", check = function() return DB.early and DB.early.valley end },
   { id = "early_conspiracy", hidden = true, name = "Wake Up", clue = "Tell people to open their eyes.", desc = "Unlock Conspiracy Guy early: say \"wake up\".", icon = "INV_Misc_Eye_01", check = function() return DB.early and DB.early.conspiracy end },
   { id = "early_announcer", hidden = true, name = "And The Crowd Goes Wild", clue = "Get excited!! Really excited!!", desc = "Unlock Sports Announcer early: send 5 messages with \"!!\".", icon = "INV_Misc_Horn_02", check = function() return DB.early and DB.early.announcer end },
-  { id = "justworks", hidden = true, name = "It Just Works", clue = "Some things just work.", desc = "Find the secret accent.", icon = "Trade_Engineering", check = function() return DB.secret and DB.secret.godd end },
+  { id = "justworks", hidden = true, name = "It Just Works", clue = "No hints. Good luck.", desc = "Find the secret accent.", icon = "Trade_Engineering", check = function() return DB.secret and DB.secret.godd end },
   { id = "whisper", hidden = true, name = "Sweet Nothings", clue = "Some things are just between two.", desc = "Send 50 accented whispers.", icon = "INV_ValentinesCard01", check = function() return Chan("WHISPER") >= 50 end },
 }
 
@@ -266,13 +266,22 @@ local function Announce(msg)
 end
 ns.Announce = Announce
 
+-- (1.3.0) one short line, at most once a minute to your group: "{star} Accents: unlocked Pirate, earned Night Owl".
+-- The details are on your own screen (the toast); a busy minute only shows in your own chat
+local lastPublic = -100
 local function FlushAnnounce()
   if #pending == 0 then return end
   local lines = pending
   pending = {}
-  for _, l in ipairs(lines) do Say(l) end
-  local text = Marker() .. table.concat(lines, " ")
-  if #text > 250 then text = Marker() .. lines[#lines] end
+  local shown = {}
+  for i = 1, math.min(2, #lines) do shown[i] = (lines[i]:gsub("[!%.]+$", "")) end
+  local text = table.concat(shown, ", ")
+  if #lines > 2 then text = text .. " " .. string.format(Tr("and %d more"), #lines - 2) end
+  Say(text)
+  if GetTime() - lastPublic < 60 then return end
+  lastPublic = GetTime()
+  text = Marker() .. text
+  if #text > 250 then text = Marker() .. lines[1] end
   local a = DB.announce
   if a.SAY then Send(text, "SAY") end   -- now, while the key press lasts (Say needs one)
   C_Timer.After(0.4, function()
@@ -327,7 +336,8 @@ function ns.CheckAwards(quiet)
   if quiet then return end
   for _, a in ipairs(new) do
     if ns.Toast then ns.Toast("Award earned!", a.name, a.desc, "Interface\\Icons\\" .. a.icon) end
-    Announce(string.format(Tr("earned [%s]: %s"), Tr(a.name), Tr(a.desc)))
+    -- (1.3.0) short, and the hidden award a secret unlock gives isn't said twice (the unlock already is)
+    if not a.id:find("^early_") then Announce(string.format(Tr("earned %s"), Tr(a.name))) end
   end
 end
 
@@ -363,7 +373,7 @@ function ns.Counted(key, where, original, strength)
     DB.rank[key] = r
     local title = ns.RankTitle(key, r)
     if ns.Toast then ns.Toast("New rank!", title, string.format(Tr("%d messages as %s"), ns.RANK_AT[r], Tr(def.name)), def.icon) end
-    Announce(string.format(Tr("became %s (%d messages as %s)!"), Tr(title), ns.RANK_AT[r], Tr(def.name)))
+    Announce(string.format(Tr("%s rank: %s"), Tr(def.name), Tr(title)))
   end
   -- a new accent unlocked
   local after = ns.UnlockedCount()
@@ -372,7 +382,7 @@ function ns.Counted(key, where, original, strength)
       if ns.UnlockAt(i) == DB.total and not DB.early[k] then
         local d = ns.ACCENTS[k]
         if ns.Toast then ns.Toast("Accent unlocked!", d.name, d.blurb or "", d.icon) end
-        Announce(string.format(Tr("unlocked the %s accent!"), Tr(d.name)))
+        Announce(string.format(Tr("unlocked %s"), Tr(d.name)))
       end
     end
   end
@@ -464,13 +474,19 @@ local function Handle(editBox)
   local out = Turn(key, text, strength)
   if type(out) ~= "string" or out == "" then return end
   if #out > 255 then
-    local cut = ns.Engine.SplitPoint(out, 255)
-    if not cut then return end   -- can't be cut cleanly: it goes out as you typed it
+    -- (1.2.0) cut into as many messages as it takes (Murloc can more than double a line), at most 3
+    local parts, rest = {}, out
+    while #rest > 255 and #parts < 2 do
+      local cut = ns.Engine.SplitPoint(rest, 255)
+      if not cut then break end
+      parts[#parts + 1] = rest:sub(1, cut - 1); rest = rest:sub(cut + 1)
+    end
+    if #rest > 255 then return end   -- can't be cut cleanly: it goes out as you typed it
     local lang = editBox.languageID
     local target = (ct == "WHISPER" or ct == "BN_WHISPER") and editBox:GetAttribute("tellTarget")
       or (ct == "CHANNEL" and editBox:GetAttribute("channelTarget")) or nil
-    Send(out:sub(1, cut - 1), ct, lang, target)   -- the first half now, the rest the game sends right after
-    out = out:sub(cut + 1)
+    for _, p in ipairs(parts) do Send(p, ct, lang, target) end   -- these now, the last part the game sends right after
+    out = rest
     Stat("split")
   end
   if out ~= text then editBox:SetText(out) end
@@ -561,7 +577,12 @@ function ns.OneShot(key, msg)
   local target = (ct == "WHISPER") and eb:GetAttribute("tellTarget") or (ct == "CHANNEL" and eb:GetAttribute("channelTarget")) or nil
   local strength = 3
   local out = Turn(key, msg, strength)
-  if #out > 255 then out = out:sub(1, 255) end
+  -- (1.2.0) too long for one message: two messages, cut between words and never inside a link
+  if #out > 255 then
+    local cut = ns.Engine.SplitPoint(out, 255)
+    if cut then Send(out:sub(1, cut - 1), ct, eb and eb.languageID, target); out = out:sub(cut + 1)
+    else out = msg:sub(1, 255) end
+  end
   Send(out, ct, eb and eb.languageID, target)
   ns.Counted(key, CHAT_TO_WHERE[ct], msg, strength)
   ns.lastAccented = { t = GetTime(), where = CHAT_TO_WHERE[ct] }
@@ -582,12 +603,22 @@ function ns.Hello(soft)
   if C_ChatInfo and C_ChatInfo.SendAddonMessage and not Locked() then pcall(C_ChatInfo.SendAddonMessage, PREFIX, "H~" .. (ns.VERSION or ""), ch) end
 end
 
-local ASK = { "how are you talking", "how do you talk", "why are you talking", "why do you talk", "what addon",
-  "which addon", "is that an addon", "accent addon", "how are you typing", "why are you typing", "talk like that",
-  "type like that", "how u talk", "how r u talking", "what's with the accent", "whats with the accent" }
+-- (1.0.1) only a question about how YOU talk counts. "which addon" alone fired on any addon talk in guild
+local ASK = { "how are you talking", "how do you talk", "why are you talking", "why do you talk", "how are you typing",
+  "why are you typing", "talk like that", "type like that", "talking like that", "typing like that", "how u talk",
+  "how r u talking", "what's with the accent", "whats with the accent", "what is with the accent", "your accent",
+  "ur accent", "accent addon", "accents addon" }
+-- "what addon" counts only next to a word about talking
+local ADDONQ = { "what addon", "which addon", "is that an addon", "what mod", "is that a mod" }
+local TALKW = { "talk", "typing", "accent", "speak", "voice", "chat like" }
 local function Asked(msg)
   local m = msg:lower()
   for _, p in ipairs(ASK) do if m:find(p, 1, true) then return true end end
+  for _, p in ipairs(ADDONQ) do
+    if m:find(p, 1, true) then
+      for _, w in ipairs(TALKW) do if m:find(w, 1, true) then return true end end
+    end
+  end
   return false
 end
 
@@ -599,6 +630,7 @@ ev:RegisterEvent("GROUP_ROSTER_UPDATE")
 ev:RegisterEvent("CHAT_MSG_ADDON")
 pcall(ev.RegisterEvent, ev, "PLAYER_DEAD")
 pcall(ev.RegisterEvent, ev, "ENCOUNTER_END")
+pcall(ev.RegisterEvent, ev, "BOSS_KILL")
 for _, e in ipairs({ "CHAT_MSG_PARTY", "CHAT_MSG_PARTY_LEADER", "CHAT_MSG_RAID", "CHAT_MSG_RAID_LEADER",
   "CHAT_MSG_INSTANCE_CHAT", "CHAT_MSG_INSTANCE_CHAT_LEADER", "CHAT_MSG_GUILD", "CHAT_MSG_SAY", "CHAT_MSG_WHISPER" }) do
   pcall(ev.RegisterEvent, ev, e)
@@ -616,7 +648,7 @@ ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4, a5)
     if ns.BuildUI then pcall(ns.BuildUI) end
     if ns.RegisterOneShots then pcall(ns.RegisterOneShots) end
     C_Timer.After(5, function() ns.Hello() end)
-  elseif e == "PLAYER_DEAD" or e == "ENCOUNTER_END" then
+  elseif e == "PLAYER_DEAD" or e == "ENCOUNTER_END" or e == "BOSS_KILL" then
     if ns.EarlyEvent then pcall(ns.EarlyEvent, e, a1, a2, a3, a4, a5) end
   elseif e == "GROUP_ROSTER_UPDATE" then
     ns.Hello()
@@ -629,6 +661,8 @@ ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4, a5)
     if issecretvalue(a1) or issecretvalue(a2) or type(a1) ~= "string" then return end
     local last = ns.lastAccented
     if not last or GetTime() - last.t > 180 then return end
+    -- (1.0.1) asked where you were talking (a whisper always counts)
+    if e ~= "CHAT_MSG_WHISPER" and last.where and (last.where == "YELL" and "SAY" or last.where) ~= ASK_WHERE[e] then return end
     local me = UnitName("player")
     local who = type(a2) == "string" and a2:match("^[^%-]+") or a2
     if who == me or not Asked(a1) then return end

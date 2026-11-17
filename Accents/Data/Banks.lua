@@ -301,7 +301,7 @@ Bank("gnome", {
     friend = "friend|pal|colleague|lab partner", friends = "friends|folks|colleagues|test subjects",
     enemy = "foe|obstacle|variable", enemies = "foes|obstacles|variables",
     mob = "specimen|creature|thingamajig|subject", mobs = "specimens|creatures|subjects",
-    boss = "big specimen|final variable|main problem", noob = "apprentice|intern|new model",
+    boss = "big specimen|prime variable|main problem", noob = "apprentice|intern|new model",
     idiot = "dunderhead|nincompoop|dingbat|silly-billy", idiots = "dunderheads|nincompoops",
     leader = "chief engineer|leader|project lead", kid = "little one|tyke", man = "fellow|chap",
     good = "excellent|fantastic|optimal|top-notch|delightful", bad = "faulty|defective|suboptimal|terrible",
