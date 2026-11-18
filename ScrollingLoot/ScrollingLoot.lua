@@ -273,14 +273,15 @@ local function Coin(c)
 end
 local function ShowMoney(copper)
   if DB.off or not DB.money or not copper or copper <= 0 then return end
-  -- (1.2.6) our own coin text: "1 [silver] 44 [copper]". Forever's GetCoinTextureString showed "144c"
+  -- (1.2.6) our own coin text, each coin on its own. Forever's GetCoinTextureString showed "144c"
+  -- (1.2.7) letters in the coin's color ("1s 44c"), not little coin pictures: the big coin on the left is the only picture
   local function coins(c)
     local g, s, cp = math.floor(c / 10000), math.floor(c / 100) % 100, c % 100
     local t = {}
-    if g > 0 then t[#t + 1] = g .. "|TInterface\\MoneyFrame\\UI-GoldIcon:0:0:2:0|t" end
-    if s > 0 then t[#t + 1] = s .. "|TInterface\\MoneyFrame\\UI-SilverIcon:0:0:2:0|t" end
-    if cp > 0 or #t == 0 then t[#t + 1] = cp .. "|TInterface\\MoneyFrame\\UI-CopperIcon:0:0:2:0|t" end
-    return "|cffffffff" .. table.concat(t, " ") .. "|r"
+    if g > 0 then t[#t + 1] = "|cffffffff" .. g .. "|r|cffffd700g|r" end
+    if s > 0 then t[#t + 1] = "|cffffffff" .. s .. "|r|cffc7c7cfs|r" end
+    if cp > 0 or #t == 0 then t[#t + 1] = "|cffffffff" .. cp .. "|r|cffeda55fc|r" end
+    return table.concat(t, " ")
   end
   local k = Coin(copper)
   local l = Push("money", k[4], coins(copper), 1, k[1], k[2], k[3])
@@ -487,6 +488,7 @@ ns.HelpConfig = {
       get = function() return nil end, set = function() SlashCmdList.SCROLLINGLOOT("test") end },
   },
   notes = {
+    { v = "1.2.7", "Money shows one coin picture, the big one on the left, with the amounts as 1g 2s 44c in each coin's color" },
     { v = "1.2.6", "Money shows each coin: 1 silver 44 copper, not 144c" },
     { v = "1.2.5", "The loot window really stays away during loot rolls now: an item at or above your group's loot quality is treated as up for a roll, and the window closes once only those are left" },
     { v = "1.2.4", "The loot window no longer opens next to loot rolls in dungeons: while a roll is going, the item left on the corpse is the one being rolled and the window closes" },

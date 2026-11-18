@@ -1,4 +1,5 @@
--- Dalorrian's Blessing Button: one button that buffs your group with the right blessings.
+-- Dalorrian's Blessings & Buffs (folder, saved settings and /bless keep the old Blessing Button names):
+-- one button that buffs your group with the right blessings, and every class's own buffs.
 --
 -- How it works:
 --  * Every paladin running this addon works out the same plan on their own, from who is in the group:
@@ -47,10 +48,10 @@ end })
 local P = ns.print or print
 local Tr = ns.Tr or function(x) return x end
 local Tip = ns.Tip or GameTooltip
-local function Say(msg) P("|cffffd100Blessing Button:|r " .. msg) end
+local function Say(msg) P("|cffffd100Blessings & Buffs:|r " .. msg) end
 
 local DB
-local DEFAULTS = { show = "auto", refresh = 300, fury = true, aura = true, scale = 1 }
+local DEFAULTS = { show = "auto", refresh = 300, fury = true, aura = true, scale = 1, thorns = "melee", imbue = "auto", mageArmor = "auto" }
 local PREFIX, PP_PREFIX = "DalBlessBtn", "PLPWR"
 local GOLD = { 1, 0.82, 0 }
 local FLAT = "Interface\\Buttons\\WHITE8X8"
@@ -372,41 +373,142 @@ local function Ready(unit)
 end
 
 -- (1.1.0) priests and mages use the button too: their own group buffs, only to the classes they help.
--- Fortitude helps everyone; Arcane Intellect and Divine Spirit only help classes that use mana.
--- A buff counts as on when any copy of it (or its group version) is there, from anyone.
+-- (1.3.0) every class with a buff: druids, warlocks, shamans, hunters and warriors too, plus each class's own
+-- self buff (armors, shields, Inner Fire, an aspect). A buff counts as on when any copy of it (or its group
+-- version) is there, from anyone. Self buffs: any one of the set already on counts, so your own pick is kept.
+--   id     the spell (cast by name, so your highest rank is used)
+--   also   other spells that count as the same buff (group versions)
+--   mana   only for classes that use mana
+--   self   only on you; ids = what to cast, best first; any = what counts as on
+--   soon   recast when this many seconds are left (short buffs), else the Recast setting
+--   who    a setting that picks who gets it ("thorns")
+--   imbue  a shaman weapon imbue, checked on your main hand
 local BUFFERS = {
   PRIEST = {
-    { id = 1243, also = { 21562 }, mana = false },   -- Power Word: Fortitude (Prayer of Fortitude counts)
-    { id = 14752, also = { 27681 }, mana = true },   -- Divine Spirit, a talent (Prayer of Spirit counts)
+    { id = 1243, also = { 21562 } },                  -- Power Word: Fortitude (Prayer of Fortitude counts)
+    { id = 14752, also = { 27681 }, mana = true },    -- Divine Spirit (Prayer of Spirit counts)
+    { id = 588, self = true },                        -- Inner Fire
   },
   MAGE = {
-    { id = 1459, also = { 23028 }, mana = true },    -- Arcane Intellect (Arcane Brilliance counts)
+    { id = 1459, also = { 23028 }, mana = true },     -- Arcane Intellect (Arcane Brilliance counts)
+    { id = 7302, self = true, ids = { 7302, 168 }, any = { 7302, 6117 }, pick = "mageArmor" },   -- Ice Armor > Frost Armor (Mage Armor counts; Frost Armor is swapped up once you know Ice Armor)
+  },
+  DRUID = {
+    { id = 1126, also = { 21849 } },                  -- Mark of the Wild (Gift of the Wild counts)
+    { id = 467, soon = 60, who = "thorns" },          -- Thorns (10 min)
+    { id = 16864, self = true, soon = 60 },           -- Omen of Clarity (talent, 10 min)
+  },
+  WARLOCK = {
+    { id = 706, self = true, ids = { 706, 687 }, any = { 706 } },   -- Demon Armor > Demon Skin (swapped up once you know Demon Armor)
+  },
+  SHAMAN = {
+    { id = 324, self = true, soon = 60 },             -- Lightning Shield
+    { id = 8232, self = true, imbue = true },         -- a weapon imbue (setting picks which)
+  },
+  HUNTER = {
+    { id = 19506, self = true },                      -- Trueshot Aura (talent, raid-wide)
+    { id = 13165, self = true, ids = { 13165 }, any = { 13165, 13163, 5118, 13159, 20043, 13161, 20190 }, pick = "aspect" },   -- an aspect: Hawk unless one is on
+  },
+  WARRIOR = {
+    { id = 6673, self = true, soon = 15, rage = 10 }, -- Battle Shout (party-wide, 3 min), when you have the rage
   },
 }
+local IMBUES = { windfury = 8232, flametongue = 8024, rockbiter = 8017, frostbrand = 8033 }
 local MANA_CLASS = { PALADIN = true, PRIEST = true, MAGE = true, WARLOCK = true, SHAMAN = true, DRUID = true, HUNTER = true }
 local function BuffEnd(unit, b)
   local e = AuraEnd(unit, b.id)
-  if e == nil then for _, id in ipairs(b.also) do e = AuraEnd(unit, id); if e ~= nil then break end end end
+  if e == nil then for _, id in ipairs(b.also or {}) do e = AuraEnd(unit, id); if e ~= nil then break end end end
   return e
+end
+-- (1.3.0) the spell a self buff casts: your pick from Settings, or the best one you know
+local function SelfSpell(b)
+  if b.imbue then
+    local w = DB.imbue or "auto"
+    if w == "off" then return nil end
+    if w ~= "auto" then return Knows(IMBUES[w]) and IMBUES[w] or nil end
+    -- (1.3.1) by your talents: Enhancement (or no points yet) Windfury, then Rockbiter; Elemental and Restoration Flametongue
+    local tree = BestTree(false)
+    local order = (tree == 1 or tree == 3) and { IMBUES.flametongue, IMBUES.rockbiter } or { IMBUES.windfury, IMBUES.rockbiter, IMBUES.flametongue }
+    for _, id in ipairs(order) do if Knows(id) then return id end end
+    return nil
+  end
+  if b.pick == "mageArmor" and DB.mageArmor == "mage" then return Knows(6117) and 6117 or nil end
+  if b.pick == "mageArmor" and DB.mageArmor == "off" then return nil end
+  if b.pick == "aspect" then
+    if DB.aspect == "off" then return nil end
+    local want = DB.aspect and tonumber(DB.aspect)
+    if want then return Knows(want) and want or nil end
+  end
+  for _, id in ipairs(b.ids or { b.id }) do if Knows(id) then return id end end
+  return nil
+end
+-- (1.3.0) seconds left on a self buff: -1 when missing, huge when it never ends
+local function SelfLeft(b, now, chosen)
+  if b.imbue then
+    if not GetWeaponEnchantInfo or not GetInventoryItemLink("player", 16) then return math.huge end
+    local has, ms = GetWeaponEnchantInfo()
+    if issecret(has) or issecret(ms) then return math.huge end
+    if not has then return -1 end
+    return ms and ms / 1000 or math.huge
+  end
+  local best
+  local list = {}
+  local only = b.pick == "mageArmor" and DB.mageArmor == "mage"   -- picked Mage Armor in Settings: only that counts
+  if not only then for _, id in ipairs(b.any or b.ids or { b.id }) do list[#list + 1] = id end end
+  if chosen then list[#list + 1] = chosen end
+  for _, id in ipairs(list) do
+    local e = AuraEnd("player", id)
+    if e ~= nil then
+      local left = (e == 0) and math.huge or (e - now)
+      if not best or left > best then best = left end
+    end
+  end
+  return best or -1
+end
+local function Wants(b, m)
+  if b.mana and not MANA_CLASS[m.class] then return false end
+  if b.who == "thorns" then
+    local t = DB.thorns or "melee"
+    if t == "off" then return false end
+    -- (1.3.1) Thorns only hurts what hits you: tanks, and melee (who stand in front of things), by default
+    local r = Role(m)
+    if m.key == ME then return true end   -- yourself: questing, mobs hit you
+    if t == "tanks" then return r == "tank" or r == "ptank" end
+    if t == "melee" then return r == "tank" or r == "ptank" or r == "melee" or r == "ret" end
+  end
+  return true
 end
 local function BuffPick(class)
   if UnitIsDeadOrGhost("player") or UnitOnTaxi("player") then return end
   local now, best, bestLeft = GetTime(), nil, nil
+  local function Consider(spellId, unit, key, left)
+    local spell = SpellName(spellId)
+    if not spell then return end
+    if InRange(spell, unit) then
+      waiting.total = waiting.total + 1
+      if not bestLeft or left < bestLeft then best, bestLeft = { spell = spell, unit = unit, icon = SpellIcon(spellId), who = key }, left end
+    else
+      waiting.far = waiting.far + 1
+    end
+  end
   for _, b in ipairs(BUFFERS[class]) do
-    if Knows(b.id) then
-      local spell = SpellName(b.id)
+    if b.self then
+      local id = SelfSpell(b)
+      local enough = true
+      if b.rage then
+        local ok, r = pcall(UnitPower or function() return 0 end, "player", 1)
+        enough = ok and type(r) == "number" and not issecret(r) and r >= b.rage
+      end
+      if id and enough then
+        local left = SelfLeft(b, now, id)
+        if left < (b.soon or DB.refresh or 300) then Consider(id, "player", ME, left) end
+      end
+    elseif Knows(b.id) then
       for _, m in ipairs(roster) do
-        if (not b.mana or MANA_CLASS[m.class]) and Ready(m.unit) then
+        if Wants(b, m) and Ready(m.unit) then
           local e = BuffEnd(m.unit, b)
           local left = (e == nil and -1) or (e == 0 and math.huge) or (e - now)
-          if left < (DB.refresh or 300) then
-            if InRange(spell, m.unit) then
-              waiting.total = waiting.total + 1
-              if not bestLeft or left < bestLeft then best, bestLeft = { spell = spell, unit = m.unit, icon = SpellIcon(b.id), who = m.key }, left end
-            else
-              waiting.far = waiting.far + 1
-            end
-          end
+          if left < math.min(b.soon or DB.refresh or 300, DB.refresh or 300) then Consider(b.id, m.unit, m.key, left) end
         end
       end
     end
@@ -571,11 +673,11 @@ btn:SetScript("OnDragStop", function(self)
 end)
 btn:SetScript("OnEnter", function(self)
   Tip:SetOwner(self, "ANCHOR_TOP")
-  Tip:AddLine("Blessing Button", GOLD[1], GOLD[2], GOLD[3])
+  Tip:AddLine("Blessings & Buffs", GOLD[1], GOLD[2], GOLD[3])
   if nextCast then
     Tip:AddDoubleLine("Next", nextCast.spell .. "  >  " .. (nextCast.who or ""), 0.8, 0.8, 0.8, 1, 1, 1)
   else
-    Tip:AddLine("Everyone has your blessings.", 0.6, 1, 0.6)
+    Tip:AddLine(select(2, UnitClass("player")) == "PALADIN" and "Everyone has your blessings." or "Everyone has your buffs.", 0.6, 1, 0.6)
   end
   if waiting.total > 1 then Tip:AddDoubleLine("Waiting", tostring(waiting.total), 0.8, 0.8, 0.8, 1, 1, 1) end
   if waiting.far > 0 then Tip:AddDoubleLine("Out of range", tostring(waiting.far), 0.8, 0.8, 0.8, 1, 0.5, 0.5) end
@@ -985,6 +1087,16 @@ ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4)
     BlessingButtonDB = BlessingButtonDB or {}
     DB = BlessingButtonDB
     for k, v in pairs(DEFAULTS) do if DB[k] == nil then DB[k] = v end end
+    -- (1.3.1) Settings only show what your class uses
+    do
+      local _, myClass = UnitClass("player")
+      local keep = {}
+      for _, row in ipairs(ns.HelpConfig.settings) do
+        if not row.class or row.class == myClass then keep[#keep + 1] = row end
+      end
+      ns.HelpConfig.settings = keep
+      if DB.thorns == "all" and not DB.thornsPicked then DB.thorns = "melee" end   -- 1.3.0's default moves to the new one
+    end
     _G["BINDING_NAME_CLICK BlessingButtonCast:LeftButton"] = Tr("Cast the next blessing")
     -- not a paladin: switch everything off. No button, no minimap icon, no messages, nothing running.
     local _, class = UnitClass("player")
@@ -1036,27 +1148,37 @@ end)
 ---------------------------------------------------------------------------
 -- Settings & Help (Help.lua, shared by Dalorrian's addons), minimap button, slash command
 ---------------------------------------------------------------------------
-BINDING_HEADER_BLESSINGBUTTON = "Dalorrian's Blessing Button"
+BINDING_HEADER_BLESSINGBUTTON = "Dalorrian's Blessings & Buffs"
 _G["BINDING_NAME_CLICK BlessingButtonCast:LeftButton"] = "Cast the next blessing"
 
 ns.HelpConfig = {
-  title = "Blessing Button",
-  tag = "Blessing Button",
+  title = "Blessings & Buffs",
+  tag = "Blessings & Buffs",
   settings = {
-    { label = "Whole Plan", choices = { { "Open", "open" } },
+    { class = "PALADIN", label = "Whole Plan", choices = { { "Open", "open" } },
       get = function() return nil end, set = function() ns.ToggleGrid() end },
     { label = "Button", choices = { { "When Needed", "auto" }, { "Always", "always" }, { "Hidden", "off" } },
       get = function() return DB.show end, set = function(v) DB.show = v; Refresh() end },
     { label = "Recast", choices = { { "1 Min Left", 60 }, { "5 Min Left", 300 }, { "10 Min Left", 600 } },
       get = function() return DB.refresh end, set = function(v) DB.refresh = v; Refresh() end },
-    { label = "Righteous Fury", choices = { { "When Tanking", true }, { "Off", false } },
+    { class = "PALADIN", label = "Righteous Fury", choices = { { "When Tanking", true }, { "Off", false } },
       get = function() return DB.fury and true or false end, set = function(v) DB.fury = v; Refresh() end },
-    { label = "Aura Reminder", choices = { { "On", true }, { "Off", false } },
+    { class = "PALADIN", label = "Aura Reminder", choices = { { "On", true }, { "Off", false } },
       get = function() return DB.aura and true or false end, set = function(v) DB.aura = v; Refresh() end },
     -- (1.2.0) pick your own aura, like picking blessings in the plan; Auto shares them out between the group's paladins
-    { label = "My Aura", choices = { { "Auto", 0 }, { "Devotion", 465 }, { "Retribution", 7294 }, { "Concentration", 19746 },
+    { class = "PALADIN", label = "My Aura", choices = { { "Auto", 0 }, { "Devotion", 465 }, { "Retribution", 7294 }, { "Concentration", 19746 },
         { "Shadow Resistance", 19876 }, { "Frost Resistance", 19888 }, { "Fire Resistance", 19891 }, { "Sanctity", 20218 } },
       get = function() return DB.myAura or 0 end, set = function(v) DB.myAura = (v ~= 0) and v or nil; Refresh() end },
+    -- (1.3.0) class buffs
+    { class = "DRUID", label = "Thorns", choices = { { "Tanks & Melee", "melee" }, { "Tanks Only", "tanks" }, { "Everyone", "all" }, { "Off", "off" } },
+      get = function() return DB.thorns or "melee" end, set = function(v) DB.thorns = v; DB.thornsPicked = true; Refresh() end },
+    { class = "MAGE", label = "Armor", choices = { { "Ice / Frost Armor", "auto" }, { "Mage Armor", "mage" }, { "Off", "off" } },
+      get = function() return DB.mageArmor or "auto" end, set = function(v) DB.mageArmor = v; Refresh() end },
+    { class = "SHAMAN", label = "Weapon", choices = { { "Auto", "auto" }, { "Windfury", "windfury" }, { "Flametongue", "flametongue" },
+        { "Rockbiter", "rockbiter" }, { "Frostbrand", "frostbrand" }, { "Off", "off" } },
+      get = function() return DB.imbue or "auto" end, set = function(v) DB.imbue = v; Refresh() end },
+    { class = "HUNTER", label = "Aspect", choices = { { "Hawk", 0 }, { "Monkey", 13163 }, { "Cheetah", 5118 }, { "Off", "off" } },
+      get = function() return DB.aspect or 0 end, set = function(v) DB.aspect = (v ~= 0) and v or nil; Refresh() end },
     { label = "Size", choices = { { "Small", 0.8 }, { "Normal", 1 }, { "Big", 1.3 } },
       get = function() return DB.scale or 1 end, set = function(v) DB.scale = v; Refresh() end },
     { label = "Spot", choices = { { "Reset", "reset" } },
@@ -1064,6 +1186,8 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.3.1", "Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on", "Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice", "Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration" },
+    { v = "1.3.0", "New name, Blessings & Buffs: every class with a buff uses it now. Druids give Mark of the Wild and Thorns, and it keeps up your own buffs: mage Ice or Frost Armor, warlock Demon Armor or Demon Skin, priest Inner Fire, shaman Lightning Shield and a weapon imbue, hunter Trueshot Aura and an aspect, warrior Battle Shout when you have the rage", "Settings for Thorns (everyone, tanks only or off), Mage Armor, the shaman weapon imbue and the hunter aspect. A buff you picked yourself is kept: if you already have Mage Armor or Aspect of the Monkey on, it won't swap it. /bless still works" },
     { v = "1.2.1", "Priests and mages get the minimap button too (it only showed for paladins). Right-click it to keep the buff button on screen even when everyone is buffed" },
     { v = "1.2.0", "New setting, My Aura: pick the aura you want kept up (Devotion, Retribution, Concentration, a resistance aura or Sanctity), the same way you can pick blessings in the plan. Auto still shares auras out between the group's paladins. Aura Reminder must be On" },
     { v = "1.1.0", "Priests and mages can use it too: the button casts Power Word: Fortitude on everyone, and Arcane Intellect or Divine Spirit only on classes that use mana. A buff someone else already gave (or its group version) counts" },
@@ -1107,7 +1231,7 @@ local function PrintPlan()
 end
 
 MinimapButton = function()
-  -- (1.2.1) priests and mages get it too (it used to be paladins only)
+  -- (1.2.1) every class with buffs gets it too (it used to be paladins only)
   local _, myClass = UnitClass("player")
   if not Minimap or _G.BlessingButtonMinimapButton or not (myClass == "PALADIN" or BUFFERS[myClass]) then return end
   local b = CreateFrame("Button", "BlessingButtonMinimapButton", Minimap)
@@ -1133,7 +1257,7 @@ MinimapButton = function()
     if button == "RightButton" then
       if myClass == "PALADIN" then ns.ToggleGrid()
       else
-        -- priests and mages have no plan: right-click keeps the button up, or back to only when someone needs a buff
+        -- other classes have no plan: right-click keeps the button up, or back to only when someone needs a buff
         DB.show = (DB.show == "always") and "auto" or "always"; Refresh()
         Say(DB.show == "always" and Tr("the button stays up. /bless auto shows it only when needed.") or Tr("the button shows only when someone needs a buff."))
       end
@@ -1141,7 +1265,7 @@ MinimapButton = function()
   end)
   b:SetScript("OnEnter", function(self)
     Tip:SetOwner(self, "ANCHOR_LEFT")
-    Tip:AddLine("Blessing Button")
+    Tip:AddLine("Blessings & Buffs")
     Tip:AddLine("Left-click: Settings & Help", 1, 1, 1)
     Tip:AddLine(myClass == "PALADIN" and "Right-click: the whole plan" or "Right-click: always show the button", 1, 1, 1)
     Tip:AddLine("Drag to move", 0.6, 0.6, 0.6)
@@ -1165,7 +1289,7 @@ SLASH_BLESSINGBUTTON1 = "/bless"
 SLASH_BLESSINGBUTTON2 = "/blessingbutton"
 SlashCmdList.BLESSINGBUTTON = function(msg)
   local _, class = UnitClass("player")
-  if class ~= "PALADIN" and not BUFFERS[class] then Say("this addon is for paladins, priests and mages. It stays off on your other characters.") return end
+  if class ~= "PALADIN" and not BUFFERS[class] then Say("this addon is for classes with buffs. Rogues have none, so it stays off here.") return end
   local cmd = (msg or ""):lower():match("^(%S*)")
   if class ~= "PALADIN" and (cmd == "plan" or cmd == "grid" or cmd == "who") then Say("the plan is for paladins.") return end
   if cmd == "plan" or cmd == "grid" then
@@ -1175,7 +1299,7 @@ SlashCmdList.BLESSINGBUTTON = function(msg)
   elseif cmd == "show" or cmd == "always" then
     DB.show = "always"; Refresh(); Say("the button stays up. /bless auto shows it only when needed.")
   elseif cmd == "auto" then
-    DB.show = "auto"; Refresh(); Say("the button shows only when someone needs a blessing.")
+    DB.show = "auto"; Refresh(); Say("the button shows only when someone needs a buff.")
   elseif cmd == "hide" then
     DB.show = "off"; Refresh(); Say("hidden. Your key still works. /bless auto brings it back.")
   elseif cmd == "reset" then
