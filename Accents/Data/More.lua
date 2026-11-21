@@ -336,8 +336,8 @@ Add("grimdark", {
   words = { sir = "ser", yes = "aye" },
   lex = {
     friend = "brother|sworn brother", friends = "brothers|you lot", enemy = "turncloak|oathbreaker|enemy", enemies = "turncloaks|oathbreakers|enemies",
-    boss = "warlord|butcher", good = "decent|fine|well-made", bad = "craven|rotten|bloody", kill = "put to the sword|kill|butcher",
-    killed = "put to the sword|butchered", die = "die badly|die", died = "died badly|died", money = "silver|coin", drink = "drink|sour wine",
+    boss = "warlord|butcher", good = "decent|fine|well-made", bad = "craven|rotten|bloody", kill = "kill|butcher",
+    killed = "butchered|killed", die = "die badly|die", died = "died badly|died", money = "silver|coin", drink = "drink|sour wine",
     idiot = "craven|fool|green boy", noob = "green boy|squire", weapon = "steel|blade", gear = "steel|plunder", scary = "grim|bloody",
   },
   openers = "Gods,|Listen,",
@@ -420,7 +420,7 @@ Add("prospector", {
   lex = {
     friend = "partner|pardner|young'un", friends = "young'uns|pardners|folks", money = "gold|nuggets|gold dust", good = "fine|dandy|mighty fine",
     bad = "rotten|no-good|lousy", big = "big|whoppin'", idiot = "varmint|fool|dang fool", mob = "varmint|critter", mobs = "varmints|critters",
-    dungeon = "mine|cave", dungeons = "mines|caves", kill = "whup|lick", killed = "whupped|licked", very = "mighty|plumb",
+    dungeon = "mine|cave", dungeons = "mines|caves", kill = "whup", killed = "whupped", very = "mighty|plumb",
   },
   rules = { { "ing$", "in'", min = 1, chance = 0.9 } },
   openers = "Hoo-wee,|Well,",

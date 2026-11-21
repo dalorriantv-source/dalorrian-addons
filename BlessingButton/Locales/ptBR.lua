@@ -147,4 +147,6 @@ ns.LOCALES.ptBR = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "As opções mostram só o que sua classe usa: um druida vê Espinhos, um mago vê Armadura e assim por diante",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "Espinhos vai para tanques e corpo a corpo por padrão (só fere quem bate em você). Todos ainda é uma opção",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "Xamãs: Auto escolhe o encantamento pelos talentos, Fúria dos Ventos ou Fende-rocha para Aperfeiçoamento, Labaredas para Elemental e Restauração",
+  ["My Role"] = "Minha função",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "Nova opção de paladino, Minha função: Auto (pelos talentos, como antes), Curador, Tanque ou Retribuição. Com Retribuição você recebe Poderio e Reis em vez de Sabedoria, e os outros paladinos com o addon planejam assim também",
 } end

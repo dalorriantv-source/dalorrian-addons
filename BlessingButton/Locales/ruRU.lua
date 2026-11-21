@@ -147,4 +147,6 @@ ns.LOCALES.ruRU = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "Настройки показывают только то, что нужно вашему классу: друид видит Шипы, маг — Доспех и так далее",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "Шипы по умолчанию идут на танков и бойцов ближнего боя (они ранят только тех, кто бьёт). Вариант «Все» остаётся",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "Шаманы: «Авто» выбирает чары по талантам: Неистовство ветра или Камнедробитель для Совершенствования, Язык пламени для Стихий и Исцеления",
+  ["My Role"] = "Моя роль",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "Новая настройка паладина «Моя роль»: Авто (по талантам, как раньше), Лекарь, Танк или Воздаяние. С Воздаянием вы получаете Могущество и Королей вместо Мудрости, и другие паладины с аддоном тоже это учитывают",
 } end

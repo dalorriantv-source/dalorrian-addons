@@ -559,6 +559,13 @@ ns.HelpConfig = {
       get = function() return ns.DB.unlockAll and true or false end, set = function(v) ns.DB.unlockAll = v or nil; ns.RefreshUI() end },
   },
   notes = {
+    { v = "1.4.7", "Every accent audited the same way as Night Elf: thousands of chat lines run through each one, and every swap that changed what you meant was fixed or removed",
+      "Words keep their meaning in context: \"I'm lost\" vs \"we lost the tank\", \"3 left\" vs \"he left\", \"it broke\" vs \"I'm broke\", \"nice drop\", \"it's okay\", \"look out\", \"see you\", \"need to\", \"get up\", \"come back\", \"for instance\", \"quest item\", \"attack power\", \"5 minutes\", \"crazy good\", \"good luck\"",
+      "Longer swaps only where they fit: \"an easy quest\" never becomes \"a cakewalk quest\", \"good luck with the boss\" stays readable, and \"hey can you help me\" gets a comma after the greeting",
+      "Bard uses thou and thee in the right places, \"we wiped 60 times\" is no longer read as a death line, and no more \"my dear\" or \"little one\" for your friend" },
+    { v = "1.4.6", "Night Elf reworked after a full audit: \"friend\" no longer turns into \"sister\" or \"brother\", \"nuts\" is not \"mad\", \"no problem\" is not \"no shadow\", and no more random \"Fandu-dath-belore?\" or \"Ishnu-alah\" in front of lines that aren't greetings",
+      "Every accent: \"let it go\", \"go ahead\", \"first time\", \"one day\", \"get a life\", \"bad at\", \"quick question\", \"guess what\", \"one hell of a\", \"elite quest\" and \"want to group\" read right. \"I'm going to stormwind\" stays a trip. Item words stay what you typed: gold, mana, axe, sword, trash, epic, giant",
+      "\"hello?\" no longer ends in \".?\", and \"get a life lol\" ends the sentence before the laugh" },
     { v = "1.4.5", "Gnome drops its catchphrases: no more \"Fun fact:\" or \"Ooh!\" in front of your lines, and no \"by my math\" in the middle. Its gnome talk stays in the words. Noir and Human lose an odd opener too" },
     { v = "1.4.4", "Typed without the apostrophe? \"ill go\", \"hell be back\", \"id like\", \"shes here\" and \"itll work\" are read as I'll, he'll, I'd, she's and it'll. \"I'm ill\" and \"hell yeah\" stay as you meant them" },
     { v = "1.4.3", "Smarter swaps in every accent: words that mean something else in context stay put. \"pretty easy\", \"that was sick\", \"need to drink\", \"home from work\", \"got home\" and \"died so fast\" read right now",

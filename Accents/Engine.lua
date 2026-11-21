@@ -164,7 +164,7 @@ E.DETERMINER = { the = true, a = true, an = true, this = true, that = true, thes
 -- show the other meaning: "hits so hard" (how, not difficult), "pretty easy" (very, not beautiful), "that was sick"
 -- (great, not ill), "need to drink" (the verb), "home from work" (the job), "got home", "mount up"
 ---------------------------------------------------------------------------
-local INTENS = { so = true, too = true, very = true, really = true, real = true, pretty = true, super = true, quite = true,
+local INTENS = { so = true, too = true, very = true, really = true, real = true, pretty = true, super = true, quite = true, absolutely = true, totally = true, extremely = true, incredibly = true,
   kinda = true, way = true, mad = true, hella = true, damn = true, freaking = true, fucking = true, extra = true }
 -- verbs a how-word follows: "hits hard", "run fast", "pull slow", "died quick", "take it easy"
 local HOWVERB = {}
@@ -179,10 +179,56 @@ local SLANG_SICK = { was = true, is = true, ["that's"] = true, thats = true, loo
   real = true, pretty = true, super = true, too = true, kinda = true, mad = true, how = true, very = true }
 local VERB_BEFORE = { to = true, gotta = true, must = true, i = true, ["i'll"] = true, ill = true, we = true, can = true,
   could = true, should = true, will = true, lemme = true, gonna = true, please = true, pls = true, ["and"] = true, ["then"] = true,
-  go = true, ["let's"] = true, lets = true, me = true, ["don't"] = true, dont = true }
+  go = true, ["let's"] = true, lets = true, me = true, ["don't"] = true, dont = true, ["didn't"] = true, didnt = true,
+  ["doesn't"] = true, doesnt = true, ["won't"] = true, wont = true, ["can't"] = true, cant = true, would = true, might = true, gonna = true }
 local WORK_NOUN = { from = true, at = true, after = true, before = true, ["for"] = true, of = true, my = true, the = true, off = true, during = true }
 local HOME_FIXED = { got = true, get = true, go = true, going = true, went = true, come = true, came = true, coming = true,
   head = true, heading = true, back = true, at = true, from = true, stay = true, stayed = true, staying = true, way = true, get = true }
+E.FUTURE_VERB = {}
+for w in ([[be go get do have need take make come see tank heal pull try help buy sell give wait put grab run start stop invite
+  check show send bring kill play log sleep eat leave miss catch meet join hop ask tell find stay keep say think want die wipe
+  farm grind level quest craft fish cook mine skin learn train respec fight win lose lead follow carry explain look watch use
+  open loot roll need equip hearth fly ride walk port summon rez res buff drink rest stream raid queue test call text clear
+  skip solo duo group work cry quit lag crash dc afk reset hit attack cast drop pick hold save spend pay trade mail post craft
+  read write talk sit stand jump swim chill relax be]]):gmatch("%S+") do E.FUTURE_VERB[w] = true end
+local BE = { ["i'm"] = true, im = true, am = true, is = true, are = true, was = true, were = true, be = true, being = true, been = true,
+  ["it's"] = true, its = true, ["that's"] = true, thats = true, ["you're"] = true, youre = true, ["we're"] = true, ["they're"] = true,
+  ["he's"] = true, ["she's"] = true, so = true, totally = true, completely = true, flat = true, dead = true, super = true, very = true,
+  pretty = true, too = true, get = true, got = true, getting = true, kinda = true }
+local LEFT_SUBJ = { he = true, she = true, they = true, i = true, we = true, you = true, just = true, already = true, who = true,
+  tank = true, healer = true, guy = true, everyone = true, people = true, someone = true, everybody = true, mage = true, rogue = true }
+local DROP_ADJ = { nice = true, good = true, great = true, rare = true, epic = true, first = true, big = true, sick = true, sweet = true, lucky = true, bad = true }
+local DROP_NOUN = { rate = true, rates = true, chance = true, chances = true, table = true, list = true }
+local COME_PART = { on = true, back = true, out = true, ["in"] = true, up = true, down = true, over = true, here = true, along = true, by = true, around = true, through = true, with = true, to = true, at = true }
+local NOUN_AFTER = { item = true, items = true, giver = true, givers = true, log = true, line = true, chain = true, reward = true, rewards = true,
+  mob = true, mobs = true, npc = true, hub = true, xp = true, text = true, quest = true, quests = true, shot = true, count = true,
+  streak = true, power = true, speed = true, guide = true, zone = true, zones = true, spot = true, spots = true, route = true,
+  gear = true, buddy = true, partner = true, group = true, dungeon = true, dungeons = true, alt = true, alts = true, steal = true }
+local HEAD_GO = { to = true, over = true, back = true, out = true, there = true, home = true, ["in"] = true, up = true, down = true, into = true, towards = true, toward = true }
+local MAKE_FIXED = { sure = true, it = true, sense = true, fun = true, up = true, out = true }
+local WIPE_ADJ = { nice = true, full = true, another = true, big = true, total = true, first = true, second = true, last = true, epic = true, raid = true }
+local AGE = { years = true, yrs = true, year = true, months = true, days = true, weeks = true }
+local LOOSE_AFTER = { now = true, soon = true, early = true, today = true, tonight = true, already = true, lol = true, ["then"] = true, too = true,
+  again = true, anyway = true, lmao = true, haha = true, guys = true, man = true, bro = true, lmfao = true, xd = true, pls = true, please = true,
+  solo = true, alone = true, together = true, still = true, fast = true, slowly = true, quickly = true, ["for"] = true, ["in"] = true }
+local ADJ = {}
+for g in ([[good bad big small strong weak fast easy hard funny stupid smart crazy scary tired hungry happy sad angry annoyed
+  rich poor ugly pretty old new expensive cheap broken boring annoying dangerous ridiculous scared sick late early whole ready
+  lucky unlucky dead important sure fun]]):gmatch("%S+") do ADJ[g] = true end
+local WOW_GAME = { is = true, was = true, just = true, play = true, playing = true, played = true, love = true, ["in"] = true, of = true,
+  about = true, the = true, classic = true, retail = true, my = true, this = true, at = true, quit = true, into = true, ["and"] = true, like = true }
+local LOOK_PART = { out = true, ["for"] = true, like = true, up = true, around = true, into = true, after = true, forward = true }
+local FEW = { few = true, couple = true, several = true, some = true, many = true, more = true, a = true, an = true, ten = true, five = true, two = true, three = true, half = true }
+local GET_FIXED = { up = true, ["in"] = true, out = true, on = true, off = true, back = true, over = true, down = true, away = true, ready = true,
+  rid = true, it = true, there = true, home = true, lost = true, killed = true, rekt = true, to = true, going = true, started = true,
+  used = true, better = true, worse = true, paid = true, hit = true, carried = true, ganked = true, along = true }
+local GOOD_FIXED = { luck = true, morning = true, night = true, evening = true, afternoon = true }
+local GO_FIXED = { ahead = true, afk = true, away = true, off = true, on = true, again = true, go = true, now = true }
+local PLACE_AFTER = { bed = true, sleep = false, town = true, stormwind = true, ironforge = true, orgrimmar = true, darnassus = true,
+  undercity = true, ["thunder"] = true, ["booty"] = true, school = true, work = true, church = true, ["there"] = true }
+local TIME_BEFORE = { first = true, second = true, third = true, last = true, next = true, this = true, that = true, one = true,
+  what = true, every = true, any = true, each = true, another = true, more = true, same = true, no = true, all = true, whole = true,
+  some = true, other = true, good = true, long = true, great = true, ["full"] = true, ["play"] = true, ["free"] = true, ["of"] = true }
 local function Near(t, i, step, skipIntens)
   local j = i + step
   while t[j] do
@@ -190,6 +236,10 @@ local function Near(t, i, step, skipIntens)
     if tk.k == "w" then
       local w = tk.v:lower()
       if not (skipIntens and INTENS[w]) then return w end
+    elseif tk.k == "r" then   -- (1.4.7) a phrase already swapped in ("it is"): its nearest word counts
+      local w = (step < 0 and tk.v:match("([%a']+)[^%a']*$") or tk.v:match("^[^%a']*([%a']+)"))
+      if w and not tk.v:find(step < 0 and "[%.!%?,;:]%s*$" or "^%s*[%.!%?,;:]") then return w:lower() end
+      return nil
     elseif tk.k == "o" and tk.v:find("[%.!%?,;:]") then return nil end
     j = j + step
   end
@@ -206,6 +256,79 @@ function E.KeepHere(k, t, i)
   if k == "work" and prev and WORK_NOUN[prev] then return true end   -- "home from work": the job
   if k == "home" and prev and HOME_FIXED[prev] then return true end   -- "got home", "on my way home"
   if k == "mount" and nxt == "up" then return true end
+  -- (1.4.6) "bad at healing" (not corrupted at it), "elite quest" / "elite mob" (the word picks the kind, keep it)
+  if k == "bad" and nxt == "at" then return true end
+  if k == "elite" and nxt then return true end
+  if k == "hell" and nxt == "of" then return true end
+  -- (1.4.6) set phrases where a swap reads wrong: "let it go", "go ahead", "going to tank" (the future, not a walk),
+  -- "first time", "one day", "get a life", "life tap"
+  if k == "go" and ((prev == "it" or prev == "we") or (nxt and GO_FIXED[nxt])) then return true end
+  if k == "going" and nxt == "to" then
+    local third = Near(t, i, 2)
+    if t[i + 4] and t[i + 4].k == "w" then third = t[i + 4].v:lower() end
+    if not third or not (E.DETERMINER[third] or PLACE_AFTER[third]) then return true end
+  end
+  if k == "time" and ((prev and TIME_BEFORE[prev]) or nxt == "to") then return true end
+  if k == "day" and prev and TIME_BEFORE[prev] then return true end
+  if k == "life" and (prev == "a" or nxt == "tap") then return true end
+  -- (1.4.7) the full audit: one rule per word that reads two ways in chat
+  local raw = t[i - 1]
+  local numBefore = (raw and raw.k == "o" and raw.v:find("%d%s*$")) or (raw and raw.k == "o" and not raw.v:find("%S") and t[i - 2] and t[i - 2].k == "p") or (raw and raw.k == "p")
+  local rawN = t[i + 1]
+  local numAfter = (rawN and rawN.k == "o" and rawN.v:find("^%s*%d")) or (rawN and rawN.k == "o" and not rawN.v:find("%S") and t[i + 2] and t[i + 2].k == "p")
+  if k == "world" and nxt == "of" then return true end                          -- "world of warcraft"
+  if k == "head" and nxt and HEAD_GO[nxt] then return true end                   -- "head to org" (the verb)
+  if k == "face" and prev and (VERB_BEFORE[prev] or prev == "to") then return true end   -- "we face the boss"
+  if (k == "here" or k == "there") and nxt then return true end                  -- "here we go", "there is a rare": only "I'm here" / "over there" swap
+  if (k == "broke" or k == "loaded") and not (prev and BE[prev]) then return true end   -- "it broke", "it loaded": only "I'm broke"
+  if k == "lost" and prev and BE[prev] then return true end                     -- "I'm lost" (where am I), not "we lost"
+  if k == "lost" and nxt and not LOOSE_AFTER[nxt] then return true end          -- "lost all my gold", "lost the tank"
+  if (k == "forget" or k == "forgot") and (nxt == "to" or nxt == "about") then return true end
+  if k == "need" and nxt == "to" then return true end                           -- "need to repair", never "require to repair"
+  if (k == "sick" or k == "scared" or k == "afraid") and nxt == "of" then return true end   -- "sick of this zone"
+  if k == "see" and nxt and (nxt == "you" or nxt == "ya" or nxt == "ye" or nxt == "u" or nxt == "y'all") then return true end   -- "see you tomorrow"
+  if k == "look" and nxt and LOOK_PART[nxt] then return true end               -- "look out", "look for"
+  if k == "item" and prev == "quest" then return true end                        -- "quest item"
+  if (k == "pull" or k == "pulled") and prev and (E.DETERMINER[prev] or ADJ[E.WORD_GROUP[prev] or ""]) then return true end   -- "a stupid pull"
+  if (k == "minute" or k == "minutes" or k == "mins" or k == "hour" or k == "hours") and prev and FEW[prev] then return true end
+  if (k == "get" or k == "grab") and nxt and GET_FIXED[nxt] then return true end   -- "get up", "get ready"
+  if E.WORD_GROUP[k] == "good" and nxt and GOOD_FIXED[nxt] then return true end
+  if k == "luck" and prev == "good" then return true end
+  if k == "wow" and prev and WOW_GAME[prev] then return true end                 -- "my life is just wow now": the game
+  if k == "go" and nxt and E.FUTURE_VERB[nxt] then return true end              -- "let's go kill it"   -- "good luck", "good morning"
+  if E.WORD_GROUP[k] == "crazy" and nxt and ADJ[E.WORD_GROUP[nxt] or ""] then return true end   -- "crazy good dps": crazy means very
+  if k == "left" and not (prev and LEFT_SUBJ[prev]) then return true end        -- "3 left", "on the left": only "he left"
+  if k == "drop" and ((prev and (E.DETERMINER[prev] or DROP_ADJ[prev])) or (nxt and DROP_NOUN[nxt])) then return true end   -- "nice drop", "drop rate"
+  if (k == "okay" or k == "ok" or k == "alright") and prev and (BE[prev] or prev == "it" or prev == "'tis" or prev == "tis" or prev == "be") then return true end   -- "it's okay" means fine
+  if (k == "going" or k == "go") and nxt == "on" then return true end           -- "what's going on"
+  if (k == "come" or k == "coming") and nxt and COME_PART[nxt] then return true end   -- "come back", "coming over"
+  if (k == "quest" or k == "kill" or k == "attack") and nxt and NOUN_AFTER[nxt] then return true end   -- "quest item", "kill quest", "attack power"
+  if k == "attack" and prev == "auto" then return true end
+  if k == "instance" and prev == "for" then return true end                     -- "for instance"
+  if k == "mount" and prev and (VERB_BEFORE[prev] or prev == "can't" or prev == "cant" or prev == "cannot") then return true end
+  if (k == "help" or k == "sleep" or k == "hope") and prev and (E.DETERMINER[prev] or prev == "for" or prev == "of") then return true end   -- "thanks for the help", "no hope"
+  if k == "need" and (nxt == "on" or nxt == "roll" or (prev and (prev == "roll" or prev == "rolled" or prev == "no" or prev == "hit"))) then return true end   -- loot rolls
+  if k == "make" and nxt and MAKE_FIXED[nxt] then return true end              -- "make sure", "make it"
+  if k == "give" and nxt == "up" then return true end
+  if k == "sorry" and prev and (BE[prev] or prev == "feel" or prev == "so" or prev == "very" or prev == "really") then return true end   -- "I'm sorry I pulled"
+  if k == "wipe" and prev and (E.DETERMINER[prev] or WIPE_ADJ[prev]) then return true end   -- "that was a wipe"
+  if k == "ready" and nxt and (nxt == "to" or nxt == "for" or nxt == "check") then return true end
+  if k == "old" and (prev == "how" or (prev and AGE[prev]) or numBefore) then return true end   -- "how old", "20 years old"
+  if k == "new" and nxt == "to" then return true end
+  if k == "now" and prev == "right" then return true end                        -- "right now" is its own phrase
+  if k == "tired" and nxt == "of" then return true end
+  if (k == "leveling" or k == "levelling") and nxt and (nxt == "up" or NOUN_AFTER[nxt]) then return true end
+  if (k == "minute" or k == "minutes" or k == "mins" or k == "hour" or k == "hours" or k == "sec") and numBefore then return true end
+  if (k == "day" or k == "time") and numAfter then return true end              -- "day 3"
+  if (k == "no" or k == "nah") and nxt then return true end                     -- "no mana": only a plain "no" is an answer
+  if (k == "light" or k == "fire") and nxt then return true end                 -- "light armor", "fire resist"
+  if (k == "leave" or k == "quit" or k == "win" or k == "leveling" or k == "levelling") and nxt and not LOOSE_AFTER[nxt] then return true end   -- "leveling a warrior"
+  if k == "wait" and ((nxt and (nxt == "until" or nxt == "till" or nxt == "til" or nxt == "to" or nxt == "up" or nxt == "a")) or (prev and (prev == "can't" or prev == "cant" or prev == "cannot"))) then return true end   -- "can't wait"
+  if k == "drop" or k == "dropped" or k == "drops" then return true end           -- "did it drop", "nice drop": the loot word stays   -- "leave the group", "win the roll"
+  if k == "work" then return true end                                           -- "it doesn't work" and "home from work" both stay                        -- "one hell of a run"
+  if k == "guess" and nxt == "what" then return true end                     -- "guess what"
+  if k == "quick" and nxt and (nxt == "question" or nxt == "q" or nxt == "one" or nxt == "sec" or nxt == "break") then return true end
+  if (k == "group" or k == "party") and prev and (prev == "to" or prev == "can" or prev == "lets" or prev == "let's" or prev == "wanna") then return true end   -- the verb: "want to group"
   if k == "play" or k == "playing" or k == "played" then return true end   -- "play wow", "playing a priest"
   if k == "world" and nxt and (nxt == "boss" or nxt == "bosses" or nxt == "buff" or nxt == "buffs" or nxt == "chat" or nxt == "pvp" or nxt == "first") then return true end
   if (k == "boss" or k == "bosses" or k == "buff" or k == "buffs") and prev == "world" then return true end
@@ -374,13 +497,15 @@ local function ClauseStart(out)
   return true
 end
 local function ClauseEnd(t, last)
-  local nx = t[last + 1]
-  if not nx then return true end
-  if nx.k == "p" then return true end
-  if nx.k ~= "o" then return false end
-  if nx.v:find("[,%.!%?;:%(%)]") then return true end
-  local after = t[last + 2]
-  return after == nil or after.k == "p"
+  -- (1.4.7) a link or number is not the end when words follow it: "we wiped 60 times" is not "We died."
+  local j = last + 1
+  while t[j] do
+    local x = t[j]
+    if x.k == "w" or x.k == "r" then return false end
+    if x.k == "o" and x.v:find("[,%.!%?;:%(%)]") then return true end
+    j = j + 1
+  end
+  return true
 end
 
 ---------------------------------------------------------------------------
@@ -388,6 +513,82 @@ end
 ---------------------------------------------------------------------------
 -- E.Apply(key, text, strength, opts) -> new text. opts.names: player names to leave alone,
 -- opts.noFlavor: no openers or closers (used when a line is too long)
+---------------------------------------------------------------------------
+-- (1.4.7) which swap fits where. A swap like "a cakewalk" or "smooth sailin'" can only end a thought ("that was easy"),
+-- never sit in front of a word ("easy quest"). "your tribute is accepted" can't be followed by "for the help".
+---------------------------------------------------------------------------
+local AFTER_ADJ = {}
+for w in ([[to for and or but now then lol lmao lmfao haha hahaha xd though tho too enough as if when with at so man bro dude guys
+  af today tonight right again anyway yet already honestly tbh imo because cause cuz since until til in on of from by there here
+  yo you me i we they he she it ngl fr rn lately sometimes either also still btw bud buddy fam all ever lately this that]]):gmatch("%S+") do AFTER_ADJ[w] = true end
+local PRED_ONLY = {}
+for x in ([[smooth sailin'|double time|child's play|simple enough|folly|highway robbery|bankrupt-sad|done in|tuckered out|wiped out|big brain
+  |worn to the bone|beat|gassed|a snooze|always late|too late|in overtime|behind schedule|behind the wind|at first light]]):gmatch("[^|]+") do PRED_ONLY[x:match("^%s*(.-)%s*$")] = true end
+local function PredOnly(x)
+  local l = x:lower()
+  return PRED_ONLY[l] or l:find("^an? ") or l:find("^no ") or l:find("^nothing") or l:find("^nae ") or l:find("^too much")
+    or l:find("^lotsa") or l:find("^too ") or l:find("^many ") or l:find("^need ") or l:find("^want ") or l:find("^make ") or l:find("^ready ")
+    or l:find("^easy %a") or l:find("^in ") or l:find(" as ") or l:find(" like ") or l:find(" than ") or l:find(" of ") or l:find(" to ")
+    or l:find(" for ") or l:find(" in ") or l:find(" on ") or l:find(" me$") or l:find("[,%.!%?]")
+end
+-- verbs that read wrong with a two-word swap in front of more words: "wait for me" is not "hold your horses for me"
+local CLAUSE_VERB = { wait = true, stop = true, try = true, look = true, forget = true }
+-- words that start a thought: a longer swap only at the very start ("honestly, ..."), never "I wake up died"
+local START_ADV = { honestly = true, obviously = true }
+-- answers and thanks: a whole little sentence only when nothing follows
+local INTERJ = { thanks = true, sorry = true, okay = true, yes = true, no = true, maybe = true, ugh = true, hello = true }
+local COMMA_AFTER = { hello = true, yes = true, no = true }
+local STANDALONE = {}
+for x in ([[a class act|gratitude logged|apology issued|no refunds|no excuses|a rough play|i'll remember that|your tribute is accepted
+  |depends on the price|probability fifty percent|reckon so|so be it|very well|as you wish|sure thing|copy that|roger|acknowledged
+  |deal|agreed|indeed|quite so|it is so|sir yes sir|zug zug|yeah dude|exactly|sure enough|never|certainly not|i think not
+  |not really|i'm afraid not|that's what they want|ew, no|no deal|no dice|negative|affirmative|aye aye|nae chance|no way
+  |so, you have come|welcome, mortals|ten-hut|listen up|what's the deal|welcome|yeah, hello|ah, you|welcome back, folks|throm-ka|lok'tar]]):gmatch("[^|]+") do STANDALONE[x:match("^%s*(.-)%s*$")] = true end
+local function Standalone(x)
+  local l = x:lower()
+  if STANDALONE[l] or l:find("[,%.!%?]") then return true end
+  local _, n = l:gsub("%S+", "")
+  return n >= 4
+end
+local PAD = { please = true, pls = true, plz = true, lol = true, now = true, asap = true, thanks = true, ty = true, guys = true, man = true, bro = true }
+local PREP_END = { ["in"] = true, on = true, with = true, at = true, ["for"] = true, of = true, to = true, into = true, up = true }
+local function Fits(g, k, x, prev, nxt)
+  if type(x) ~= "string" then return true end
+  if g and ADJ[g] and nxt and not AFTER_ADJ[nxt] and PredOnly(x) then return false end
+  if g and CLAUSE_VERB[g] and nxt and x:find(" ") then return false end
+  if g and START_ADV[g] and prev and x:find(" ") then return false end
+  if g and INTERJ[g] and nxt and Standalone(x) then return false end
+  if (not nxt or PAD[nxt]) and x:find(" %a+$") and PREP_END[x:match(" (%a+)$")] then return false end   -- "can you help" is not "can you invest in"
+  if g == "finally" and prev and (x == "about time" or x:find("!")) then return false end
+  return true
+end
+E.Fits = Fits
+-- (1.4.7) "thank you" -> "thank thee", "you are" -> "thou art": thou does, thee is done to
+local THEE_PREV = {}
+for w in ([[to for with at from of by about on in upon unto without like than behind beside near against thank thanks see tell give help
+  love hate kill heal invite need want show ask let make beat miss follow trust know hear call meet join pay owe bless save carry
+  find get send bring teach guide protect forgive leave res rez buff summon]]):gmatch("%S+") do THEE_PREV[w] = true end
+-- (1.4.7) set lines that only work as a whole thought, or only with certain endings when more words follow
+E.FOLLOW = {
+  ["good luck"] = true, ["be careful"] = true, ["calm down"] = true, ["hurry up"] = true, ["have fun"] = true, ["i'm dead"] = true,
+  ["i'm dying"] = true, ["i don't care"] = true, ["for free"] = true, ["how's it going"] = true, ["what's up"] = true, ["no way"] = true,
+  ["no worries"] = true, ["sounds good"] = true, ["take care"] = true, ["see you"] = true, ["that's crazy"] = true, ["come on"] = true,
+  ["kill me"] = true, ["got it"] = true, ["my bad"] = true, ["of course"] = true, ["for real"] = true,
+  ["i don't know"] = { say = 1, know = 1, knows = 1, tell = 1, me = 1, ya = 1, dunno = 1, idea = 1, said = 1, care = 1 },
+  ["i dunno"] = { say = 1, know = 1, dunno = 1, me = 1 },
+  ["i'm tired"] = { weary = 1, tired = 1, wiped = 1 },
+  ["i'm hungry"] = { hungry = 1, hunger = 1 },
+  ["let's go"] = { go = 1 },
+}
+E.NOT_ALONE = { ["so long"] = true }   -- "so long" alone is a goodbye, not "an age"
+local function NextWord(t, j)
+  while t[j] do
+    if t[j].k == "w" then return Key(t[j].v) end
+    if t[j].k == "p" or (t[j].k == "o" and t[j].v:find("[%.!%?,;:]")) then return nil end
+    j = j + 1
+  end
+end
+
 function E.Apply(key, text, strength, opts)
   local def = ns.ACCENTS[key]
   if not def or type(text) ~= "string" or text == "" then return text end
@@ -429,20 +630,59 @@ function E.Apply(key, text, strength, opts)
             local cs, ce = ClauseStart(out), ClauseEnd(t, used[#used])
             -- interjections (lol, wow, gg, brb, rip) also count at the very start or end of a line
             if not ((cs and ce) or (E.LOOSE[c.id] and #c.words == 1 and ((cs and #out == 0) or (ce and not t[used[#used] + 2])))) then used = nil end
+            -- (1.4.6) "that was a wipe", "nice wipe": only "rip" stands for a death line inside a sentence
+            if used and c.id == "dead" and not (cs and ce) and Key(t[i].v) ~= "rip" then used = nil end
           end
           if used and opts.keepSwears and c.kind == "phrase" and E.SWEAR_PHRASE[c.id] then used = nil end
+          -- (1.4.6) "I'm going to" is "I shall" only before a verb: "I'm going to stormwind" is a trip
+          if used and c.kind == "phrase" and c.words[#c.words] == "to" and (c.words[#c.words - 1] == "going" or c.words[#c.words - 1] == "gonna") then
+            local nx = t[used[#used] + 2]
+            if not (nx and nx.k == "w" and E.FUTURE_VERB[Key(nx.v)]) then used = nil end
+          end
+          local pool = c.out
+          local used0 = used
+          if used and c.kind == "phrase" then
+            local nxw = NextWord(t, used[#used] + 1)
+            local f = E.FOLLOW[c.id]
+            if (c.id == "i think" and nxw == "so") or (c.words[#c.words] == "need" and nxw == "to") then used = nil
+              for _, u in ipairs(used0) do t[u].keep = true end
+            elseif E.NOT_ALONE[c.id] and ClauseStart(out) then used = nil
+            elseif nxw and type(pool) == "table" then
+              if f == true then used = nil; for _, u in ipairs(used0) do t[u].keep = true end   -- leave the words as typed
+              else
+                local keep = {}
+                for _, v in ipairs(pool) do
+                  local last = v:lower():match("([%a']+)%W*$")
+                  if not v:find("[,%.!%?]") and (type(f) ~= "table" or (last and f[last])) then keep[#keep + 1] = v end
+                end
+                if #keep == 0 then used = nil; for _, u in ipairs(used0) do t[u].keep = true end else pool = keep end
+              end
+            elseif nxw and type(pool) == "string" then
+              if f == true or (type(f) == "table" and not f[(pool:lower():match("([%a']+)%W*$") or "")]) or pool:find("[,%.!%?]") then used = nil end
+            end
+          end
           if used and (c.kind ~= "say" or random() < sayChance) then
-            local repl = Pick(c.out)
+            local repl = Pick(pool)
             local orig = {}
             for _, u in ipairs(used) do orig[#orig + 1] = t[u].v end
-            local r = Case(table.concat(orig, " "), repl, firstWord)
+            local o = table.concat(orig, " ")
+            -- (1.4.6) "XD", "LOL", "GG" are how people type them, not shouting: the line keeps its own case
+            if c.kind == "say" and #o <= 4 and not o:find("%l") then o = o:lower() end
+            local r = Case(o, repl, firstWord)
             if c.kind == "say" then
               -- a whole line in the middle of a message reads as its own sentence: "..., Me back." -> "... Me back."
               local prev = out[#out]
               if prev and prev.k == "o" and prev.v:find(",%s*$") then prev.v = prev.v:gsub(",(%s*)$", ".%1")
-              elseif #out > 0 and not (prev and prev.k == "o" and prev.v:find("[%.!%?]%s*$")) then r = r:gsub("^(%u)(%l)", function(a, b) return a:lower() .. b end) end
+              elseif #out > 0 and not (prev and prev.k == "o" and prev.v:find("[%.!%?]%s*$")) then
+                -- (1.4.6) a full sentence after words ("get a life lol"): end the words first, "get a life. Amusing, young one."
+                local before = out[#out - 1]
+                if r:find("[%.!%?]$") and prev and prev.k == "o" and not prev.v:find("%S") then
+                  if not (before and before.v:find("[%.!%?%*]$")) then prev.v = "." .. prev.v end
+                else r = r:gsub("^(%u)(%l)", function(a, b) return a:lower() .. b end) end
+              end
               local nx = t[used[#used] + 1]
-              if nx and nx.k == "o" and r:find("[%.!%?]$") then nx.v = nx.v:gsub("^[,%.]", "") end
+              -- (1.4.6) "hello?" -> "Greetings.?": the line brings its own end mark
+              if nx and nx.k == "o" and r:find("[%.!%?]$") then nx.v = nx.v:gsub("^[,%.%?!]+", "") end
             end
             -- the same line twice in a row ("going to bed, good night all"): say it once
             local twice = c.kind == "say" and lastSay == c.id
@@ -495,11 +735,32 @@ function E.Apply(key, text, strength, opts)
       local repl = heavy[k] or more[k] or words[k]
       local group = not repl and lex and groups[k]
       -- (1.4.3) the same word can mean two things in chat: leave it alone when the words around it say so
-      if E.KeepHere(k, out, n) then repl, group = nil, nil end
+      if tok.keep or E.KeepHere(k, out, n) then repl, group = nil, nil end
       if group and opts.keepSwears and E.SWEAR_GROUP[group] then group = nil end
       if group and lex[group] and random() < (E.SWEAR_GROUP[group] and 1 or lexChance) then repl = lex[group] end
       if repl then
+        local pool = repl
         repl = Fresh(repl, group or k)
+        -- (1.4.7) keep only a swap that fits here (see Fits); thee or thou by place
+        do
+          local g = group or E.WORD_GROUP[k]
+          local pw, nw = Near(out, n, -1), Near(out, n, 1)
+          if type(pool) == "table" and #pool == 2 and ((pool[1] == "thee" and pool[2] == "thou") or (pool[1] == "thou" and pool[2] == "thee")) then
+            repl = (pw and THEE_PREV[pw]) and "thee" or "thou"
+          elseif not Fits(g, k, repl, pw, nw) then
+            local alt
+            if type(pool) == "table" then
+              local s0 = random(#pool)
+              for d = 0, #pool - 1 do local x = pool[(s0 + d - 1) % #pool + 1]; if Fits(g, k, x, pw, nw) then alt = x; break end end
+            end
+            repl = alt or tok.v
+          end
+          -- "hey can you help me" -> "Well met, can you help me"
+          if g and COMMA_AFTER[g] and nw and repl ~= tok.v and not repl:find("[,%.!%?]$") then
+            local nt = out[n + 1]
+            if nt and nt.k == "o" and nt.v:match("^%s+$") then repl = repl .. "," end
+          end
+        end
         -- "the horde" -> "the the Horde": a swap that brings its own "the" drops it when one is already there
         -- (1.4.3) "pretty a cakewalk", "so a riot": a swap with its own "a" can't follow so/pretty/very. Pick another, or keep
         if repl:find("^[Aa]n? ") then
@@ -536,6 +797,10 @@ function E.Apply(key, text, strength, opts)
               break
             end
           end
+        end
+        if repl:find("^[Tt]his ") or repl:find("^[Tt]hat ") then
+          local pw = Near(out, n, -1)
+          if pw and E.DETERMINER[pw] then repl = repl:gsub("^%a+ ", "") end
         end
         if repl:find("^[Tt]he ") then
           for j = #res, 1, -1 do

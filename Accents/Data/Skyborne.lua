@@ -30,7 +30,7 @@ local d = {
     ["omg"] = "by the four winds", ["good luck"] = "may the winds guide your path", ["let's go"] = "to the skies|let us ride the winds",
     ["you guys"] = "you sky-kin|you all", ["right now"] = "on this very breeze", ["calm down"] = "let the wind settle", ["be careful"] = "mind the crosswinds",
     ["what the hell"] = "what ill wind is this", ["i'm tired"] = "my wings are weary", ["take care"] = "fair winds", ["have fun"] = "enjoy the breeze",
-    ["a lot"] = "a great gust of", ["no way"] = "not on any wind",
+    ["a lot"] = "a great gust", ["no way"] = "not on any wind",
   },
   lex = {
     friend = "sky-kin|friend|wind-friend", friends = "sky-kin|friends|wind-friends", enemy = "storm-bringer|foe", enemies = "storm-bringers|foes",

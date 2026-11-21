@@ -146,4 +146,6 @@ ns.LOCALES.zhCN = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "设置只显示你的职业用得上的：德鲁伊看到荆棘术，法师看到护甲，依此类推",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "荆棘术默认给坦克和近战（它只伤害打你的人）。仍可选择所有人",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "萨满：自动按天赋选武器附魔，增强选风怒或石化，元素和恢复选火舌",
+  ["My Role"] = "我的职责",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "新的圣骑士设置“我的职责”：自动（按天赋，和以前一样）、治疗、坦克或惩戒。选惩戒会得到力量和王者而不是智慧，用这个插件的其他圣骑士也会照此安排",
 } end

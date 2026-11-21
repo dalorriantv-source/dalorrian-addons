@@ -145,4 +145,6 @@ ns.LOCALES.frFR = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "Les réglages ne montrent que ce que votre classe utilise : un druide voit Épines, un mage voit Armure, etc.",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "Épines va par défaut aux tanks et à la mêlée (il ne blesse que ce qui vous frappe). Tout le monde reste possible",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "Chamans : Auto choisit l'enchantement selon vos talents, Furie-des-vents ou Croque-roc pour Amélioration, Langue de feu pour Élémentaire et Restauration",
+  ["My Role"] = "Mon rôle",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "Nouveau réglage de paladin, Mon rôle : Auto (d'après vos talents, comme avant), Soigneur, Tank ou Vindicte. Avec Vindicte vous recevez Puissance et Rois au lieu de Sagesse, et les autres paladins avec l'addon en tiennent compte",
 } end

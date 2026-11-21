@@ -241,6 +241,8 @@ local ROLE_BY_TREE = {
 local function MyRole()
   local _, class = UnitClass("player")
   if class ~= "PALADIN" then return nil end
+  -- (1.3.2) your pick in Settings (My Role) wins over talents and the group's role
+  if DB and DB.myRole then return DB.myRole end
   if UnitGroupRolesAssigned and UnitGroupRolesAssigned("player") == "TANK" then return "tank" end
   return ROLE_BY_TREE.PALADIN[BestTree(false) or 0]
 end
@@ -1161,6 +1163,10 @@ ns.HelpConfig = {
       get = function() return DB.show end, set = function(v) DB.show = v; Refresh() end },
     { label = "Recast", choices = { { "1 Min Left", 60 }, { "5 Min Left", 300 }, { "10 Min Left", 600 } },
       get = function() return DB.refresh end, set = function(v) DB.refresh = v; Refresh() end },
+    -- (1.3.2) your own role, when reading your talents gets it wrong (a Ret paladin shown as a healer)
+    { class = "PALADIN", label = "My Role", choices = { { "Auto", "auto" }, { "Healer", "hybrid" }, { "Tank", "tank" }, { "Retribution", "ret" } },
+      get = function() return DB.myRole or "auto" end,
+      set = function(v) DB.myRole = (v ~= "auto") and v or nil; planDirty = true; Hello(true); Refresh() end },
     { class = "PALADIN", label = "Righteous Fury", choices = { { "When Tanking", true }, { "Off", false } },
       get = function() return DB.fury and true or false end, set = function(v) DB.fury = v; Refresh() end },
     { class = "PALADIN", label = "Aura Reminder", choices = { { "On", true }, { "Off", false } },
@@ -1186,6 +1192,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.3.2", "New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too" },
     { v = "1.3.1", "Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on", "Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice", "Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration" },
     { v = "1.3.0", "New name, Blessings & Buffs: every class with a buff uses it now. Druids give Mark of the Wild and Thorns, and it keeps up your own buffs: mage Ice or Frost Armor, warlock Demon Armor or Demon Skin, priest Inner Fire, shaman Lightning Shield and a weapon imbue, hunter Trueshot Aura and an aspect, warrior Battle Shout when you have the rage", "Settings for Thorns (everyone, tanks only or off), Mage Armor, the shaman weapon imbue and the hunter aspect. A buff you picked yourself is kept: if you already have Mage Armor or Aspect of the Monkey on, it won't swap it. /bless still works" },
     { v = "1.2.1", "Priests and mages get the minimap button too (it only showed for paladins). Right-click it to keep the buff button on screen even when everyone is buffed" },

@@ -42,7 +42,7 @@ Bank("orc", {
     rich = "rich|full of gold", ugly = "ugly|ugly like kobold|hideous", pretty = "pretty|fine|good-looking",
     old = "old|ancient|grey", new = "new|fresh", expensive = "costly|too much gold|pricey",
     broken = "broken|busted|smashed", boring = "boring|dull|sleepy", important = "important|big deal",
-    very = "much|very|mighty|big", maybe = "maybe|perhaps", probably = "probably|maybe", definitely = "for sure|yes|always",
+    very = "much|very|mighty|big", maybe = "maybe|perhaps", probably = "probably|maybe", definitely = "for sure",
     money = "gold|coin|shinies", food = "meat|grub|food|roast", drink = "grog|drink|swill|ale",
     weapon = "axe|blade|weapon|cleaver", weapons = "axes|blades|weapons", armor = "armor|mail|plate",
     gear = "gear|loot|spoils", stuff = "stuff|junk|things", quest = "task|mission|job|hunt", quests = "tasks|jobs|hunts",
@@ -53,8 +53,8 @@ Bank("orc", {
     attack = "smash|attack|charge", help = "help|aid", go = "go|march",
     want = "want|need", think = "think|say", know = "know", look = "look",
     get = "get|take|grab", buy = "buy|trade for", make = "make|forge|build",
-    love = "love|like much", hate = "hate|despise|loathe", farm = "farm|grind|hunt", farming = "farming|grinding|hunting",
-    die = "die|fall", died = "died|fell", leave = "leave|go", lose = "lose", win = "win|conquer",
+    love = "love", hate = "hate|despise|loathe", farm = "farm|grind|hunt", farming = "farming|grinding|hunting",
+    die = "die|fall", died = "died|fell", leave = "leave", lose = "lose", win = "win|conquer",
     hello = "throm-ka|lok'tar|hail", yes = "zug zug|dabu|yes", no = "no|never|nah",
     damn = "grr|blast|curse it|bah", wow = "grr|whoa|by Doomhammer", lol = "har har|ha|haha|har",
     but = "but", because = "because|cause",
@@ -85,7 +85,7 @@ Bank("troll", {
     angry = "angry|mad|hot", rich = "rich|loaded", ugly = "ugly|nasty-lookin'", pretty = "pretty|fine|lovely",
     old = "old|ancient", expensive = "pricey|too much gold|crazy expensive", broken = "busted|broken|cursed",
     boring = "boring|sleepy", very = "real|very|so|mighty", maybe = "maybe|could be", probably = "prob'ly|maybe",
-    definitely = "for sure|fo' sure|sure ting",
+    definitely = "for sure|fo' sure",
     money = "gold|coin|shiny", food = "grub|food|eats|fish", drink = "drink|rum|juice",
     weapon = "spear|weapon|blade|axe", gear = "gear|loot|goodies", stuff = "stuff|tings|junk",
     quest = "job|quest|task", quests = "jobs|quests", dungeon = "cave|dungeon|hole", dungeons = "caves|dungeons",
@@ -114,25 +114,25 @@ Bank("troll", {
 ---------------------------------------------------------------------------
 Bank("tauren", {
   lex = {
-    friend = "friend|little one|kin|brother", friends = "friends|little ones|kin|herd|tribe",
+    friend = "friend|kin", friends = "friends|little ones|kin|herd|tribe",
     enemy = "foe|enemy|lost soul", enemies = "foes|enemies|lost souls",
     mob = "beast|creature|spirit|thing", mobs = "beasts|creatures|wild things",
     boss = "great beast|chieftain|old one|great foe", bosses = "great beasts|old ones",
     noob = "calf|young one|little calf", idiot = "foolish one|lost calf|silly one", idiots = "foolish ones|lost calves",
-    leader = "chieftain|elder|leader", kid = "calf|young one", man = "brave|bull", woman = "cow|sister",
+    leader = "chieftain|elder|leader", kid = "calf|young one", man = "brave|bull", woman = "lady",
     good = "good|blessed|fine|worthy", bad = "bad|unwise|troubling|unbalanced",
     big = "big|great|mighty|vast", small = "small|little|humble", strong = "strong|mighty|sturdy as stone",
     weak = "weak|frail|tender", fast = "swift|fast|quick as the wind", quickly = "swiftly|with haste",
-    slow = "slow|patient|unhurried", slowly = "slowly|patiently",
+    slow = "slow|unhurried", slowly = "slowly|patiently",
     easy = "easy|simple|gentle", hard = "hard|trying|difficult as climbing a mesa",
     funny = "funny|amusing", stupid = "foolish|unwise|silly", smart = "wise|clever|thoughtful",
     crazy = "wild|untamed|mad as a kodo", scary = "frightful|dark|unsettling", tired = "weary|tired|heavy-hooved",
     hungry = "hungry|ready to graze", happy = "content|happy|at peace", sad = "sad|heavy-hearted",
     angry = "angry|stormy|restless", rich = "rich|blessed with plenty", ugly = "unsightly|homely",
-    pretty = "beautiful|lovely|fair as the plains", old = "old|ancient|aged", new = "new|young|fresh",
+    pretty = "beautiful|lovely|fair as the plains", old = "old|ancient|aged", new = "new|fresh",
     expensive = "costly|dear", broken = "broken|cracked", boring = "dull|quiet",
     very = "very|truly|greatly|deeply", maybe = "perhaps|maybe", probably = "likely|perhaps",
-    definitely = "surely|truly", always = "always|ever", never = "never",
+    definitely = "surely|truly", always = "always", never = "never",
     now = "now", soon = "soon|before long", later = "later|in time",
     money = "gold|coin|trade goods", food = "food|grain|stew|meal", drink = "water|drink|spring water",
     weapon = "totem|staff|weapon|axe", weapons = "weapons|totems", armor = "hide|armor",
@@ -140,8 +140,8 @@ Bank("tauren", {
     dungeon = "cave|dark place|deep place", dungeons = "caves|dark places", home = "lodge|home|tent",
     city = "Thunder Bluff|town|the village", fight = "battle|fight|struggle", fights = "battles|struggles",
     problem = "trouble|burden|problem", magic = "magic|spirit power", mount = "kodo|mount",
-    world = "world|land|Earth Mother", life = "life|path", time = "time|season",
-    day = "day|sun", morning = "dawn|morning", today = "this day|today",
+    world = "world|land|Earth Mother", life = "life|path", time = "time",
+    day = "day", morning = "dawn|morning", today = "this day|today",
     kill = "hunt|kill|bring down|end", killed = "hunted|killed|brought down", killing = "hunting|killing",
     attack = "charge|attack", help = "help|aid", go = "go|walk|wander",
     going = "going|walking|wandering", want = "want|wish|seek", think = "feel|believe|think",
@@ -149,9 +149,9 @@ Bank("tauren", {
     get = "get|gather", buy = "trade for|buy", make = "make|craft", eat = "eat|graze",
     sleep = "rest|sleep|dream", love = "love|cherish", hate = "dislike|hate",
     farm = "gather|farm", farming = "gathering|farming", die = "die|return to the earth",
-    died = "died|returned to the earth", leave = "leave|depart", lose = "lose", win = "win|prevail",
+    died = "died|returned to the earth", leave = "leave", lose = "lose", win = "win|prevail",
     hello = "peace|well met|greetings", bye = "farewell|walk with the Earth Mother", yes = "yes|indeed|it is so",
-    no = "no|it is not so", damn = "hrm|alas|by the Earth Mother", wow = "by the Earth Mother|hm|ah",
+    no = "no|nay", damn = "hrm|alas|by the Earth Mother", wow = "by the Earth Mother|hm|ah",
     lol = "hm hm|ha|*chuckles*", ugh = "hrm|ugh",
   },
   interject = "little one|hm|friend",
@@ -247,7 +247,7 @@ Bank("human", {
 ---------------------------------------------------------------------------
 Bank("dwarf", {
   lex = {
-    friend = "lad|lass|friend|me friend", friends = "lads|friends|lads an' lasses|me friends",
+    friend = "lad|friend|me friend", friends = "lads|friends|lads an' lasses|me friends",
     enemy = "foe|scoundrel|enemy", enemies = "foes|scoundrels|enemies",
     mob = "beastie|beast|brute|critter", mobs = "beasties|beasts|brutes|critters",
     boss = "big brute|big beastie|great ugly lump", noob = "wee lad|beardling|greenbeard",
@@ -264,7 +264,7 @@ Bank("dwarf", {
     pretty = "bonny|pretty|lovely", old = "auld|old|ancient", new = "new|shiny",
     expensive = "dear|pricey|a king's ransom", broken = "broken|knackered|busted", boring = "dull|borin'",
     very = "right|awful|pure|very|dead", maybe = "maybe|mebbe|aye, perhaps", probably = "prob'ly|likely",
-    definitely = "aye|for certain|nae doubt", always = "always|aye always", never = "never|ne'er",
+    definitely = "for certain|nae doubt", always = "always", never = "never|ne'er",
     money = "gold|coin|siller", food = "grub|food|vittles|roast", drink = "ale|stout|drink|brew|pint",
     weapon = "hammer|axe|blade|weapon", weapons = "hammers|axes|weapons", armor = "armor|plate|mail",
     gear = "gear|kit|loot", stuff = "stuff|gubbins|bits an' bobs", quest = "job|task|quest", quests = "jobs|tasks|quests",
@@ -272,7 +272,7 @@ Bank("dwarf", {
     city = "Ironforge|town|the city", fight = "brawl|scrap|fight|rammy", fights = "brawls|scraps|fights",
     problem = "bother|problem|trouble", magic = "magic|runes", mount = "ram|mount",
     kill = "flatten|smash|kill|squash|batter", killed = "flattened|smashed|killed|squashed", killing = "flattenin'|smashin'|killin'",
-    attack = "clobber|attack|hit", help = "help", go = "go|head", want = "want|fancy", think = "reckon|think",
+    attack = "clobber|attack|hit", help = "help", go = "go", want = "want", think = "reckon|think",
     know = "ken|know", look = "look|have a gander", get = "get|grab", buy = "buy",
     make = "forge|make|craft", eat = "eat|scoff", sleep = "kip|sleep|rest", love = "love",
     hate = "hate|cannae stand", farm = "mine|farm|dig", farming = "minin'|farmin'|diggin'",
@@ -328,7 +328,7 @@ Bank("gnome", {
     kill = "dismantle|defeat|disassemble|neutralize", killed = "dismantled|defeated|disassembled|neutralized",
     killing = "dismantling|defeating", attack = "zap|attack", help = "help|assist",
     go = "go|zip|scoot", want = "want", think = "calculate|think|theorize",
-    know = "know", look = "look|inspect|analyze", get = "get|acquire", buy = "buy|procure",
+    know = "know", look = "look|inspect|analyze", get = "get", buy = "buy|procure",
     make = "build|invent|engineer|make", eat = "eat|refuel", sleep = "recharge|sleep|power down",
     love = "love|adore", hate = "hate|can't stand", farm = "collect|farm", farming = "collecting|farming",
     die = "die|break down", died = "died|broke down", lose = "lose", win = "win|succeed",
@@ -344,43 +344,43 @@ Bank("gnome", {
 ---------------------------------------------------------------------------
 Bank("nightelf", {
   lex = {
-    friend = "friend|young one|sister|brother", friends = "friends|young ones|kin|sisters and brothers",
+    friend = "friend|companion", friends = "friends|companions|kin",
     enemy = "foe|enemy|defiler", enemies = "foes|enemies|defilers",
     mob = "beast|creature|corrupted thing", mobs = "beasts|creatures|wild things",
     boss = "great foe|ancient evil|corrupted one", noob = "young one|sapling|initiate",
     idiot = "fool|foolish one|sapling", idiots = "fools|foolish ones",
-    leader = "elder|leader|high priestess", kid = "young one|sapling", man = "man|brother", woman = "woman|sister",
-    good = "good|graceful|blessed|beautiful|serene", bad = "bad|corrupted|tainted|troubling",
+    leader = "elder|leader|high priestess", kid = "young one|sapling", man = "man|brother", woman = "woman|lady",
+    good = "good|graceful|blessed|wondrous|lovely", bad = "bad|dire|troubling|grim",
     big = "great|vast|immense", small = "small|slight|little", strong = "strong|mighty|unyielding",
-    weak = "weak|frail|fragile", fast = "swift|fleet|fast", quickly = "swiftly|quickly|like the wind",
-    slow = "slow|patient", slowly = "slowly|patiently", easy = "easy|simple|effortless", hard = "hard|trying|daunting",
+    weak = "weak|frail|fragile", fast = "swift|fast", quickly = "swiftly|quickly|like the wind",
+    slow = "slow", slowly = "slowly|patiently", easy = "easy|simple|effortless", hard = "hard|trying|daunting",
     funny = "amusing|curious", stupid = "foolish|unwise|thoughtless", smart = "wise|clever|insightful",
-    crazy = "mad|wild|reckless", scary = "dreadful|ominous|haunting", tired = "weary|tired",
+    crazy = "wild|reckless|unthinkable", scary = "dreadful|ominous|haunting", tired = "weary|tired",
     hungry = "hungry", happy = "joyful|content|at peace", sad = "sorrowful|melancholy|heavy-hearted",
     angry = "wrathful|angry|furious", rich = "rich|blessed", ugly = "ugly|unsightly|corrupted",
-    pretty = "beautiful|graceful|radiant", old = "ancient|old|timeless", new = "new|young",
+    pretty = "beautiful|graceful|radiant", old = "ancient|old|timeless", new = "new|fresh",
     expensive = "costly|precious", broken = "broken|shattered", boring = "dull|tedious",
-    very = "very|truly|deeply|most", maybe = "perhaps|maybe", probably = "likely|perhaps",
+    very = "very|truly", maybe = "perhaps|maybe", probably = "likely|perhaps",
     definitely = "surely|certainly", always = "always|eternally", never = "never",
-    now = "now", soon = "soon|before the moon rises", later = "later|in time",
+    now = "now", soon = "soon|before long", later = "later|in time",
     money = "gold|coin", food = "food|moonberries|fruit|nourishment", drink = "drink|cup of moonwell water|cup of water",
-    weapon = "glaive|blade|bow|weapon", weapons = "glaives|blades|weapons", armor = "armor|leathers",
+    weapon = "weapon|blade", weapons = "weapons|blades", armor = "armor|leathers",
     gear = "gear|relics", stuff = "things|belongings|trinkets", quest = "task|path|calling", quests = "tasks|callings",
     dungeon = "barrow|dark place|ruin", dungeons = "barrows|dark places|ruins", home = "home|grove|Darnassus",
     city = "Darnassus|town", fight = "battle|fight|struggle", fights = "battles|struggles",
-    problem = "problem|shadow|trouble", magic = "magic|nature's power|druidic arts", mount = "nightsaber|mount",
-    world = "world|forest|Azeroth", day = "day|sunlight", time = "time|ages",
-    life = "life|eternity", tonight = "tonight|beneath the moon",
-    kill = "slay|cleanse|end|kill", killed = "slew|cleansed|ended|killed", killing = "slaying|cleansing|killing",
-    attack = "strike|attack", help = "aid|help", go = "go|travel|journey",
-    going = "going|journeying", want = "wish|seek|want", think = "believe|sense|think",
+    problem = "problem|trouble", magic = "magic|nature's power|druidic arts", mount = "nightsaber|mount",
+    world = "world", day = "day", time = "time",
+    life = "life", tonight = "tonight|beneath the moon",
+    kill = "slay|cleanse|end|kill", killed = "felled|killed", killing = "slaying|cleansing|killing",
+    attack = "strike|attack", help = "aid|help", go = "go",
+    going = "going", want = "seek|want", think = "believe|sense|think",
     know = "know", see = "see|perceive", look = "look|gaze",
     get = "get|gather", buy = "buy|trade for", make = "make|craft|shape",
-    sleep = "rest|dream|slumber", love = "love|treasure", hate = "despise|hate",
-    die = "die|fall|perish", died = "died|fell|perished", leave = "leave|depart", lose = "lose", win = "win|prevail",
+    sleep = "rest|slumber|sleep", love = "love|treasure", hate = "despise|hate",
+    die = "die|fall|perish", died = "died|fell|perished", leave = "leave", lose = "lose", win = "win|prevail",
     farm = "gather|farm", farming = "gathering|farming",
     hello = "Ishnu-alah|greetings|well met", bye = "farewell|Elune be with you", yes = "yes|indeed|it is so",
-    no = "no|it is not so", damn = "alas|by Elune|curses", wow = "by Elune|ah|remarkable",
+    no = "no|nay", damn = "alas|by Elune|curses", wow = "by Elune|ah|remarkable",
     lol = "*smiles*|hm hm|*laughs softly*",
   },
   interject = "young one|by Elune|hm",
@@ -474,14 +474,14 @@ Bank("gnome", { lex = {
 }})
 Bank("nightelf", { lex = {
   healer = "healer|priestess|druid", healers = "healers|priestesses", tank = "guardian|bear|tank", group = "group|circle|company",
-  guild = "guild|order|circle", zone = "land|forest|realm", pet = "companion|pet|nightsaber", elite = "ancient beast|elite",
+  guild = "guild|order|circle", zone = "land|zone", pet = "companion|pet|nightsaber", elite = "ancient beast|elite",
   spider = "spider|webspinner", spiders = "spiders|webspinners", wipe = "fall|wipe", wiped = "fell together|wiped",
   aggro = "wrath|fury", rogue = "shadow|rogue", mage = "mage|arcanist", hunter = "huntress|hunter|sentinel", priest = "priestess|priest",
   druid = "druid|shapeshifter", warrior = "warrior|sentinel", honestly = "truly|in truth|honestly", obviously = "plainly|clearly",
   annoying = "tiresome|troubling", dangerous = "perilous|dangerous", ridiculous = "absurd|foolish", finally = "at last|finally",
   almost = "nearly|almost", together = "together|as one", whole = "whole|entire", scared = "afraid|uneasy", ready = "ready|prepared",
   minute = "moment|minute", minutes = "moments|minutes", hour = "hour", hours = "hours|long hours", nobody = "no one",
-  anybody = "anyone", early = "early|at dawn", late = "late|deep into the night",
+  anybody = "anyone", early = "early", late = "late",
 }})
 
 ---------------------------------------------------------------------------
@@ -524,41 +524,41 @@ end
 ---------------------------------------------------------------------------
 Bank("orc", { lex = {
   swear = "dung|filth", swearing = "blasted|cursed|stupid", sucks = "is weak|stinks like kobold|is shame",
-  kinda = "little|bit", hope = "hope|pray to ancestors", disconnected = "dropped|yanked",
+  kinda = "little|bit", hope = "hope", disconnected = "dropped",
   kicked = "thrown out|kicked", leveling = "getting stronger|leveling", horde = "Horde|mighty Horde", alliance = "pink-skins|Alliance dogs",
-  character = "warrior|fighter", server = "realm|world" } })
+  character = "warrior|fighter", server = "realm" } })
 Bank("troll", { lex = {
   swear = "junk|mess", swearing = "cursed|crazy|dang", sucks = "be bad juju|stinks, mon|be no good",
-  kinda = "kinda|lil' bit", hope = "hope|pray ta da loa",
-  disconnected = "cut|dropped", kicked = "kicked|tossed out", leveling = "levelin'|gettin' stronger",
+  kinda = "kinda|lil' bit", hope = "hope",
+  disconnected = "dropped", kicked = "kicked|tossed out", leveling = "levelin'|gettin' stronger",
   alliance = "Alliance|da pink ones", character = "toon|troll", server = "realm" } })
 Bank("tauren", { lex = {
   swear = "dung|mess", swearing = "troublesome|wretched", sucks = "is unfortunate|is troubling|is a heavy burden",
-  kinda = "somewhat|a little", hope = "hope|pray", disconnected = "cut|dropped",
+  kinda = "somewhat|a little", hope = "hope|pray", disconnected = "dropped",
   kicked = "cast out|sent away", leveling = "growing|walking the path", alliance = "the Alliance|our Alliance cousins",
-  character = "spirit|character", server = "realm|land" } })
+  character = "spirit|character", server = "realm" } })
 Bank("forsaken", { lex = {
   swear = "rot|filth", swearing = "wretched|accursed|rotten", sucks = "is wretched|reeks|is deliciously awful",
-  kinda = "somewhat|rather", hope = "hope|dare to hope", disconnected = "severed|dropped",
+  kinda = "somewhat|rather", hope = "hope|dare to hope", disconnected = "dropped",
   kicked = "cast out|discarded", leveling = "growing deadlier|leveling", alliance = "the living Alliance|Alliance",
-  character = "corpse|character", server = "realm|graveyard" } })
+  character = "corpse|character", server = "realm" } })
 Bank("human", { lex = {
   swear = "rubbish|nonsense", swearing = "blasted|confounded|wretched", sucks = "is dreadful|is most unfortunate|is ghastly",
-  kinda = "rather|somewhat", hope = "hope|pray", disconnected = "severed|dropped",
+  kinda = "rather|somewhat", hope = "hope|pray", disconnected = "dropped",
   kicked = "expelled|dismissed", leveling = "training|leveling", horde = "the Horde|the savage Horde", alliance = "the Alliance|the noble Alliance",
-  character = "hero|character", server = "realm|kingdom" } })
+  character = "hero|character", server = "realm" } })
 Bank("dwarf", { lex = {
   swear = "muck|mince", swearing = "blasted|bloody|flamin'", sucks = "is rotten|is pure mince|is a right pain",
-  kinda = "a wee bit|kinda", hope = "hope|pray", disconnected = "booted|dropped",
+  kinda = "a wee bit|kinda", hope = "hope|pray", disconnected = "dropped",
   kicked = "booted|thrown oot", leveling = "levelin'|gettin' stronger", horde = "Horde|greenskins", alliance = "Alliance",
   character = "toon|fella", server = "realm" } })
 Bank("gnome", { lex = {
   swear = "scrap|junk", swearing = "blasted|dratted|ding-dang", sucks = "is suboptimal|malfunctions|is inefficient",
-  kinda = "roughly|approximately|sorta", hope = "hope|calculate", disconnected = "disconnected|unplugged",
+  kinda = "roughly|approximately|sorta", hope = "hope|calculate", disconnected = "disconnected",
   kicked = "ejected|kicked", leveling = "upgrading|leveling", alliance = "Alliance", character = "unit|character", server = "server|network" } })
 Bank("nightelf", { lex = {
   swear = "filth|corruption", swearing = "cursed|wretched", sucks = "is troubling|is sorrowful|is ill-fated",
-  kinda = "somewhat|rather", hope = "hope|pray to Elune", disconnected = "severed|dropped",
+  kinda = "somewhat|rather", hope = "hope", disconnected = "dropped",
   kicked = "cast out|banished", leveling = "growing|leveling", horde = "the Horde|the brutish Horde", alliance = "the Alliance",
   character = "spirit|character", server = "realm" } })
 
@@ -633,7 +633,6 @@ Extend("nightelf", {
     gg = { "Andu-falah-dor. Balance is restored.", "Well fought. Ishnu-alah." },
   },
   lex = { leader = "shan'do|elder|leader", noob = "thero'shan|young one|sapling" },
-  openers = { "Fandu-dath-belore?", "Ishnu-alah." },
 })
 
 -- Taur-ahe: Nechi owachi (hello and thank you), Theia-shoush ahmen (so it will be), Ish-ne-alo por-ah (may the elders guide your days),

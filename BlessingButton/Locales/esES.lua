@@ -146,4 +146,6 @@ ns.LOCALES.esES = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "Los ajustes solo muestran lo que usa tu clase: un druida ve Espinas, un mago ve Armadura, etc.",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "Espinas va a tanques y cuerpo a cuerpo por defecto (solo daña a quien te golpea). Todos sigue siendo una opción",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "Chamanes: Auto elige el encantamiento por tus talentos, Viento Furioso o Muerdepiedras para Mejora, Lengua de Fuego para Elemental y Restauración",
+  ["My Role"] = "Mi rol",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "Nuevo ajuste de paladín, Mi rol: Auto (por tus talentos, como antes), Sanador, Tanque o Reprensión. Con Reprensión recibes Poderío y Reyes en vez de Sabiduría, y los demás paladines con el addon también lo tienen en cuenta",
 } end

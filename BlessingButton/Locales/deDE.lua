@@ -147,4 +147,6 @@ ns.LOCALES.deDE = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "Die Einstellungen zeigen nur, was deine Klasse nutzt: Druiden sehen Dornen, Magier Rüstung und so weiter",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "Dornen geht standardmäßig auf Tanks und Nahkämpfer (es schadet nur dem, der dich trifft). Alle bleibt wählbar",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "Schamanen: Auto wählt die Waffenverzauberung nach deinen Talenten, Windzorn oder Felsbeißer für Verstärkung, Flammenzunge für Elementar und Wiederherstellung",
+  ["My Role"] = "Meine Rolle",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "Neue Paladin-Einstellung Meine Rolle: Auto (nach deinen Talenten, wie bisher), Heiler, Tank oder Vergeltung. Mit Vergeltung bekommst du Macht und Könige statt Weisheit, und andere Paladine mit dem Addon planen das auch so ein",
 } end

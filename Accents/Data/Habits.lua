@@ -53,12 +53,12 @@ H("nightelf", {
   ["a long time"] = "an age|many long years", ["long time"] = "an age", ["right now"] = "in this moment|now",
   ["let's go"] = "come, let us go|let us move", ["let's"] = "let us", ["oh my god"] = "by Elune|Elune's light",
   ["omg"] = "by Elune", ["what the hell"] = "by Elune|what darkness is this", ["wtf"] = "by Elune",
-  ["good luck"] = "Ishnu-alah|good fortune to you", ["you guys"] = "you all|young ones", ["i'm going to"] = "I shall|I will",
+  ["good luck"] = "Ishnu-alah|good fortune to you", ["you guys"] = "you all|you young ones", ["i'm going to"] = "I shall|I will",
   ["i will"] = "I shall", ["i'll"] = "I shall", ["a lot"] = "much|a great deal", ["kind of"] = "somewhat", ["i'm tired"] = "I grow weary",
   ["how's it going"] = "how fares your path|how fare you", ["what's up"] = "how fares your path", ["hurry up"] = "swiftly now|make haste",
   ["calm down"] = "be at peace|patience", ["be careful"] = "tread softly|walk with care", ["have fun"] = "find joy in it",
   ["i need"] = "I require|I have need of", ["we need"] = "we have need of", ["so long"] = "an age", ["so old"] = "ancient",
-  ["new to"] = "young to", ["for real"] = "truly", ["no way"] = "it cannot be", ["come on"] = "come", ["my bad"] = "forgive me",
+  ["for real"] = "truly", ["no way"] = "it cannot be", ["come on"] = "come now", ["my bad"] = "forgive me",
 })
 
 ---------------------------------------------------------------------------
@@ -82,7 +82,7 @@ H("tauren", {
 H("forsaken", {
   ["i think"] = "I suspect|I think", ["i don't know"] = "who knows|I neither know nor care", ["i don't care"] = "I stopped caring when I died|I care not",
   ["oh my god"] = "by the Dark Lady|how grim", ["omg"] = "how grim|by the Dark Lady", ["what the hell"] = "what in the Shadowlands|what fresh horror",
-  ["wtf"] = "what fresh horror", ["kill me"] = "too late|been there", ["i'm dying"] = "I'm already dead|I died once, it was fine",
+  ["wtf"] = "what fresh horror", ["i'm dying"] = "I'm already dead|I died once, it was fine",
   ["i'm dead"] = "I'm deader than usual", ["good luck"] = "try not to die. Or do, it's not so bad", ["you guys"] = "you living lot|you breathers",
   ["have fun"] = "enjoy it, if you're capable", ["i love"] = "I almost tolerate|I can stomach", ["i hate"] = "I loathe|I truly despise",
   ["a lot"] = "a great deal|plenty", ["let's go"] = "let's shamble on|onward, then", ["how's it going"] = "still rotting?|how's the decay",
@@ -128,7 +128,7 @@ H("dwarf", { ["oh my god"] = "by me beard|by the Light", ["omg"] = "by me beard"
 for key, v in pairs({ human = "band together|form a party", nightelf = "gather together", tauren = "band together|gather as one herd",
   forsaken = "band together", gnome = "team up|assemble the team", orc = "form a warband|join up", troll = "team up, mon|team up",
   dwarf = "team up|band together" }) do
-  H(key, { ["group up"] = v, ["grouping up"] = "teaming up", ["want to group"] = "want to team up" })
+  H(key, { ["group up"] = v, ["grouping up"] = "teaming up" })   -- (1.4.6) "want to group" is left to KeepHere: "want to group up" read "team up up"
 end
 -- Forsaken irony stays clear: good never comes out as "dreadful"
 do

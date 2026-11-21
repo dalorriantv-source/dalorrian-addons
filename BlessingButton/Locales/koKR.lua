@@ -147,4 +147,6 @@ ns.LOCALES.koKR = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "설정에는 직업이 쓰는 것만 보입니다: 드루이드는 가시, 마법사는 갑옷 등",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "가시는 기본적으로 방어 전담과 근접에게 걸립니다 (자신을 때리는 대상만 피해를 입음). 모두도 선택할 수 있습니다",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "주술사: 자동은 특성에 따라 무기 강화를 고릅니다. 고양은 질풍 또는 대지, 정기와 복원은 불꽃",
+  ["My Role"] = "내 역할",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "새 성기사 설정, 내 역할: 자동(기존처럼 특성 기준), 치유, 방어 전담, 징벌. 징벌을 고르면 지혜 대신 힘과 왕의 축복을 받고, 애드온을 쓰는 다른 성기사도 그에 맞춰 계획합니다",
 } end

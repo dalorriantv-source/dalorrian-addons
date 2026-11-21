@@ -146,4 +146,6 @@ ns.LOCALES.itIT = function() return {
   ["Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on"] = "Le impostazioni mostrano solo ciò che usa la tua classe: un druido vede Spine, un mago vede Armatura e così via",
   ["Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice"] = "Spine va di base a difensori e mischia (ferisce solo chi ti colpisce). Tutti resta una scelta",
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "Sciamani: Auto sceglie l'incantamento in base ai talenti, Vento Furioso o Spaccaroccia per Potenziamento, Lingua di Fuoco per Elementale e Rigenerazione",
+  ["My Role"] = "Il mio ruolo",
+  ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "Nuova impostazione del paladino, Il mio ruolo: Auto (dai tuoi talenti, come prima), Guaritore, Difensore o Castigo. Con Castigo ricevi Potenza e Re invece di Saggezza, e gli altri paladini con l'addon ne tengono conto",
 } end
