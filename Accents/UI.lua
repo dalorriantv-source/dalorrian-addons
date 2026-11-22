@@ -559,6 +559,7 @@ ns.HelpConfig = {
       get = function() return ns.DB.unlockAll and true or false end, set = function(v) ns.DB.unlockAll = v or nil; ns.RefreshUI() end },
   },
   notes = {
+    { v = "1.4.8", "Item, armor, weapon, quest and spell links you put in chat go out untouched in every accent. Links in the game's newer color format were getting broken, so the game blanked them" },
     { v = "1.4.7", "Every accent audited the same way as Night Elf: thousands of chat lines run through each one, and every swap that changed what you meant was fixed or removed",
       "Words keep their meaning in context: \"I'm lost\" vs \"we lost the tank\", \"3 left\" vs \"he left\", \"it broke\" vs \"I'm broke\", \"nice drop\", \"it's okay\", \"look out\", \"see you\", \"need to\", \"get up\", \"come back\", \"for instance\", \"quest item\", \"attack power\", \"5 minutes\", \"crazy good\", \"good luck\"",
       "Longer swaps only where they fit: \"an easy quest\" never becomes \"a cakewalk quest\", \"good luck with the boss\" stays readable, and \"hey can you help me\" gets a comma after the greeting",

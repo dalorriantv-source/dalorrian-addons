@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Accents
 ## Notes: Talk like an Orc, a Dwarf, a Pirate and dozens more. Unlock accents, earn ranks and awards. /accents
 ## Author: Dalorrian
-## Version: 1.4.7
+## Version: 1.4.8
 ## IconTexture: Interface\Icons\Spell_Shadow_SoothingKiss
 ## AddonCompartmentFunc: Accents_OnCompartmentClick
 ## SavedVariables: AccentsDB, Accents_Lang

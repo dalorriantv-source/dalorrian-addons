@@ -350,8 +350,14 @@ end
 function E.Protect(s, names)
   local saved = {}
   local function keep(x) saved[#saved + 1] = x; return "\001" .. #saved .. "\002" end
-  s = s:gsub("|c%x%x%x%x%x%x%x%x|H.-|h.-|h|r", keep)   -- item, spell, quest links
+  -- (1.4.8) item, spell, quest and achievement links, in every color format the game uses: the old
+  -- "|cffa335ee" and the newer "|cnIQ4:" quality colors. The whole link stays exactly as it was, or the
+  -- server drops it ("|r" on its own was being read as "are")
+  s = s:gsub("|c[^|]*|H.-|h.-|h|r", keep)
+  s = s:gsub("|H.-|h.-|h|r", keep)
   s = s:gsub("|H.-|h.-|h", keep)
+  s = s:gsub("|c[^|%s]*", keep)                         -- any stray color start or end left over
+  s = s:gsub("|[rn]", keep)
   s = s:gsub("|T.-|t", keep)                            -- icons
   s = s:gsub("|A.-|a", keep)
   s = s:gsub('"[^"]*"', keep)                           -- "quoted text" stays word for word
