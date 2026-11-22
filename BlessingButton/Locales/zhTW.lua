@@ -149,4 +149,5 @@ ns.LOCALES.zhTW = function() return {
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "薩滿：自動依天賦選武器附魔，增強選風怒或石化，元素和恢復選火舌",
   ["My Role"] = "我的職責",
   ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "新的聖騎士設定「我的職責」：自動（依天賦，和以前一樣）、治療、坦克或懲戒。選懲戒會得到力量和王者而不是智慧，用這個插件的其他聖騎士也會照此安排",
+  ["No more false \"Aspect of the Hawk\" (or other self buff) prompts in boss fights: when the game hides your buffs from addons, they count as on, and self-buff reminders wait until the boss fight is over"] = "首領戰中不再誤報\"雄鷹守護\"（或其他自身增益）：當遊戲對插件隱藏你的增益時，視為已開啟，自身增益提醒會等到首領戰結束",
 } end

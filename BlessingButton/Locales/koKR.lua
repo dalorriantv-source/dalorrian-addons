@@ -149,4 +149,5 @@ ns.LOCALES.koKR = function() return {
   ["Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration"] = "주술사: 자동은 특성에 따라 무기 강화를 고릅니다. 고양은 질풍 또는 대지, 정기와 복원은 불꽃",
   ["My Role"] = "내 역할",
   ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "새 성기사 설정, 내 역할: 자동(기존처럼 특성 기준), 치유, 방어 전담, 징벌. 징벌을 고르면 지혜 대신 힘과 왕의 축복을 받고, 애드온을 쓰는 다른 성기사도 그에 맞춰 계획합니다",
+  ["No more false \"Aspect of the Hawk\" (or other self buff) prompts in boss fights: when the game hides your buffs from addons, they count as on, and self-buff reminders wait until the boss fight is over"] = "우두머리 전투 중 잘못된 \"매의 상\"(또는 다른 자기 강화) 알림이 더 이상 뜨지 않습니다: 게임이 애드온에서 강화 효과를 숨기면 켜진 것으로 보고, 자기 강화 알림은 우두머리 전투가 끝난 뒤에 나옵니다",
 } end

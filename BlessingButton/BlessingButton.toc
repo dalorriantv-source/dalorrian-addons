@@ -2,7 +2,7 @@
 ## Title: Dalorrian's Blessings & Buffs
 ## Notes: One button for every class buff: paladin blessings split between paladins, Fortitude, Arcane Intellect, Mark of the Wild, Thorns, and your own armor, shield or aspect. Shows only when someone needs one. Type /bless help for settings.
 ## Author: Dalorrian
-## Version: 1.3.2
+## Version: 1.3.3
 ## IconTexture: Interface\Icons\Spell_Magic_MageArmor
 ## SavedVariables: BlessingButtonDB, BlessingButton_Lang
 

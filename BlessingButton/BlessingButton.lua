@@ -122,22 +122,28 @@ local function Knows(id)
 end
 
 -- when my blessing (or any aura by name) on a unit runs out: a time, 0 for no end, nil when missing
+-- (1.3.3) in boss fights the game can hide buffs from addons ("secret values"). A buff we can't read counts as
+-- ON (0 = never runs out), never as missing: that was popping "Aspect of the Hawk" with it already on
+local RAW_AURAS, RAW_BUFF = _G.C_UnitAuras, _G.UnitBuff
 local function AuraEnd(unit, id, mine)
   local name = SpellName(id)
   if not name then return nil end
   local filter = mine and "HELPFUL|PLAYER" or "HELPFUL"
-  if C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName then
-    local ok, a = pcall(C_UnitAuras.GetAuraDataBySpellName, unit, name, filter)
-    if not ok or not a then return nil end
+  if RAW_AURAS and RAW_AURAS.GetAuraDataBySpellName then
+    local ok, a = pcall(RAW_AURAS.GetAuraDataBySpellName, unit, name, filter)
+    if not ok or issecret(a) then return 0 end
+    if not a then return nil end
+    if issecret(a.name) or issecret(a.spellId) then return 0 end
     local e = a.expirationTime
     if e == nil or issecret(e) then return 0 end
     return e
   end
-  if UnitBuff then
+  if RAW_BUFF then
     for i = 1, 40 do
-      local n, _, _, _, _, e, src = UnitBuff(unit, i)
+      local ok, n, _, _, _, _, e, src = pcall(RAW_BUFF, unit, i)
+      if not ok or issecret(n) then return 0 end
       if not n then return nil end
-      if n == name and (not mine or src == "player") then return e or 0 end
+      if n == name and (not mine or issecret(src) or src == "player") then return (not issecret(e) and e) or 0 end
     end
   end
   return nil
@@ -446,6 +452,8 @@ local function SelfSpell(b)
 end
 -- (1.3.0) seconds left on a self buff: -1 when missing, huge when it never ends
 local function SelfLeft(b, now, chosen)
+  -- (1.3.3) no self-buff reminders in the middle of a boss fight
+  if IsEncounterInProgress then local ok, on = pcall(IsEncounterInProgress); if ok and on and not issecret(on) then return math.huge end end
   if b.imbue then
     if not GetWeaponEnchantInfo or not GetInventoryItemLink("player", 16) then return math.huge end
     local has, ms = GetWeaponEnchantInfo()
@@ -1192,6 +1200,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.3.3", "No more false \"Aspect of the Hawk\" (or other self buff) prompts in boss fights: when the game hides your buffs from addons, they count as on, and self-buff reminders wait until the boss fight is over" },
     { v = "1.3.2", "New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too" },
     { v = "1.3.1", "Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on", "Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice", "Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration" },
     { v = "1.3.0", "New name, Blessings & Buffs: every class with a buff uses it now. Druids give Mark of the Wild and Thorns, and it keeps up your own buffs: mage Ice or Frost Armor, warlock Demon Armor or Demon Skin, priest Inner Fire, shaman Lightning Shield and a weapon imbue, hunter Trueshot Aura and an aspect, warrior Battle Shout when you have the rage", "Settings for Thorns (everyone, tanks only or off), Mage Armor, the shaman weapon imbue and the hunter aspect. A buff you picked yourself is kept: if you already have Mage Armor or Aspect of the Monkey on, it won't swap it. /bless still works" },
