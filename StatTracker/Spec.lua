@@ -257,24 +257,60 @@ for _, g in ipairs({ DURABILITY_TEMPLATE, ITEM_MIN_LEVEL, ITEM_CLASSES_ALLOWED, 
 end
 local function Any(t, list) for _, p in ipairs(list) do if t:find(p) then return true end end end
 
-local function EnchantLine(slot)
-  local lines = TipLines(slot)
+-- (1.3.3) the enchant's number on the item link ("item:ID:ENCHANT:..."): 0 or empty means no enchant
+local function EnchantId(slot)
+  local link = GetInventoryItemLink and GetInventoryItemLink("player", slot)
+  if type(link) ~= "string" or issecretvalue(link) then return nil end
+  local e = link:match("item:%-?%d+:(%-?%d*)")
+  return tonumber(e) or 0
+end
+ns.EnchantId = EnchantId
+
+-- (1.3.3) a tooltip line's plain words and its color, also when the color or an icon is written into the text
+-- (WoW: Forever's tooltips do that: "|T...|t |cff1eff00+3 Stamina|r")
+local function Plain(l)
+  local t = l[1]
+  if type(t) ~= "string" or issecretvalue(t) then return nil end
+  local r, g, b = l[2], l[3], l[4]
+  local hex = t:match("|c%x%x(%x%x%x%x%x%x)")
+  if hex then r, g, b = tonumber(hex:sub(1, 2), 16) / 255, tonumber(hex:sub(3, 4), 16) / 255, tonumber(hex:sub(5, 6), 16) / 255 end
+  t = t:gsub("|T.-|t", ""):gsub("|A.-|a", ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|cn[^:]*:", ""):gsub("|r", "")
+  t = t:gsub("^%s+", ""):gsub("%s+$", "")
+  if t == "" then return nil end
+  return t, r, g, b
+end
+
+local function FindEnchant(lines)
   local ET = Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.ItemEnchantmentPermanent
   local prefix = type(ENCHANTED_TOOLTIP_LINE) == "string" and ENCHANTED_TOOLTIP_LINE:match("^(.-)%%s") or "Enchanted: "
   for i, l in ipairs(lines) do
-    local t = l[1]
-    if i > 1 and type(t) == "string" and not issecretvalue(t) and t ~= "" then
+    local t, r, g, b = Plain(l)
+    if i > 1 and t then
       if ET and l[5] == ET then return (t:gsub("^" .. prefix:gsub("%p", "%%%0"), "")) end
       if prefix ~= "" and t:sub(1, #prefix) == prefix then return t:sub(#prefix + 1) end
       -- Classic tooltips: the enchant is the green line above durability ("+7 Agility", "Crusader", "Healing Power").
       -- The item's own green lines (Equip:, Use:) come after it, so stop there
       if Any(t, STOP) then return nil end
-      local r, g, b = l[2], l[3], l[4]
-      if type(g) == "number" and g > 0.9 and r < 0.3 and b < 0.3 and not Any(t, OWN) then return t end
+      if type(g) == "number" and g > 0.9 and (r or 1) < 0.3 and (b or 1) < 0.3 and not Any(t, OWN) then return t end
     end
   end
 end
+
+-- (1.3.3) only when the item link says it's enchanted, and from every source the game has: the hidden tooltip,
+-- then C_TooltipInfo (WoW: Forever's tooltips can leave the enchant out of the first one)
+local function EnchantLine(slot)
+  local id = EnchantId(slot)
+  if not id or id <= 0 then return nil end
+  local okA, a = pcall(ScanLines, slot)
+  local e = okA and FindEnchant(a)
+  if e then return e end
+  local okB, b = pcall(InfoLines, slot)
+  e = okB and FindEnchant(b)
+  if e then return e end
+  return false   -- enchanted, but the words weren't found: shown as "Enchanted"
+end
 ns.EnchantLine = EnchantLine
+ns.ScanLines, ns.InfoLines, ns.Plain = ScanLines, InfoLines, Plain
 
 -- (1.3.0) every WoW: Forever enchant by the name the game may show, per slot, with what it does (short).
 -- Slots: 2 neck, 15 back, 5 chest, 9 wrist, 10 hands, 8 feet, 16 main hand (one-hand and two-hand), 17 off hand / shield.
@@ -326,6 +362,7 @@ end
 function ns.EnchantInfo(slot)
   local okLine, line = pcall(EnchantLine, slot)
   if not okLine then line = nil end
+  if line == false then return { stats = {}, text = ns.Tr and ns.Tr("Enchanted") or "Enchanted" } end
   if not line then return nil end
   -- a Forever enchant the game shows by name ("Healing Power", "Greater Stats"): use what it really does on this slot
   local key = line:lower():gsub("^enchant [%a%- ]+ %- ", ""):gsub("%s+$", ""):gsub("\226\128\153", "'")

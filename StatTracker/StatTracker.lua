@@ -420,7 +420,14 @@ local function Gear(spec)
     if link then
       g.stats = ns.ItemStats(link)
       g.ench = ns.EnchantInfo and ns.EnchantInfo(s[2])
-      g.verdict = ns.Verdict(g.stats, w)
+      -- (1.3.3) the enchant counts toward how good the slot is for your spec
+      local all = g.stats
+      if g.ench and g.ench.stats and next(g.ench.stats) then
+        all = {}
+        for k, v in pairs(g.stats or {}) do all[k] = v end
+        for k, v in pairs(g.ench.stats) do all[k] = (all[k] or 0) + v end
+      end
+      g.verdict = ns.Verdict(all, w)
       g.ilvl = ILvl(link)
     elseif s[2] == 17 and twoHand then
       g.skip = true   -- a two-hander fills both hands
@@ -777,6 +784,7 @@ ns.HelpConfig = {
       get = function() return DB.ench ~= false end, set = function(v) DB.ench = v; Paint() end },
   },
   notes = {
+    { v = "1.3.3", "Enchants show on WoW: Forever's tooltips: the addon checks the item link for an enchant, then reads it from both of the game's tooltip sources, including colors and icons written into the text. An enchant it can't read still shows as Enchanted", "Enchants count toward how good each slot is for your spec" },
     { v = "1.3.2", "Enchants read from the item's own tooltip text, so they show on WoW: Forever" },
     { v = "1.3.1", "Enchants show on more gear: named ones like Crusader or Healing Power, and on game versions where the old way found nothing. Type /stats ench to see what it reads on each slot" },
     { v = "1.3.0", "Enchants now show on your character window: each enchanted slot gets one extra line in light blue under its stats, like +7 Agi or Crusader. Turn it off in Settings with Enchants On Character Window" },
@@ -861,11 +869,19 @@ SlashCmdList.STATTRACKER = function(msg)
     for _, sl in ipairs({ 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 }) do
       if GetInventoryItemLink("player", sl) then
         local e = ns.EnchantLine and ns.EnchantLine(sl)
-        local greens = {}
-        for _, l in ipairs(ns.TipLines and ns.TipLines(sl) or {}) do
-          if type(l[3]) == "number" and l[3] > 0.9 and (l[2] or 1) < 0.3 and type(l[1]) == "string" and not issecretvalue(l[1]) then greens[#greens + 1] = l[1] end
+        local id = ns.EnchantId and ns.EnchantId(sl) or "?"
+        -- (1.3.3) every line from both sources after the name, so a missed enchant can be found
+        local function Lines(f)
+          local seen = {}
+          for i, l in ipairs(f and f(sl) or {}) do
+            local t, r, g = ns.Plain(l)
+            if i > 1 and t and #seen < 8 then seen[#seen + 1] = ((type(g) == "number" and g > 0.9 and (r or 1) < 0.3) and "|cff40ff40" or "") .. t .. "|r" end
+          end
+          return table.concat(seen, " | ")
         end
-        P("  slot " .. sl .. ": " .. (e or "-") .. (#greens > 0 and ("   green: " .. table.concat(greens, " | ")) or ""))
+        P("  slot " .. sl .. " (enchant id " .. tostring(id) .. "): " .. tostring(e == false and "not found" or e or "-"))
+        P("    tip: " .. Lines(ns.ScanLines))
+        P("    info: " .. Lines(ns.InfoLines))
       end
     end
   elseif cmd == "help" or cmd == "settings" then
