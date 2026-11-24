@@ -150,4 +150,6 @@ ns.LOCALES.koKR = function() return {
   ["My Role"] = "내 역할",
   ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "새 성기사 설정, 내 역할: 자동(기존처럼 특성 기준), 치유, 방어 전담, 징벌. 징벌을 고르면 지혜 대신 힘과 왕의 축복을 받고, 애드온을 쓰는 다른 성기사도 그에 맞춰 계획합니다",
   ["No more false \"Aspect of the Hawk\" (or other self buff) prompts in boss fights: when the game hides your buffs from addons, they count as on, and self-buff reminders wait until the boss fight is over"] = "우두머리 전투 중 잘못된 \"매의 상\"(또는 다른 자기 강화) 알림이 더 이상 뜨지 않습니다: 게임이 애드온에서 강화 효과를 숨기면 켜진 것으로 보고, 자기 강화 알림은 우두머리 전투가 끝난 뒤에 나옵니다",
+  ["Buff My Target"] = "내 대상 강화",
+  ["New setting, Buff My Target (off by default): turn it on and target a friendly player who isn't in your group, and the button buffs them too, so you can hand out buffs out in the world. Thanks prickikorven for the idea"] = "새 설정 내 대상 강화(기본값 꺼짐): 켜고 파티 밖의 우호적인 플레이어를 대상으로 잡으면 버튼이 그 플레이어에게도 강화 효과를 걸어 줘서, 필드에서 강화 효과를 나눠 줄 수 있습니다. 아이디어를 준 prickikorven에게 감사합니다",
 } end

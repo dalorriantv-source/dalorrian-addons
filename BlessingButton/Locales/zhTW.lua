@@ -150,4 +150,6 @@ ns.LOCALES.zhTW = function() return {
   ["My Role"] = "我的職責",
   ["New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too"] = "新的聖騎士設定「我的職責」：自動（依天賦，和以前一樣）、治療、坦克或懲戒。選懲戒會得到力量和王者而不是智慧，用這個插件的其他聖騎士也會照此安排",
   ["No more false \"Aspect of the Hawk\" (or other self buff) prompts in boss fights: when the game hides your buffs from addons, they count as on, and self-buff reminders wait until the boss fight is over"] = "首領戰中不再誤報\"雄鷹守護\"（或其他自身增益）：當遊戲對插件隱藏你的增益時，視為已開啟，自身增益提醒會等到首領戰結束",
+  ["Buff My Target"] = "增益我的目標",
+  ["New setting, Buff My Target (off by default): turn it on and target a friendly player who isn't in your group, and the button buffs them too, so you can hand out buffs out in the world. Thanks prickikorven for the idea"] = "新設定「增益我的目標」（預設關閉）：開啟後選取一名不在你隊伍中的友方玩家，按鈕也會為其施加增益，方便在野外替路人加增益。感謝 prickikorven 的建議",
 } end

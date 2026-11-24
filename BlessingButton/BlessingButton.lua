@@ -527,10 +527,48 @@ local function BuffPick(class)
 end
 ns.BUFFERS = BUFFERS
 
+-- (1.3.4) Buff My Target (Settings, off by default): a friendly player you target who isn't in your group gets
+-- what your class gives them, so you can buff people out in the world. Group buffs come after.
+local function TargetPick(class)
+  if not DB.targetBuff then return false end
+  local u = "target"
+  if not UnitExists(u) or not (UnitIsPlayer and UnitIsPlayer(u)) or UnitIsUnit(u, "player") then return false end
+  local okF, friend = pcall(UnitIsFriend, "player", u)
+  if not okF or issecret(friend) or not friend then return false end
+  if (UnitInParty and UnitInParty(u)) or (UnitInRaid and UnitInRaid(u)) then return false end
+  if not Ready(u) then return false end
+  local _, tclass = UnitClass(u)
+  if not tclass then return false end
+  local m = { key = Key(u) or UnitName(u) or "target", unit = u, class = tclass, level = UnitLevel(u) or 0 }
+  local ids = {}
+  if BUFFERS[class] then
+    for _, b in ipairs(BUFFERS[class]) do
+      if not b.self and Knows(b.id) and Wants(b, m) and BuffEnd(u, b) == nil then ids[#ids + 1] = b.id end
+    end
+  elseif class == "PALADIN" then
+    for _, bk in pairs(BLESS) do if AuraEnd(u, bk.id, true) then return false end end   -- one blessing from you each
+    for _, k in ipairs(WANT[Role(m)] or WANT.hybrid) do
+      local id = BLESS[k] and BLESS[k].id
+      if id and Knows(id) and AuraEnd(u, id) == nil then ids[#ids + 1] = id end
+    end
+  end
+  for _, id in ipairs(ids) do
+    local spell = SpellName(id)
+    if spell and InRange(spell, u) then
+      nextCast = { spell = spell, unit = u, icon = SpellIcon(id), who = UnitName(u) }
+      waiting.total = 1
+      return true
+    end
+  end
+  if #ids > 0 then waiting.far = waiting.far + 1 end
+  return false
+end
+
 local function Pick()
   nextCast = nil
   waiting.total, waiting.far = 0, 0
   local _, class = UnitClass("player")
+  if ME and TargetPick(class) then return end
   if BUFFERS[class] and ME then BuffPick(class) return end
   if class ~= "PALADIN" or not ME then return end
   if UnitIsDeadOrGhost("player") or UnitOnTaxi("player") then return end
@@ -1088,7 +1126,7 @@ local function Reg(e) pcall(ev.RegisterEvent, ev, e) end
 for _, e in ipairs({ "ADDON_LOADED", "PLAYER_ENTERING_WORLD", "GROUP_ROSTER_UPDATE", "PLAYER_REGEN_ENABLED",
   "UNIT_AURA", "UNIT_SPELLCAST_SUCCEEDED", "SPELLS_CHANGED", "PLAYER_LEVEL_UP", "PLAYER_ROLES_ASSIGNED",
   "CHAT_MSG_ADDON", "PLAYER_TALENT_UPDATE", "CHARACTER_POINTS_CHANGED", "UNIT_DISPLAYPOWER", "PLAYER_ALIVE", "PLAYER_UNGHOST",
-  "INSPECT_READY" }) do Reg(e) end
+  "INSPECT_READY", "PLAYER_TARGET_CHANGED" }) do Reg(e) end
 
 ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4)
   if AnySecret(a1, a2, a3, a4) then return end   -- (Forever) a hidden value: nothing to do with it
@@ -1102,7 +1140,7 @@ ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4)
       local _, myClass = UnitClass("player")
       local keep = {}
       for _, row in ipairs(ns.HelpConfig.settings) do
-        if not row.class or row.class == myClass then keep[#keep + 1] = row end
+        if (not row.class and not row.classes) or row.class == myClass or (row.classes and row.classes[myClass]) then keep[#keep + 1] = row end
       end
       ns.HelpConfig.settings = keep
       if DB.thorns == "all" and not DB.thornsPicked then DB.thorns = "melee" end   -- 1.3.0's default moves to the new one
@@ -1128,7 +1166,9 @@ ev:SetScript("OnEvent", function(_, e, a1, a2, a3, a4)
   elseif e == "CHAT_MSG_ADDON" then
     if a1 == PREFIX or a1 == PP_PREFIX then OnMessage(a1, a2, a4) end
   elseif e == "UNIT_AURA" then
-    if a1 == "player" or (a1 and (a1:find("^raid%d") or a1:find("^party%d"))) then scanDirty = true end
+    if a1 == "player" or (a1 and (a1:find("^raid%d") or a1:find("^party%d"))) or (a1 == "target" and DB.targetBuff) then scanDirty = true end
+  elseif e == "PLAYER_TARGET_CHANGED" then
+    if DB.targetBuff then scanDirty = true end
   elseif e == "UNIT_SPELLCAST_SUCCEEDED" then
     if a1 == "player" then scanDirty = true end
   elseif e == "UNIT_DISPLAYPOWER" then
@@ -1172,6 +1212,9 @@ ns.HelpConfig = {
     { label = "Recast", choices = { { "1 Min Left", 60 }, { "5 Min Left", 300 }, { "10 Min Left", 600 } },
       get = function() return DB.refresh end, set = function(v) DB.refresh = v; Refresh() end },
     -- (1.3.2) your own role, when reading your talents gets it wrong (a Ret paladin shown as a healer)
+    -- (1.3.4) off by default: target a friendly player outside your group and the button buffs them
+    { classes = { PALADIN = true, PRIEST = true, MAGE = true, DRUID = true }, label = "Buff My Target", choices = { { "Off", false }, { "On", true } },
+      get = function() return DB.targetBuff and true or false end, set = function(v) DB.targetBuff = v or nil; Refresh() end },
     { class = "PALADIN", label = "My Role", choices = { { "Auto", "auto" }, { "Healer", "hybrid" }, { "Tank", "tank" }, { "Retribution", "ret" } },
       get = function() return DB.myRole or "auto" end,
       set = function(v) DB.myRole = (v ~= "auto") and v or nil; planDirty = true; Hello(true); Refresh() end },
@@ -1200,6 +1243,7 @@ ns.HelpConfig = {
       set = function() DB.point, DB.rel, DB.x, DB.y = nil, nil, nil, nil; Place() end },
   },
   notes = {
+    { v = "1.3.4", "New setting, Buff My Target (off by default): turn it on and target a friendly player who isn't in your group, and the button buffs them too, so you can hand out buffs out in the world. Thanks prickikorven for the idea" },
     { v = "1.3.3", "No more false \"Aspect of the Hawk\" (or other self buff) prompts in boss fights: when the game hides your buffs from addons, they count as on, and self-buff reminders wait until the boss fight is over" },
     { v = "1.3.2", "New paladin setting, My Role: Auto (from your talents, as before), Healer, Tank or Retribution. Pick Retribution and you get Might and Kings instead of Wisdom, and other paladins using the addon plan for it too" },
     { v = "1.3.1", "Settings only show what your class uses: a druid sees Thorns, a mage sees Armor, and so on", "Thorns goes on tanks and melee by default (it only hurts what hits you). Everyone is still a choice", "Shamans: Auto picks the imbue by your talents, Windfury or Rockbiter for Enhancement, Flametongue for Elemental and Restoration" },
